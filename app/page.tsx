@@ -65,10 +65,7 @@ export default async function HomePage() {
         <div className="container hero-content-new">
           <div className="hero-main">
             <MotionSection className="hero-text-new">
-              <div className="hero-badge-new">
-                <Sparkles className="w-4 h-4" />
-                <span>#1 Real Estate Platform in India</span>
-              </div>
+
               <h1 className="hero-title-new">
                 Find Your Perfect
                 <span className="hero-title-gradient"> Dream Home</span>

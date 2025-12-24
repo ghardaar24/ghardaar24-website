@@ -35,7 +35,7 @@ export default function AgentProfile() {
               <p className="agent-title">Senior Property Consultant</p>
 
               <p className="agent-bio">
-                With over 10 years of experience in the real estate industry,
+                With over 10 years of experience in the Pune real estate market,
                 I've helped thousands of families find their dream homes. Let me
                 guide you through your property journey with personalized
                 service and expert advice.

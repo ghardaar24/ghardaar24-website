@@ -138,7 +138,7 @@ export default function Footer() {
               </motion.li>
               <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                 <MapPin className="w-4 h-4 text-blue-400" />
-                <span>Mumbai, Maharashtra, India</span>
+                <span>Pune, Maharashtra, India</span>
               </motion.li>
             </ul>
           </motion.div>

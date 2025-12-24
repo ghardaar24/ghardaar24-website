@@ -7,6 +7,7 @@ import ImageGallery from "@/components/ImageGallery";
 import ContactForm from "@/components/ContactForm";
 import GoogleMap from "@/components/GoogleMap";
 import InquiryCTA from "@/components/InquiryCTA";
+import ScrollToButton from "@/components/ScrollToButton";
 import { formatPrice } from "@/lib/utils";
 import { generatePropertyMetadata } from "@/lib/seo";
 import {
@@ -149,19 +150,13 @@ export default async function PropertyDetailsPage({
                         </span>
                         <span className="location-city">{property.city}</span>
                       </div>
-                      <button
-                        onClick={() => {
-                          document
-                            .getElementById("property-map")
-                            ?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "center",
-                            });
-                        }}
+                      <ScrollToButton
+                        targetId="property-map"
+                        block="center"
                         className="view-map-btn"
                       >
                         View on Map
-                      </button>
+                      </ScrollToButton>
                     </div>
 
                     <div className="property-price-block">
@@ -272,19 +267,13 @@ export default async function PropertyDetailsPage({
                           To view the exact location and get detailed
                           directions, please send an inquiry.
                         </p>
-                        <button
-                          onClick={() => {
-                            document
-                              .getElementById("contact-form")
-                              ?.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start",
-                              });
-                          }}
+                        <ScrollToButton
+                          targetId="contact-form"
+                          block="start"
                           className="view-map-btn"
                         >
                           Send Inquiry for Location
-                        </button>
+                        </ScrollToButton>
                       </div>
                     </div>
                   </div>
