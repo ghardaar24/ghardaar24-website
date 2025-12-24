@@ -21,6 +21,18 @@ interface PropertyFormData {
   listing_type: "sale" | "rent" | "resale";
   possession: string;
   featured: boolean;
+  // Project Details
+  land_parcel: string;
+  towers: string;
+  floors: string;
+  config: string;
+  carpet_area: string;
+  // RERA & Legal Details
+  rera_no: string;
+  possession_status: string;
+  target_possession: string;
+  rera_possession: string;
+  litigation: boolean;
 }
 
 const initialFormData: PropertyFormData = {
@@ -36,6 +48,18 @@ const initialFormData: PropertyFormData = {
   listing_type: "sale",
   possession: "",
   featured: false,
+  // Project Details
+  land_parcel: "",
+  towers: "",
+  floors: "",
+  config: "",
+  carpet_area: "",
+  // RERA & Legal Details
+  rera_no: "",
+  possession_status: "",
+  target_possession: "",
+  rera_possession: "",
+  litigation: false,
 };
 
 const cities = [
@@ -190,6 +214,18 @@ export default function NewPropertyPage() {
         featured: formData.featured,
         images: imageUrls,
         amenities: amenities,
+        // Project Details
+        land_parcel: parseInt(formData.land_parcel) || 0,
+        towers: parseInt(formData.towers) || 0,
+        floors: formData.floors,
+        config: formData.config,
+        carpet_area: formData.carpet_area,
+        // RERA & Legal Details
+        rera_no: formData.rera_no,
+        possession_status: formData.possession_status,
+        target_possession: formData.target_possession,
+        rera_possession: formData.rera_possession,
+        litigation: formData.litigation,
       });
 
       if (insertError) throw insertError;
@@ -435,6 +471,159 @@ export default function NewPropertyPage() {
                 placeholder="e.g., 1200"
                 min="0"
               />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="admin-section-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.42 }}
+        >
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Project Details
+          </h2>
+
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="land_parcel">Land Parcel</label>
+              <input
+                type="number"
+                id="land_parcel"
+                name="land_parcel"
+                value={formData.land_parcel}
+                onChange={handleChange}
+                placeholder="e.g., 8"
+                min="0"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="towers">Towers</label>
+              <input
+                type="number"
+                id="towers"
+                name="towers"
+                value={formData.towers}
+                onChange={handleChange}
+                placeholder="e.g., 6"
+                min="0"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="floors">Floors</label>
+              <input
+                type="text"
+                id="floors"
+                name="floors"
+                value={formData.floors}
+                onChange={handleChange}
+                placeholder="e.g., G+3P+22"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="config">Configuration</label>
+              <input
+                type="text"
+                id="config"
+                name="config"
+                value={formData.config}
+                onChange={handleChange}
+                placeholder="e.g., 2, 3 BHK"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="carpet_area">Carpet Area</label>
+              <input
+                type="text"
+                id="carpet_area"
+                name="carpet_area"
+                value={formData.carpet_area}
+                onChange={handleChange}
+                placeholder="e.g., 746-947 sqft"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="admin-section-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.44 }}
+        >
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            RERA & Legal Details
+          </h2>
+
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="rera_no">RERA Number</label>
+              <input
+                type="text"
+                id="rera_no"
+                name="rera_no"
+                value={formData.rera_no}
+                onChange={handleChange}
+                placeholder="e.g., P52100047..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="possession_status">Possession Status</label>
+              <select
+                id="possession_status"
+                name="possession_status"
+                value={formData.possession_status}
+                onChange={handleChange}
+              >
+                <option value="">Select Status</option>
+                <option value="Pre-Launch">Pre-Launch</option>
+                <option value="Under Construction">Under Construction</option>
+                <option value="Mid Stage">Mid Stage</option>
+                <option value="Nearing Possession">Nearing Possession</option>
+                <option value="Ready to Move">Ready to Move</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="target_possession">Target Possession</label>
+              <input
+                type="text"
+                id="target_possession"
+                name="target_possession"
+                value={formData.target_possession}
+                onChange={handleChange}
+                placeholder="e.g., Jun 2027"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="rera_possession">RERA Possession</label>
+              <input
+                type="text"
+                id="rera_possession"
+                name="rera_possession"
+                value={formData.rera_possession}
+                onChange={handleChange}
+                placeholder="e.g., Jun 2028"
+              />
+            </div>
+
+            <div className="form-group full">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="litigation"
+                  checked={formData.litigation}
+                  onChange={handleChange}
+                />
+                <span>Property under Litigation</span>
+              </label>
             </div>
           </div>
         </motion.div>

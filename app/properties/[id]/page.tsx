@@ -18,6 +18,14 @@ import {
   Building,
   CheckCircle,
   ArrowLeft,
+  LandPlot,
+  TowerControl,
+  Layers,
+  LayoutGrid,
+  Ruler,
+  FileCheck,
+  Clock,
+  Scale,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -241,6 +249,145 @@ export default async function PropertyDetailsPage({
                     </p>
                   </div>
                 </MotionSection>
+
+                {/* Project Overview */}
+                {(property.land_parcel || property.towers || property.floors || property.config || property.carpet_area || property.rera_no || property.possession_status || property.target_possession || property.rera_possession || property.litigation !== undefined) && (
+                  <MotionSection delay={0.45}>
+                    <div className="property-section">
+                      <h2 className="section-heading">Project Overview</h2>
+                      <StaggerContainer className="project-overview-grid" fast>
+                        {property.land_parcel !== undefined && property.land_parcel > 0 && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <LandPlot className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.land_parcel}</span>
+                                <span className="project-overview-label">Land Parcel</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.towers !== undefined && property.towers > 0 && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <TowerControl className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.towers}</span>
+                                <span className="project-overview-label">Towers</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.floors && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <Layers className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.floors}</span>
+                                <span className="project-overview-label">Floors</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.config && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <LayoutGrid className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.config}</span>
+                                <span className="project-overview-label">Config</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.carpet_area && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <Ruler className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.carpet_area}</span>
+                                <span className="project-overview-label">Carpet Area</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.rera_no && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <FileCheck className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value rera-number" title={property.rera_no}>{property.rera_no}</span>
+                                <span className="project-overview-label">RERA No.</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.possession_status && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <Building className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.possession_status}</span>
+                                <span className="project-overview-label">Possession Status</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.target_possession && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <Calendar className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.target_possession}</span>
+                                <span className="project-overview-label">Target Possession</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        {property.rera_possession && (
+                          <StaggerItem>
+                            <div className="project-overview-item">
+                              <div className="project-overview-icon">
+                                <Clock className="w-5 h-5" />
+                              </div>
+                              <div className="project-overview-content">
+                                <span className="project-overview-value">{property.rera_possession}</span>
+                                <span className="project-overview-label">RERA Possession</span>
+                              </div>
+                            </div>
+                          </StaggerItem>
+                        )}
+                        <StaggerItem>
+                          <div className={`project-overview-item litigation-item ${property.litigation ? 'has-litigation' : 'no-litigation'}`}>
+                            <div className="project-overview-icon">
+                              <Scale className="w-5 h-5" />
+                            </div>
+                            <div className="project-overview-content">
+                              <span className="project-overview-value">{property.litigation ? 'Yes' : 'No'}</span>
+                              <span className="project-overview-label">Litigation</span>
+                            </div>
+                          </div>
+                        </StaggerItem>
+                      </StaggerContainer>
+                    </div>
+                  </MotionSection>
+                )}
 
                 {/* Amenities */}
                 {property.amenities && property.amenities.length > 0 && (

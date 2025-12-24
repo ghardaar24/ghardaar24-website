@@ -22,5 +22,17 @@ export interface Property {
   featured: boolean;
   status?: string;
   possession?: string;
+  // Project Details
+  land_parcel?: number;
+  towers?: number;
+  floors?: string;
+  config?: string;
+  carpet_area?: string;
+  // RERA & Legal Details
+  rera_no?: string;
+  possession_status?: string;
+  target_possession?: string;
+  rera_possession?: string;
+  litigation?: boolean;
   created_at: string;
 }

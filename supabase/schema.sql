@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS properties (
   
   -- Property Classification
   property_type TEXT NOT NULL CHECK (property_type IN ('apartment', 'house', 'villa', 'plot', 'commercial')),
-  listing_type TEXT NOT NULL CHECK (listing_type IN ('sale', 'rent')),
+  listing_type TEXT NOT NULL CHECK (listing_type IN ('sale', 'rent', 'resale')),
   
   -- Images - Array of public URLs from Supabase Storage
   images TEXT[] DEFAULT '{}',
@@ -52,6 +52,20 @@ CREATE TABLE IF NOT EXISTS properties (
   
   -- Possession/Availability
   possession TEXT DEFAULT 'Immediate',
+  
+  -- Project Details
+  land_parcel INTEGER DEFAULT 0,
+  towers INTEGER DEFAULT 0,
+  floors TEXT DEFAULT '',
+  config TEXT DEFAULT '',
+  carpet_area TEXT DEFAULT '',
+  
+  -- RERA & Legal Details
+  rera_no TEXT DEFAULT '',
+  possession_status TEXT DEFAULT '',
+  target_possession TEXT DEFAULT '',
+  rera_possession TEXT DEFAULT '',
+  litigation BOOLEAN DEFAULT false,
   
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -286,3 +300,18 @@ USING (bucket_id = 'property-images');
 -- If you're upgrading an existing database, run this:
 -- ALTER TABLE properties ADD COLUMN IF NOT EXISTS possession TEXT DEFAULT 'Immediate';
 -- CREATE INDEX IF NOT EXISTS idx_properties_possession ON properties(possession);
+
+-- =============================================
+-- MIGRATION: Add project details columns if upgrading
+-- =============================================
+-- If you're upgrading an existing database, run these:
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS land_parcel INTEGER DEFAULT 0;
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS towers INTEGER DEFAULT 0;
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS floors TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS config TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS carpet_area TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS rera_no TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS possession_status TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS target_possession TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS rera_possession TEXT DEFAULT '';
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS litigation BOOLEAN DEFAULT false;
