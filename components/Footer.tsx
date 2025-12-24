@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { motion, fadeInUp, staggerContainer } from "@/lib/motion";
 
@@ -43,9 +44,11 @@ export default function Footer() {
                 whileHover={{ scale: 1.05, rotate: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <img
+                <Image
                   src="/logo2.png"
                   alt="Ghardaar24"
+                  width={100}
+                  height={40}
                   className="h-10 w-auto"
                 />
               </motion.div>

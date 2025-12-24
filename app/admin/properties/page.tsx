@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase, Property } from "@/lib/supabase";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import { Plus, Edit, Trash2, Star, Eye, Search } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
@@ -165,7 +166,12 @@ export default function AdminPropertiesPage() {
                       <div className="table-property">
                         <div className="table-property-image">
                           {property.images?.[0] && (
-                            <img src={property.images[0]} alt="" />
+                            <Image
+                              src={property.images[0]}
+                              alt=""
+                              fill
+                              className="object-cover"
+                            />
                           )}
                         </div>
                         <span className="table-property-title">

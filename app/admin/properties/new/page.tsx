@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Upload, X, Save, ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "@/lib/motion";
 
 interface PropertyFormData {
@@ -548,7 +549,12 @@ export default function NewPropertyPage() {
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <img src={preview} alt={`Preview ${index + 1}`} />
+                    <Image
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
                     <motion.button
                       type="button"
                       className="remove-image"

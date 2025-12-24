@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Building,
   MessageSquare,
@@ -132,7 +133,13 @@ export default function AdminLayout({
           </AnimatePresence>
         </motion.button>
         <span className="admin-brand flex items-center gap-2">
-          <img src="/logo2.png" alt="Ghardaar24" className="h-10 w-auto" />
+          <Image
+            src="/logo2.png"
+            alt="Ghardaar24"
+            width={100}
+            height={40}
+            className="h-10 w-auto"
+          />
         </span>
       </motion.header>
 
@@ -144,7 +151,13 @@ export default function AdminLayout({
               whileHover={{ scale: 1.1, rotate: -2 }}
               transition={{ duration: 0.2 }}
             >
-              <img src="/logo2.png" alt="Ghardaar24" className="h-12 w-auto" />
+              <Image
+                src="/logo2.png"
+                alt="Ghardaar24"
+                width={120}
+                height={48}
+                className="h-12 w-auto"
+              />
             </motion.div>
           </Link>
         </div>

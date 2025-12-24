@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import {
@@ -45,7 +46,13 @@ export default function Header() {
               whileHover={{ scale: 1.05, rotate: -2 }}
               whileTap={{ scale: 0.95 }}
             >
-              <img src="/logo2.png" alt="Ghardaar24" className="h-10 w-auto" />
+              <Image
+                src="/logo2.png"
+                alt="Ghardaar24"
+                width={100}
+                height={40}
+                className="h-10 w-auto"
+              />
             </motion.div>
           </Link>
 

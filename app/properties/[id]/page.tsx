@@ -20,6 +20,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 
 async function getProperty(id: string): Promise<Property | null> {
@@ -314,7 +315,12 @@ export default async function PropertyDetailsPage({
                     >
                       <div className="similar-card-image">
                         {prop.images?.[0] && (
-                          <img src={prop.images[0]} alt={prop.title} />
+                          <Image
+                            src={prop.images[0]}
+                            alt={prop.title}
+                            fill
+                            className="object-cover"
+                          />
                         )}
                       </div>
                       <div className="similar-card-content">

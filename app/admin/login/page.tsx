@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Lock, Mail, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -81,7 +82,13 @@ export default function AdminLoginPage() {
             whileHover={{ scale: 1.1, rotate: -2 }}
             transition={{ duration: 0.2 }}
           >
-            <img src="/logo.png" alt="Ghardaar24" className="h-12 w-auto" />
+            <Image
+              src="/logo.png"
+              alt="Ghardaar24"
+              width={120}
+              height={48}
+              className="h-12 w-auto"
+            />
           </motion.div>
           <h1>Ghardaar24 Admin</h1>
           <p>Sign in to access the dashboard</p>
