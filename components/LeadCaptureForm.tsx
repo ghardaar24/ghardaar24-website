@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "@/lib/motion";
+import { supabase } from "@/lib/supabase";
 import { Send, User, Phone, Mail, Home, CheckCircle } from "lucide-react";
 
 const propertyTypes = ["Apartment", "House", "Villa", "Plot", "Commercial"];
@@ -24,12 +25,44 @@ export default function LeadCaptureForm() {
     budget: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log("Form submitted:", formData);
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 5000);
+    
+    // Construct the message from structured data
+    const message = `Consultation Request:
+Property Type: ${formData.propertyType}
+Budget: ${formData.budget}`;
+
+    try {
+      const { error } = await supabase
+        .from("inquiries")
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            message: message,
+            // propert_id is null for general inquiries
+          },
+        ]);
+
+      if (error) throw error;
+
+      console.log("Form submitted successfully");
+      setIsSubmitted(true);
+      // Reset form
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        propertyType: "",
+        budget: "",
+      });
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("There was an error submitting your request. Please try again.");
+    }
   };
 
   const handleChange = (
