@@ -34,5 +34,7 @@ export interface Property {
   target_possession?: string;
   rera_possession?: string;
   litigation?: boolean;
+  // Brochure
+  brochure_url?: string;
   created_at: string;
 }

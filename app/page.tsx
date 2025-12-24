@@ -16,7 +16,6 @@ import {
   Building,
   Bed,
   DollarSign,
-  SlidersHorizontal,
   ChevronRight,
   ArrowRight,
   Sparkles,
@@ -275,11 +274,6 @@ export default async function HomePage() {
                   </select>
                 </div>
               </div>
-
-              <button type="button" className="search-more-btn">
-                <SlidersHorizontal className="w-4 h-4" />
-                More
-              </button>
 
               <button type="submit" className="search-button">
                 <Search className="w-5 h-5" />

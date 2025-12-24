@@ -67,6 +67,9 @@ CREATE TABLE IF NOT EXISTS properties (
   rera_possession TEXT DEFAULT '',
   litigation BOOLEAN DEFAULT false,
   
+  -- Brochure
+  brochure_url TEXT DEFAULT '',
+  
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -315,3 +318,62 @@ USING (bucket_id = 'property-images');
 -- ALTER TABLE properties ADD COLUMN IF NOT EXISTS target_possession TEXT DEFAULT '';
 -- ALTER TABLE properties ADD COLUMN IF NOT EXISTS rera_possession TEXT DEFAULT '';
 -- ALTER TABLE properties ADD COLUMN IF NOT EXISTS litigation BOOLEAN DEFAULT false;
+
+-- =============================================
+-- MIGRATION: Add brochure_url column if upgrading
+-- =============================================
+-- If you're upgrading an existing database, run this:
+-- ALTER TABLE properties ADD COLUMN IF NOT EXISTS brochure_url TEXT DEFAULT '';
+
+-- =============================================
+-- BROCHURE STORAGE BUCKET SETUP
+-- =============================================
+
+-- Create the property-brochures bucket (public bucket for property brochures)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'property-brochures',
+  'property-brochures',
+  true,
+  10485760, -- 10MB max file size
+  ARRAY['application/pdf']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = true,
+  file_size_limit = 10485760,
+  allowed_mime_types = ARRAY['application/pdf'];
+
+-- =============================================
+-- BROCHURE STORAGE POLICIES
+-- =============================================
+
+-- Drop existing brochure storage policies first
+DROP POLICY IF EXISTS "Public can view brochures" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload brochures" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can update brochures" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can delete brochures" ON storage.objects;
+
+-- Policy: Allow public read access to property brochures
+CREATE POLICY "Public can view brochures"
+ON storage.objects FOR SELECT
+TO anon, authenticated
+USING (bucket_id = 'property-brochures');
+
+-- Policy: Allow authenticated users to upload brochures
+CREATE POLICY "Authenticated users can upload brochures"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'property-brochures');
+
+-- Policy: Allow authenticated users to update brochures
+CREATE POLICY "Authenticated users can update brochures"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (bucket_id = 'property-brochures')
+WITH CHECK (bucket_id = 'property-brochures');
+
+-- Policy: Allow authenticated users to delete brochures
+CREATE POLICY "Authenticated users can delete brochures"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (bucket_id = 'property-brochures');

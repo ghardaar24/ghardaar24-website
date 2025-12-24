@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Upload, X, Save, ArrowLeft, Plus } from "lucide-react";
+import { Upload, X, Save, ArrowLeft, Plus, FileText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "@/lib/motion";
+import { getAmenityIcon, defaultAmenitiesWithIcons, defaultAmenityNames } from "@/lib/amenityIcons";
 
 const cities = [
   "Mumbai",
@@ -17,24 +18,6 @@ const cities = [
   "Pune",
   "Kolkata",
   "Ahmedabad",
-];
-
-const defaultAmenities = [
-  "Parking",
-  "Swimming Pool",
-  "Gym",
-  "Security",
-  "Power Backup",
-  "Lift",
-  "Garden",
-  "Club House",
-  "Children's Play Area",
-  "CCTV",
-  "Intercom",
-  "Fire Safety",
-  "Rainwater Harvesting",
-  "Visitor Parking",
-  "Maintenance Staff",
 ];
 
 export default function EditPropertyPage({
@@ -75,10 +58,14 @@ export default function EditPropertyPage({
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [customAmenity, setCustomAmenity] = useState("");
+  const [brochure, setBrochure] = useState<File | null>(null);
+  const [brochureName, setBrochureName] = useState("");
+  const [existingBrochureUrl, setExistingBrochureUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const brochureInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -122,6 +109,11 @@ export default function EditPropertyPage({
         });
         setExistingImages(data.images || []);
         setAmenities(data.amenities || []);
+        if (data.brochure_url) {
+          setExistingBrochureUrl(data.brochure_url);
+          const urlParts = data.brochure_url.split('/');
+          setBrochureName(urlParts[urlParts.length - 1] || 'brochure.pdf');
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load property"
@@ -214,6 +206,51 @@ export default function EditPropertyPage({
     return urls;
   };
 
+  const uploadBrochure = async (): Promise<string> => {
+    if (!brochure) return "";
+    
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}-${brochure.name}`;
+    const { data, error } = await supabase.storage
+      .from("property-brochures")
+      .upload(fileName, brochure);
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from("property-brochures")
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  };
+
+  const handleBrochureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== "application/pdf") {
+        setError("Only PDF files are allowed for brochures");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Brochure file size must be less than 10MB");
+        return;
+      }
+      setBrochure(file);
+      setBrochureName(file.name);
+      setExistingBrochureUrl(""); // Clear existing when new file selected
+    }
+  };
+
+  const removeBrochure = () => {
+    setBrochure(null);
+    setBrochureName("");
+    setExistingBrochureUrl("");
+    if (brochureInputRef.current) {
+      brochureInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -235,6 +272,12 @@ export default function EditPropertyPage({
         allImages = [...allImages, ...uploadedUrls];
       }
 
+      // Handle brochure
+      let brochureUrl = existingBrochureUrl;
+      if (brochure) {
+        brochureUrl = await uploadBrochure();
+      }
+
       const { error: updateError } = await supabase
         .from("properties")
         .update({
@@ -253,6 +296,7 @@ export default function EditPropertyPage({
           status: formData.status,
           images: allImages,
           amenities: amenities,
+          brochure_url: brochureUrl,
           // Project Details
           land_parcel: parseInt(formData.land_parcel) || 0,
           towers: parseInt(formData.towers) || 0,
@@ -700,21 +744,22 @@ export default function EditPropertyPage({
           </h2>
 
           <div className="amenities-grid">
-            {defaultAmenities.map((amenity) => (
+            {defaultAmenitiesWithIcons.map(({ name, Icon }) => (
               <motion.label
-                key={amenity}
+                key={name}
                 className={`amenity-checkbox ${
-                  amenities.includes(amenity) ? "selected" : ""
+                  amenities.includes(name) ? "selected" : ""
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <input
                   type="checkbox"
-                  checked={amenities.includes(amenity)}
-                  onChange={() => toggleAmenity(amenity)}
+                  checked={amenities.includes(name)}
+                  onChange={() => toggleAmenity(name)}
                 />
-                <span>{amenity}</span>
+                <Icon className="w-4 h-4" />
+                <span>{name}</span>
               </motion.label>
             ))}
           </div>
@@ -740,13 +785,13 @@ export default function EditPropertyPage({
             </motion.button>
           </div>
 
-          {amenities.filter((a) => !defaultAmenities.includes(a)).length >
+          {amenities.filter((a) => !defaultAmenityNames.includes(a)).length >
             0 && (
             <div className="custom-amenities">
               <p className="custom-amenities-label">Custom amenities:</p>
               <div className="custom-amenities-list">
                 {amenities
-                  .filter((a) => !defaultAmenities.includes(a))
+                  .filter((a) => !defaultAmenityNames.includes(a))
                   .map((amenity) => (
                     <motion.span
                       key={amenity}
@@ -859,6 +904,64 @@ export default function EditPropertyPage({
                 </motion.button>
               )}
             </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="admin-section-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+        >
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Brochure (PDF)
+          </h2>
+
+          <div className="brochure-upload-area">
+            <input
+              type="file"
+              ref={brochureInputRef}
+              onChange={handleBrochureChange}
+              accept="application/pdf"
+              hidden
+            />
+
+            {brochureName ? (
+              <motion.div
+                className="brochure-preview"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <FileText className="w-8 h-8 text-primary" />
+                <div className="brochure-info">
+                  <span className="brochure-name">{brochureName}</span>
+                  <span className="brochure-size">
+                    {existingBrochureUrl ? "Existing brochure" : "PDF Document"}
+                  </span>
+                </div>
+                <motion.button
+                  type="button"
+                  className="remove-brochure"
+                  onClick={removeBrochure}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <X className="w-4 h-4" />
+                </motion.button>
+              </motion.div>
+            ) : (
+              <motion.button
+                type="button"
+                className="upload-trigger"
+                onClick={() => brochureInputRef.current?.click()}
+                whileHover={{ scale: 1.02, borderColor: "var(--accent)" }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Upload className="w-6 h-6" />
+                <span>Upload Brochure</span>
+                <span className="upload-hint">Max 10MB PDF</span>
+              </motion.button>
+            )}
           </div>
         </motion.div>
 

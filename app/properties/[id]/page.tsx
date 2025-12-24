@@ -9,6 +9,7 @@ import InquiryCTA from "@/components/InquiryCTA";
 import ScrollToButton from "@/components/ScrollToButton";
 import { formatPrice } from "@/lib/utils";
 import { generatePropertyMetadata, generatePropertySchema } from "@/lib/seo";
+import { getAmenityIcon } from "@/lib/amenityIcons";
 import {
   Bed,
   Bath,
@@ -16,7 +17,6 @@ import {
   MapPin,
   Calendar,
   Building,
-  CheckCircle,
   ArrowLeft,
   LandPlot,
   TowerControl,
@@ -26,6 +26,7 @@ import {
   FileCheck,
   Clock,
   Scale,
+  FileDown,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -395,15 +396,36 @@ export default async function PropertyDetailsPage({
                     <div className="property-section">
                       <h2 className="section-heading">Amenities</h2>
                       <StaggerContainer className="amenities-grid" fast>
-                        {property.amenities.map((amenity: string) => (
-                          <StaggerItem key={amenity}>
-                            <div className="amenity-item">
-                              <CheckCircle className="w-5 h-5 text-primary" />
-                              <span>{amenity}</span>
-                            </div>
-                          </StaggerItem>
-                        ))}
+                        {property.amenities.map((amenity: string) => {
+                          const AmenityIcon = getAmenityIcon(amenity);
+                          return (
+                            <StaggerItem key={amenity}>
+                              <div className="amenity-item">
+                                <AmenityIcon className="w-5 h-5 text-primary" />
+                                <span>{amenity}</span>
+                              </div>
+                            </StaggerItem>
+                          );
+                        })}
                       </StaggerContainer>
+                    </div>
+                  </MotionSection>
+                )}
+
+                {/* Brochure Download */}
+                {property.brochure_url && (
+                  <MotionSection delay={0.52}>
+                    <div className="property-section">
+                      <h2 className="section-heading">Brochure</h2>
+                      <a
+                        href={property.brochure_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="brochure-download-btn"
+                      >
+                        <FileDown className="w-5 h-5" />
+                        <span>Download Property Brochure</span>
+                      </a>
                     </div>
                   </MotionSection>
                 )}

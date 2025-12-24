@@ -6,40 +6,46 @@ import { MapPin, ArrowRight } from "lucide-react";
 
 const localities = [
   {
-    name: "Baner",
+    name: "Warje",
     city: "Pune",
     propertyCount: 45,
-    image: "/localities/baner.jpg",
+    image: "/localities/warje.jpg",
   },
   {
-    name: "Hinjewadi",
-    city: "Pune",
-    propertyCount: 38,
-    image: "/localities/hinjewadi.jpg",
-  },
-  {
-    name: "Wakad",
+    name: "Kothrud",
     city: "Pune",
     propertyCount: 52,
-    image: "/localities/wakad.jpg",
+    image: "/localities/kothrud.jpg",
   },
   {
-    name: "Kharadi",
+    name: "Viman Nagar",
+    city: "Pune",
+    propertyCount: 38,
+    image: "/localities/viman-nagar.jpg",
+  },
+  {
+    name: "Balewadi",
+    city: "Pune",
+    propertyCount: 41,
+    image: "/localities/balewadi.jpg",
+  },
+  {
+    name: "Malunje",
     city: "Pune",
     propertyCount: 29,
-    image: "/localities/kharadi.jpg",
+    image: "/localities/malunje.jpg",
   },
   {
-    name: "Pimpri-Chinchwad",
+    name: "Bibwewadi",
     city: "Pune",
-    propertyCount: 60,
-    image: "/localities/pcmc.jpg",
+    propertyCount: 35,
+    image: "/localities/bibwewadi.jpg",
   },
   {
-    name: "Hadapsar",
+    name: "Market Yard",
     city: "Pune",
     propertyCount: 24,
-    image: "/localities/hadapsar.jpg",
+    image: "/localities/market-yard.jpg",
   },
 ];
 

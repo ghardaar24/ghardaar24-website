@@ -1698,6 +1698,10 @@ body {
   .footer-grid {
     grid-template-columns: 2fr 1fr 1fr 1.5fr;
   }
+  
+  .footer-grid.footer-grid-5 {
+    grid-template-columns: 1.5fr 1fr 1fr 1.3fr 1.3fr;
+  }
 }
 
 .footer-brand .logo {
@@ -1791,6 +1795,20 @@ body {
 
 .footer-contact a:hover {
   color: var(--primary); /* Orange */
+}
+
+/* CP Details Dense Layout */
+.footer-contact-dense li {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.footer-contact-dense li strong {
+  color: #c0c0c0;
+}
+
+.footer-cp-details {
+  min-width: 0;
 }
 
 .footer-bottom {
@@ -2770,6 +2788,31 @@ body {
 
 .amenity-item:hover svg {
   color: white;
+}
+
+/* Brochure Download */
+.brochure-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--gradient-accent);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(146, 154, 171, 0.3);
+}
+
+.brochure-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(146, 154, 171, 0.4);
+}
+
+.brochure-download-btn svg {
+  flex-shrink: 0;
 }
 
 /* Map */
@@ -4489,6 +4532,72 @@ body {
 .upload-hint {
   font-size: 0.75rem;
   color: var(--gray-400);
+}
+
+/* Brochure Upload Area */
+.brochure-upload-area {
+  margin-top: 0.5rem;
+}
+
+.brochure-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.brochure-preview:hover {
+  border-color: var(--accent);
+}
+
+.brochure-preview svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.brochure-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.brochure-name {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brochure-size {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.remove-brochure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-brochure:hover {
+  background: var(--error);
+  color: white;
 }
 
 /* Checkbox Label */
