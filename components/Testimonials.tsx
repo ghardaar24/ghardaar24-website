@@ -2,7 +2,6 @@
 
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import { Star, Quote } from "lucide-react";
-import Image from "next/image";
 
 const testimonials = [
   {

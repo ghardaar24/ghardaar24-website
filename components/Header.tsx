@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, Phone, Home } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import {
   motion,
   AnimatePresence,

@@ -108,7 +108,7 @@ export default function AdminDashboard() {
         transition={{ duration: 0.4 }}
       >
         <h1>Dashboard</h1>
-        <p>Welcome back! Here's an overview of your properties.</p>
+        <p>Welcome back! Here&apos;s an overview of your properties.</p>
       </motion.div>
 
       {/* Stats Grid */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
@@ -92,25 +92,35 @@ export default function PropertyFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
-    city: "",
-    property_type: "",
-    listing_type: "",
-    min_price: "",
-    max_price: "",
-    bedrooms: "",
-  });
-
-  useEffect(() => {
-    setFilters({
+  
+  // Initialize filters from URL params, update when searchParams change
+  const initialFilters = useMemo<FilterState>(() => ({
+    city: searchParams.get("city") || "",
+    property_type: searchParams.get("property_type") || "",
+    listing_type: searchParams.get("listing_type") || "",
+    min_price: searchParams.get("min_price") || "",
+    max_price: searchParams.get("max_price") || "",
+    bedrooms: searchParams.get("bedrooms") || "",
+  }), [searchParams]);
+  
+  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  
+  // Sync filters when URL changes (e.g., browser back/forward)
+  const searchParamsKey = searchParams.toString();
+  if (JSON.stringify(filters) !== JSON.stringify(initialFilters) && searchParamsKey) {
+    // Only update if there's a mismatch and we have search params
+    const urlFilters = {
       city: searchParams.get("city") || "",
       property_type: searchParams.get("property_type") || "",
       listing_type: searchParams.get("listing_type") || "",
       min_price: searchParams.get("min_price") || "",
       max_price: searchParams.get("max_price") || "",
       bedrooms: searchParams.get("bedrooms") || "",
-    });
-  }, [searchParams]);
+    };
+    if (JSON.stringify(filters) !== JSON.stringify(urlFilters)) {
+      setFilters(urlFilters);
+    }
+  }
 
   const updateFilters = (newFilters: FilterState) => {
     const params = new URLSearchParams();

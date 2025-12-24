@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "@/lib/motion";
 import { Calculator, IndianRupee, Percent, Calendar } from "lucide-react";
 
@@ -8,20 +8,19 @@ export default function EMICalculator() {
   const [loanAmount, setLoanAmount] = useState(5000000);
   const [interestRate, setInterestRate] = useState(8.5);
   const [tenure, setTenure] = useState(20);
-  const [emi, setEmi] = useState(0);
-  const [totalPayment, setTotalPayment] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
 
-  useEffect(() => {
+  const { emi, totalPayment, totalInterest } = useMemo(() => {
     // EMI calculation formula
     const monthlyRate = interestRate / 12 / 100;
     const numberOfMonths = tenure * 12;
 
     if (monthlyRate === 0) {
       const calculatedEmi = loanAmount / numberOfMonths;
-      setEmi(Math.round(calculatedEmi));
-      setTotalPayment(loanAmount);
-      setTotalInterest(0);
+      return {
+        emi: Math.round(calculatedEmi),
+        totalPayment: loanAmount,
+        totalInterest: 0,
+      };
     } else {
       const calculatedEmi =
         (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfMonths)) /
@@ -30,9 +29,11 @@ export default function EMICalculator() {
       const totalPayable = calculatedEmi * numberOfMonths;
       const interestPayable = totalPayable - loanAmount;
 
-      setEmi(Math.round(calculatedEmi));
-      setTotalPayment(Math.round(totalPayable));
-      setTotalInterest(Math.round(interestPayable));
+      return {
+        emi: Math.round(calculatedEmi),
+        totalPayment: Math.round(totalPayable),
+        totalInterest: Math.round(interestPayable),
+      };
     }
   }, [loanAmount, interestRate, tenure]);
 

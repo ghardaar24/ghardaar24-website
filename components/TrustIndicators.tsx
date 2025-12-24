@@ -41,7 +41,7 @@ export default function TrustIndicators() {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
         >
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <motion.div
               key={stat.label}
               className="trust-indicator-card"

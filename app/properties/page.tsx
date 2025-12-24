@@ -6,6 +6,9 @@ import PropertyFilters from "@/components/PropertyFilters";
 import { Building } from "lucide-react";
 import { Suspense } from "react";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
+import { Metadata } from "next";
+import { generatePropertiesListMetadata } from "@/lib/seo";
+import Link from "next/link";
 
 interface SearchParams {
   city?: string;
@@ -15,6 +18,19 @@ interface SearchParams {
   max_price?: string;
   bedrooms?: string;
   featured?: string;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  return generatePropertiesListMetadata({
+    city: params.city,
+    property_type: params.property_type,
+    listing_type: params.listing_type,
+  });
 }
 
 async function getProperties(searchParams: SearchParams): Promise<Property[]> {
@@ -112,7 +128,7 @@ export default async function PropertiesPage({
             <StaggerContainer>
               <StaggerItem>
                 <div className="breadcrumb">
-                  <a href="/">Home</a>
+                  <Link href="/">Home</Link>
                   <span>/</span>
                   <span>Properties</span>
                 </div>
@@ -162,12 +178,12 @@ export default async function PropertiesPage({
                   </div>
                   <h3>No Properties Found</h3>
                   <p>
-                    We couldn't find any properties matching your search criteria.
+                    We couldn&apos;t find any properties matching your search criteria.
                     Try removing some filters to see more results.
                   </p>
-                  <a href="/properties" className="btn-primary-new">
+                  <Link href="/properties" className="btn-primary-new">
                     Clear All Filters
-                  </a>
+                  </Link>
                 </div>
               </MotionSection>
             )}

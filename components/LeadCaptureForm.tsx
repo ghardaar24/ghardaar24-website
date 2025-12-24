@@ -92,7 +92,7 @@ export default function LeadCaptureForm() {
                   </div>
                   <h3>Thank You!</h3>
                   <p>
-                    We've received your inquiry. Our team will contact you
+                    We&apos;ve received your inquiry. Our team will contact you
                     shortly.
                   </p>
                 </motion.div>

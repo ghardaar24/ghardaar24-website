@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "@/lib/motion";
-import { Phone, MessageCircle, Mail, Award, Users, Home } from "lucide-react";
+import { Phone, MessageCircle, Mail, Award, Home } from "lucide-react";
 
 export default function AgentProfile() {
   return (
@@ -29,7 +29,7 @@ export default function AgentProfile() {
 
             <div className="agent-info">
               <span className="agent-greeting">
-                Hi, I'm your property expert
+                Hi, I&apos;m your property expert
               </span>
               <h2 className="agent-name">Sanket Hire</h2>
               <p className="agent-title">Senior Property Consultant</p>

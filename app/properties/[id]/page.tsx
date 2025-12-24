@@ -5,11 +5,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
 import ContactForm from "@/components/ContactForm";
-import GoogleMap from "@/components/GoogleMap";
 import InquiryCTA from "@/components/InquiryCTA";
 import ScrollToButton from "@/components/ScrollToButton";
 import { formatPrice } from "@/lib/utils";
-import { generatePropertyMetadata } from "@/lib/seo";
+import { generatePropertyMetadata, generatePropertySchema } from "@/lib/seo";
 import {
   Bed,
   Bath,
@@ -80,6 +79,14 @@ export default async function PropertyDetailsPage({
 
   return (
     <>
+      {/* JSON-LD Structured Data for Property */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generatePropertySchema(property)),
+        }}
+      />
+      
       <Header />
 
       <main className="property-details-page">

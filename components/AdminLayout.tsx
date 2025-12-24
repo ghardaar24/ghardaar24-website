@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import {
-  Home,
   Building,
   MessageSquare,
   LogOut,
