@@ -112,12 +112,19 @@ For detailed documentation, see:
 
 ---
 
+## 👨‍💻 Developer
+
+**Ashutosh Swamy**  
+[![GitHub](https://img.shields.io/badge/GitHub-ashutoshswamy-181717?style=flat-square&logo=github)](https://github.com/ashutoshswamy)
+
+---
+
 ## 📧 Contact
 
-For questions or support, please contact the development team.
+For questions or support, please reach out via GitHub.
 
 ---
 
 <div align="center">
-Made with ❤️ by the Ghardaar24 Team
+Made by <a href="https://github.com/ashutoshswamy">Ashutosh Swamy</a>
 </div>

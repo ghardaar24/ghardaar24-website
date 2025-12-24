@@ -337,4 +337,13 @@ Use this checklist before deploying to production:
 
 ## Contact
 
-For security-related inquiries, please contact the development team.
+For security-related inquiries, please contact:
+
+**Ashutosh Swamy**  
+[![GitHub](https://img.shields.io/badge/GitHub-ashutoshswamy-181717?style=flat-square&logo=github)](https://github.com/ashutoshswamy)
+
+---
+
+<div align="center">
+Made by <a href="https://github.com/ashutoshswamy">Ashutosh Swamy</a>
+</div>
