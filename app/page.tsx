@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import TrustIndicators from "@/components/TrustIndicators";
 import WhyChooseUs from "@/components/WhyChooseUs";
-import Testimonials from "@/components/Testimonials";
+
 import PopularLocalities from "@/components/PopularLocalities";
 import AgentProfile from "@/components/AgentProfile";
 import LeadCaptureForm from "@/components/LeadCaptureForm";
@@ -39,21 +39,6 @@ async function getFeaturedProperties(): Promise<Property[]> {
   return data || [];
 }
 
-async function getRecentProperties(): Promise<Property[]> {
-  const { data, error } = await supabase
-    .from("properties")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  if (error) {
-    console.error("Error fetching recent properties:", error);
-    return [];
-  }
-
-  return data || [];
-}
-
 const propertyTypes = [
   { type: "apartment", label: "Apartments", icon: "🏢" },
   { type: "house", label: "Houses", icon: "🏠" },
@@ -64,7 +49,6 @@ const propertyTypes = [
 
 export default async function HomePage() {
   const featuredProperties = await getFeaturedProperties();
-  const recentProperties = await getRecentProperties();
 
   return (
     <>
@@ -254,43 +238,11 @@ export default async function HomePage() {
       {/* Trust Indicators */}
       <TrustIndicators />
 
-      {/* Latest Properties */}
-      <MotionSection className="section latest-section">
-        <div className="container">
-          <StaggerContainer className="section-header">
-            <StaggerItem>
-              <h2 className="section-title-new">Latest in your area</h2>
-            </StaggerItem>
-            <StaggerItem>
-              <Link href="/properties" className="btn-outline-new">
-                View all <ChevronRight className="w-4 h-4" />
-              </Link>
-            </StaggerItem>
-          </StaggerContainer>
-
-          {recentProperties.length > 0 ? (
-            <div className="properties-grid">
-              {recentProperties.map((property, index) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  index={index}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <p>No properties found. Check back soon!</p>
-            </div>
-          )}
-        </div>
-      </MotionSection>
-
       {/* Why Choose Us */}
       <WhyChooseUs />
 
       {/* Featured Properties */}
-      {featuredProperties.length > 1 && (
+      {featuredProperties.length > 0 && (
         <MotionSection className="section featured-section-new">
           <div className="container">
             <StaggerContainer className="section-header">
@@ -308,7 +260,7 @@ export default async function HomePage() {
             </StaggerContainer>
 
             <div className="properties-grid">
-              {featuredProperties.slice(1).map((property, index) => (
+              {featuredProperties.map((property, index) => (
                 <PropertyCard
                   key={property.id}
                   property={property}
@@ -319,9 +271,6 @@ export default async function HomePage() {
           </div>
         </MotionSection>
       )}
-
-      {/* Testimonials */}
-      <Testimonials />
 
       {/* Popular Localities */}
       <PopularLocalities />

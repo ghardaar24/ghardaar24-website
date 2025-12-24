@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
 import ContactForm from "@/components/ContactForm";
 import GoogleMap from "@/components/GoogleMap";
+import InquiryCTA from "@/components/InquiryCTA";
 import { formatPrice } from "@/lib/utils";
 import { generatePropertyMetadata } from "@/lib/seo";
 import {
@@ -138,11 +139,29 @@ export default async function PropertyDetailsPage({
 
                     <h1 className="property-title">{property.title}</h1>
 
-                    <div className="property-location">
-                      <MapPin className="w-5 h-5 text-blue-500" />
-                      <span>
-                        {property.address}, {property.city}
-                      </span>
+                    <div className="property-location-visual">
+                      <div className="location-icon-box">
+                        <MapPin className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="location-details">
+                        <span className="location-address">
+                          {property.address}
+                        </span>
+                        <span className="location-city">{property.city}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          document
+                            .getElementById("property-map")
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                        }}
+                        className="view-map-btn"
+                      >
+                        View on Map
+                      </button>
                     </div>
 
                     <div className="property-price-block">
@@ -235,14 +254,39 @@ export default async function PropertyDetailsPage({
                   </MotionSection>
                 )}
 
+                {/* Inquiry CTA */}
+                <MotionSection delay={0.55}>
+                  <InquiryCTA />
+                </MotionSection>
+
                 {/* Location Map */}
                 <MotionSection delay={0.6}>
-                  <div className="property-section">
+                  <div id="property-map" className="property-section">
                     <h2 className="section-heading">Location</h2>
-                    <GoogleMap
-                      address={property.address}
-                      city={property.city}
-                    />
+                    <div className="location-text-block">
+                      <p className="location-address-text">
+                        {property.address}, {property.city}
+                      </p>
+                      <div className="location-inquiry-prompt">
+                        <p>
+                          To view the exact location and get detailed
+                          directions, please send an inquiry.
+                        </p>
+                        <button
+                          onClick={() => {
+                            document
+                              .getElementById("contact-form")
+                              ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
+                          }}
+                          className="view-map-btn"
+                        >
+                          Send Inquiry for Location
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </MotionSection>
               </div>
