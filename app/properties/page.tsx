@@ -95,6 +95,8 @@ function getPageTitle(searchParams: SearchParams): string {
     parts.push("Properties for Sale");
   } else if (searchParams.listing_type === "rent") {
     parts.push("Properties for Rent");
+  } else if (searchParams.listing_type === "resale") {
+    parts.push("Resale Properties");
   } else {
     parts.push("All Properties");
   }
@@ -183,8 +185,8 @@ export default async function PropertiesPage({
                   </div>
                   <h3>No Properties Found</h3>
                   <p>
-                    We couldn&apos;t find any properties matching your search criteria.
-                    Try removing some filters to see more results.
+                    We couldn&apos;t find any properties matching your search
+                    criteria. Try removing some filters to see more results.
                   </p>
                   <Link href="/properties" className="btn-primary-new">
                     Clear All Filters

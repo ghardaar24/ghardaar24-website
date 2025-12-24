@@ -303,7 +303,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Basic Information</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Basic Information
+          </h2>
 
           <div className="form-grid">
             <div className="form-group full">
@@ -355,6 +357,7 @@ export default function EditPropertyPage({
               >
                 <option value="sale">For Sale</option>
                 <option value="rent">For Rent</option>
+                <option value="resale">Resale</option>
               </select>
             </div>
 
@@ -368,13 +371,11 @@ export default function EditPropertyPage({
               >
                 <option value="">Select Possession</option>
                 <option value="Immediate">Immediate</option>
-                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map(
-                  (year) => (
-                    <option key={year} value={year.toString()}>
-                      {year}
-                    </option>
-                  )
-                )}
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
               </select>
             </div>
 
@@ -412,7 +413,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Location Details</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Location Details
+          </h2>
 
           <div className="form-grid">
             <div className="form-group">
@@ -453,7 +456,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Property Details</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Property Details
+          </h2>
 
           <div className="form-grid">
             <div className="form-group">
@@ -500,7 +505,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Amenities</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Amenities
+          </h2>
 
           <div className="amenities-grid">
             {defaultAmenities.map((amenity) => (
@@ -577,7 +584,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Images</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Images
+          </h2>
 
           <div className="image-upload-area">
             <input
@@ -659,7 +668,9 @@ export default function EditPropertyPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Options</h2>
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Options
+          </h2>
 
           <label className="checkbox-label">
             <input

@@ -53,13 +53,21 @@ export default function PropertyCard({
           <div className="property-card-badges">
             <motion.span
               className={`property-badge-new ${
-                property.listing_type === "sale" ? "sale" : "rent"
+                property.listing_type === "sale"
+                  ? "sale"
+                  : property.listing_type === "resale"
+                  ? "resale"
+                  : "rent"
               }`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {property.listing_type === "sale" ? "For Sale" : "For Rent"}
+              {property.listing_type === "sale"
+                ? "For Sale"
+                : property.listing_type === "resale"
+                ? "Resale"
+                : "For Rent"}
             </motion.span>
             {property.featured && (
               <motion.span

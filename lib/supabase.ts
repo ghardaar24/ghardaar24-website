@@ -16,7 +16,7 @@ export interface Property {
   bathrooms: number;
   area_sqft: number;
   property_type: "apartment" | "house" | "villa" | "plot" | "commercial";
-  listing_type: "sale" | "rent";
+  listing_type: "sale" | "rent" | "resale";
   images: string[];
   amenities: string[];
   featured: boolean;

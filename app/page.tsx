@@ -26,32 +26,60 @@ import {
   Store,
   Wallet,
   Building2,
+  Calendar,
 } from "lucide-react";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 import { ReactNode } from "react";
 
 async function getFeaturedProperties(): Promise<Property[]> {
-  const { data, error } = await supabase
+  // First try to get explicitly featured properties
+  const { data: featured, error: featuredError } = await supabase
     .from("properties")
     .select("*")
     .eq("featured", true)
     .order("created_at", { ascending: false })
     .limit(6);
 
-  if (error) {
-    console.error("Error fetching featured properties:", error);
+  if (featuredError) {
+    console.error("Error fetching featured properties:", featuredError);
     return [];
   }
 
-  return data || [];
+  // If we have featured properties, return them
+  if (featured && featured.length > 0) {
+    return featured;
+  }
+
+  // Fallback: Get latest properties if no featured ones exist
+  const { data: latest, error: latestError } = await supabase
+    .from("properties")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  if (latestError) {
+    console.error("Error fetching latest properties:", latestError);
+    return [];
+  }
+
+  // Mark fallback properties as featured for display purposes
+  return latest?.map((prop) => ({ ...prop, featured: true })) || [];
 }
 
 const propertyTypes: { type: string; label: string; icon: ReactNode }[] = [
-  { type: "apartment", label: "Apartments", icon: <Building2 className="w-6 h-6" /> },
+  {
+    type: "apartment",
+    label: "Apartments",
+    icon: <Building2 className="w-6 h-6" />,
+  },
   { type: "house", label: "Houses", icon: <Home className="w-6 h-6" /> },
   { type: "villa", label: "Villas", icon: <Castle className="w-6 h-6" /> },
   { type: "plot", label: "Plots", icon: <Ruler className="w-6 h-6" /> },
-  { type: "commercial", label: "Commercial", icon: <Store className="w-6 h-6" /> },
+  {
+    type: "commercial",
+    label: "Commercial",
+    icon: <Store className="w-6 h-6" />,
+  },
 ];
 
 export default async function HomePage() {
@@ -72,7 +100,6 @@ export default async function HomePage() {
         <div className="container hero-content-new">
           <div className="hero-main">
             <MotionSection className="hero-text-new">
-
               <h1 className="hero-title-new">
                 Find Your Perfect
                 <span className="hero-title-gradient"> Dream Home</span>
@@ -119,7 +146,9 @@ export default async function HomePage() {
               <StaggerItem>
                 <div className="hero-visual-main">
                   <div className="hero-visual-card">
-                    <div className="hero-visual-icon"><Home className="w-6 h-6" /></div>
+                    <div className="hero-visual-icon">
+                      <Home className="w-6 h-6" />
+                    </div>
                     <div className="hero-visual-content">
                       <span className="hero-visual-title">
                         Premium Properties
@@ -130,7 +159,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="hero-visual-card">
-                    <div className="hero-visual-icon"><MapPin className="w-6 h-6" /></div>
+                    <div className="hero-visual-icon">
+                      <MapPin className="w-6 h-6" />
+                    </div>
                     <div className="hero-visual-content">
                       <span className="hero-visual-title">Prime Locations</span>
                       <span className="hero-visual-desc">
@@ -139,7 +170,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="hero-visual-card">
-                    <div className="hero-visual-icon"><Sparkles className="w-6 h-6" /></div>
+                    <div className="hero-visual-icon">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
                     <div className="hero-visual-content">
                       <span className="hero-visual-title">
                         Verified Listings
@@ -150,7 +183,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="hero-visual-card">
-                    <div className="hero-visual-icon"><Wallet className="w-6 h-6" /></div>
+                    <div className="hero-visual-icon">
+                      <Wallet className="w-6 h-6" />
+                    </div>
                     <div className="hero-visual-content">
                       <span className="hero-visual-title">Zero Brokerage</span>
                       <span className="hero-visual-desc">
@@ -207,6 +242,22 @@ export default async function HomePage() {
                     <option value="2500000-5000000">₹25L - ₹50L</option>
                     <option value="5000000-10000000">₹50L - ₹1Cr</option>
                     <option value="10000000-">Above ₹1Cr</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="search-filter">
+                <span className="search-filter-label">Possession</span>
+                <div className="search-filter-value">
+                  <Calendar className="w-4 h-4" />
+                  <select name="possession" defaultValue="">
+                    <option value="">Any</option>
+                    <option value="Immediate">Immediate</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
                   </select>
                 </div>
               </div>

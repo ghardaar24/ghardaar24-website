@@ -86,7 +86,7 @@ export default async function PropertyDetailsPage({
           __html: JSON.stringify(generatePropertySchema(property)),
         }}
       />
-      
+
       <Header />
 
       <main className="property-details-page">
@@ -137,10 +137,10 @@ export default async function PropertyDetailsPage({
                         </span>
                       </StaggerItem>
                       <StaggerItem>
-                         <span className="date-badge">
-                            <Calendar className="w-3 h-3 inline mr-1" />
-                            {new Date(property.created_at).toLocaleDateString()}
-                         </span>
+                        <span className="date-badge">
+                          <Calendar className="w-3 h-3 inline mr-1" />
+                          {new Date(property.created_at).toLocaleDateString()}
+                        </span>
                       </StaggerItem>
                       {property.featured && (
                         <StaggerItem>
@@ -186,7 +186,7 @@ export default async function PropertyDetailsPage({
                   <StaggerContainer className="key-features">
                     <StaggerItem>
                       <div className="key-feature">
-                        <Bed className="w-6 h-6" />
+                        <Bed className="w-6 h-6 text-primary" />
                         <div>
                           <span className="feature-value">
                             {property.bedrooms}
@@ -197,7 +197,7 @@ export default async function PropertyDetailsPage({
                     </StaggerItem>
                     <StaggerItem>
                       <div className="key-feature">
-                        <Bath className="w-6 h-6" />
+                        <Bath className="w-6 h-6 text-primary" />
                         <div>
                           <span className="feature-value">
                             {property.bathrooms}
@@ -208,7 +208,7 @@ export default async function PropertyDetailsPage({
                     </StaggerItem>
                     <StaggerItem>
                       <div className="key-feature">
-                        <Maximize className="w-6 h-6" />
+                        <Maximize className="w-6 h-6 text-primary" />
                         <div>
                           <span className="feature-value">
                             {property.area_sqft.toLocaleString()}
@@ -219,7 +219,7 @@ export default async function PropertyDetailsPage({
                     </StaggerItem>
                     <StaggerItem>
                       <div className="key-feature">
-                        <Building className="w-6 h-6" />
+                        <Building className="w-6 h-6 text-primary" />
                         <div>
                           <span className="feature-value">
                             {property.property_type}
@@ -250,7 +250,7 @@ export default async function PropertyDetailsPage({
                         {property.amenities.map((amenity: string) => (
                           <StaggerItem key={amenity}>
                             <div className="amenity-item">
-                              <CheckCircle className="w-5 h-5" />
+                              <CheckCircle className="w-5 h-5 text-primary" />
                               <span>{amenity}</span>
                             </div>
                           </StaggerItem>
@@ -278,15 +278,7 @@ export default async function PropertyDetailsPage({
                           To view the exact location and get detailed
                           directions, please send an inquiry.
                         </p>
-                        <ScrollToButton
-                          targetId="contact-form"
-                          block="start"
-                          className="view-map-btn"
-                        >
-                          Send Inquiry for Location
-                        </ScrollToButton>
                       </div>
-
                     </div>
                   </div>
                 </MotionSection>
@@ -301,7 +293,6 @@ export default async function PropertyDetailsPage({
                       propertyId={property.id}
                       propertyTitle={property.title}
                     />
-
                   </div>
                 </MotionSection>
               </aside>

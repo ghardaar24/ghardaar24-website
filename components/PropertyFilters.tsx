@@ -106,23 +106,29 @@ export default function PropertyFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  
+
   // Initialize filters from URL params, update when searchParams change
-  const initialFilters = useMemo<FilterState>(() => ({
-    city: searchParams.get("city") || "",
-    property_type: searchParams.get("property_type") || "",
-    listing_type: searchParams.get("listing_type") || "",
-    min_price: searchParams.get("min_price") || "",
-    max_price: searchParams.get("max_price") || "",
-    bedrooms: searchParams.get("bedrooms") || "",
-    possession: searchParams.get("possession") || "",
-  }), [searchParams]);
-  
+  const initialFilters = useMemo<FilterState>(
+    () => ({
+      city: searchParams.get("city") || "",
+      property_type: searchParams.get("property_type") || "",
+      listing_type: searchParams.get("listing_type") || "",
+      min_price: searchParams.get("min_price") || "",
+      max_price: searchParams.get("max_price") || "",
+      bedrooms: searchParams.get("bedrooms") || "",
+      possession: searchParams.get("possession") || "",
+    }),
+    [searchParams]
+  );
+
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  
+
   // Sync filters when URL changes (e.g., browser back/forward)
   const searchParamsKey = searchParams.toString();
-  if (JSON.stringify(filters) !== JSON.stringify(initialFilters) && searchParamsKey) {
+  if (
+    JSON.stringify(filters) !== JSON.stringify(initialFilters) &&
+    searchParamsKey
+  ) {
     // Only update if there's a mismatch and we have search params
     const urlFilters = {
       city: searchParams.get("city") || "",
@@ -181,7 +187,7 @@ export default function PropertyFilters() {
   const activeFilterCount = Object.entries(filters).filter(
     ([k, v]) => k !== "listing_type" && v !== ""
   ).length; // Count filters excluding listing type which is now a tab
-  
+
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
   return (
@@ -218,19 +224,28 @@ export default function PropertyFilters() {
             >
               For Rent
             </button>
+            <button
+              className={`filter-toggle-option ${
+                filters.listing_type === "resale" ? "active" : ""
+              }`}
+              onClick={() => setListingType("resale")}
+            >
+              Resale
+            </button>
           </div>
 
           <div className="active-tags">
-             {filters.city && (
-                <span className="filter-tag">
-                    {filters.city} <X onClick={() => removeFilter("city")} />
-                </span>
-             )}
-              {filters.property_type && (
-                <span className="filter-tag">
-                    {filters.property_type} <X onClick={() => removeFilter("property_type")} />
-                </span>
-             )}
+            {filters.city && (
+              <span className="filter-tag">
+                {filters.city} <X onClick={() => removeFilter("city")} />
+              </span>
+            )}
+            {filters.property_type && (
+              <span className="filter-tag">
+                {filters.property_type}{" "}
+                <X onClick={() => removeFilter("property_type")} />
+              </span>
+            )}
           </div>
         </div>
 
@@ -239,7 +254,7 @@ export default function PropertyFilters() {
             <button onClick={clearFilters} className="clear-filters">
               Clear All
             </button>
-          )} 
+          )}
           <button
             className="filter-btn-main"
             onClick={() => setShowFilters(!showFilters)}
@@ -284,7 +299,10 @@ export default function PropertyFilters() {
             </div>
 
             <div className="filters-actions">
-              <button className="btn-secondary-new" onClick={() => setShowFilters(false)}>
+              <button
+                className="btn-secondary-new"
+                onClick={() => setShowFilters(false)}
+              >
                 Cancel
               </button>
               <button className="btn-primary-new" onClick={applyFilters}>

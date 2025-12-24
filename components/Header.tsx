@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/properties", label: "Properties" },
   { href: "/properties?listing_type=sale", label: "Buy" },
   { href: "/properties?listing_type=rent", label: "Rent" },
+  { href: "/properties?listing_type=resale", label: "Resale" },
 ];
 
 export default function Header() {
@@ -44,7 +45,7 @@ export default function Header() {
               whileHover={{ scale: 1.05, rotate: -2 }}
               whileTap={{ scale: 0.95 }}
             >
-              <img src="/logo.png" alt="Ghardaar24" className="h-10 w-auto" />
+              <img src="/logo2.png" alt="Ghardaar24" className="h-10 w-auto" />
             </motion.div>
           </Link>
 

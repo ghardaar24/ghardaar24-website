@@ -132,8 +132,7 @@ export default function AdminLayout({
           </AnimatePresence>
         </motion.button>
         <span className="admin-brand flex items-center gap-2">
-          <img src="/logo.png" alt="Ghardaar24" className="h-6 w-auto" />
-          Ghardaar24
+          <img src="/logo2.png" alt="Ghardaar24" className="h-10 w-auto" />
         </span>
       </motion.header>
 
@@ -145,9 +144,8 @@ export default function AdminLayout({
               whileHover={{ scale: 1.1, rotate: -2 }}
               transition={{ duration: 0.2 }}
             >
-              <img src="/logo.png" alt="Ghardaar24" className="h-8 w-auto" />
+              <img src="/logo2.png" alt="Ghardaar24" className="h-12 w-auto" />
             </motion.div>
-            <span>Ghardaar24</span>
           </Link>
         </div>
 

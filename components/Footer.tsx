@@ -1,11 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Phone,
-  Mail,
-  MapPin,
-} from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 import { motion, fadeInUp, staggerContainer } from "@/lib/motion";
 
 const quickLinks = [
@@ -13,6 +9,7 @@ const quickLinks = [
   { href: "/properties", label: "All Properties" },
   { href: "/properties?listing_type=sale", label: "Buy Property" },
   { href: "/properties?listing_type=rent", label: "Rent Property" },
+  { href: "/properties?listing_type=resale", label: "Resale Property" },
 ];
 
 const propertyTypes = [
@@ -46,7 +43,11 @@ export default function Footer() {
                 whileHover={{ scale: 1.05, rotate: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <img src="/logo.png" alt="Ghardaar24" className="h-10 w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
+                <img
+                  src="/logo2.png"
+                  alt="Ghardaar24"
+                  className="h-10 w-auto"
+                />
               </motion.div>
             </Link>
             <p className="footer-description">

@@ -107,7 +107,7 @@ export function generateOrganizationSchema() {
     name: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/logo.png`,
+    logo: `${siteConfig.url}/logo2.png`,
     telephone: siteConfig.phone,
     email: siteConfig.email,
     address: {
@@ -147,7 +147,7 @@ export function generateWebsiteSchema() {
       name: siteConfig.name,
       logo: {
         "@type": "ImageObject",
-        url: `${siteConfig.url}/logo.png`,
+        url: `${siteConfig.url}/logo2.png`,
       },
     },
   };
@@ -219,8 +219,18 @@ export function generatePropertyMetadata(property: {
   property_type: string;
   listing_type: string;
 }): Metadata {
-  const title = `${property.title} - ${property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1)} for ${property.listing_type === "sale" ? "Sale" : "Rent"} in ${property.city}`;
-  const description = `${property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1)} for ${property.listing_type === "sale" ? "sale" : "rent"} in ${property.city}. ${property.description?.slice(0, 140)}... Contact Ghardaar24 for details.`;
+  const title = `${property.title} - ${
+    property.property_type.charAt(0).toUpperCase() +
+    property.property_type.slice(1)
+  } for ${property.listing_type === "sale" ? "Sale" : "Rent"} in ${
+    property.city
+  }`;
+  const description = `${
+    property.property_type.charAt(0).toUpperCase() +
+    property.property_type.slice(1)
+  } for ${property.listing_type === "sale" ? "sale" : "rent"} in ${
+    property.city
+  }. ${property.description?.slice(0, 140)}... Contact Ghardaar24 for details.`;
 
   return {
     title,
@@ -263,12 +273,22 @@ export function generatePropertiesListMetadata(filters: {
 
   if (filters.city) {
     title += ` in ${filters.city}`;
-    description = `Browse ${filters.listing_type === "rent" ? "rental" : ""} properties in ${filters.city}. Verified listings with photos and details.`;
+    description = `Browse ${
+      filters.listing_type === "rent" ? "rental" : ""
+    } properties in ${
+      filters.city
+    }. Verified listings with photos and details.`;
   }
 
   if (filters.property_type) {
-    const type = filters.property_type.charAt(0).toUpperCase() + filters.property_type.slice(1);
-    title = `${type}s ${title.includes("for") ? title : `for ${filters.listing_type === "rent" ? "Rent" : "Sale"}`}`;
+    const type =
+      filters.property_type.charAt(0).toUpperCase() +
+      filters.property_type.slice(1);
+    title = `${type}s ${
+      title.includes("for")
+        ? title
+        : `for ${filters.listing_type === "rent" ? "Rent" : "Sale"}`
+    }`;
   }
 
   return {
@@ -287,4 +307,3 @@ export function generatePropertiesListMetadata(filters: {
 }
 
 export default siteConfig;
-
