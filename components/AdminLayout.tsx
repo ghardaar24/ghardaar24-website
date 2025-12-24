@@ -154,9 +154,9 @@ export default function AdminLayout({
               <Image
                 src="/logo3.png"
                 alt="Ghardaar24"
-                width={120}
-                height={48}
-                className="h-12 w-auto"
+                width={140}
+                height={56}
+                className="h-14 w-auto"
               />
             </motion.div>
           </Link>
