@@ -23,7 +23,11 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Property Listings** - Browse apartments, houses, villas, plots, and commercial properties
 - **Advanced Search & Filters** - Filter by city, price range, property type, bedrooms, listing type, and possession status
 - **Property Details** - Comprehensive property pages with image galleries, amenities, and location info
+- **Real Estate Guide** - Educational resource explaining real estate concepts in India
+- **Financial Calculators** - Dedicated page with EMI, Mortgage, and ROI calculators
 - **EMI Calculator** - Built-in mortgage calculator for quick affordability checks
+- **Mortgage Calculator** - Detailed loan amortization with monthly payment breakdown
+- **ROI Calculator** - Investment return analysis for rental properties
 - **Agent Profile** - Showcase agent details and expertise
 - **Popular Localities** - Explore properties in top trending areas
 - **Customer Testimonials** - Social proof with verified client reviews
@@ -77,6 +81,10 @@ ghardaar24-web/
 │   ├── properties/
 │   │   ├── page.tsx              # Property listings
 │   │   └── [id]/page.tsx         # Property details
+│   ├── real-estate-guide/
+│   │   └── page.tsx              # Educational real estate guide
+│   ├── calculators/
+│   │   └── page.tsx              # Financial calculators page
 │   └── admin/
 │       ├── layout.tsx            # Admin layout
 │       ├── login/page.tsx        # Admin login
@@ -90,7 +98,9 @@ ghardaar24-web/
 │   ├── PropertyFilters.tsx       # Search filters
 │   ├── ImageGallery.tsx          # Property image gallery
 │   ├── ContactForm.tsx           # Inquiry form
-│   ├── EMICalculator.tsx         # Mortgage calculator
+│   ├── EMICalculator.tsx         # EMI calculator widget
+│   ├── MortgageCalculator.tsx    # Detailed mortgage calculator
+│   ├── ROICalculator.tsx         # Investment ROI calculator
 │   ├── LeadCaptureForm.tsx       # Lead generation form
 │   └── ...                       # Other components
 ├── lib/                          # Utility libraries
@@ -98,6 +108,7 @@ ghardaar24-web/
 │   ├── auth.tsx                  # Auth context provider
 │   ├── seo.ts                    # SEO configuration
 │   ├── motion.tsx                # Animation utilities
+│   ├── amenityIcons.ts           # Amenity icon mappings
 │   └── utils.ts                  # Helper functions
 ├── supabase/
 │   └── schema.sql                # Database schema + RLS policies

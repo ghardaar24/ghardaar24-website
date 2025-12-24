@@ -183,30 +183,45 @@ const { data, error } = await query;
 
 ### Public Components
 
-| Component           | Path                               | Description                          |
-| ------------------- | ---------------------------------- | ------------------------------------ |
-| `Header`            | `components/Header.tsx`            | Navigation header with mobile menu   |
-| `Footer`            | `components/Footer.tsx`            | Site footer with links               |
-| `PropertyCard`      | `components/PropertyCard.tsx`      | Property listing card                |
-| `PropertyFilters`   | `components/PropertyFilters.tsx`   | Search and filter form               |
-| `ImageGallery`      | `components/ImageGallery.tsx`      | Property image gallery               |
-| `ContactForm`       | `components/ContactForm.tsx`       | Inquiry submission form              |
-| `EMICalculator`     | `components/EMICalculator.tsx`     | Mortgage calculator                  |
-| `LeadCaptureForm`   | `components/LeadCaptureForm.tsx`   | Lead generation form                 |
-| `Testimonials`      | `components/Testimonials.tsx`      | Customer testimonials                |
-| `WhyChooseUs`       | `components/WhyChooseUs.tsx`       | Value propositions                   |
-| `TrustIndicators`   | `components/TrustIndicators.tsx`   | Trust badges                         |
-| `FloatingWhatsApp`  | `components/FloatingWhatsApp.tsx`  | WhatsApp chat button                 |
-| `AgentProfile`      | `components/AgentProfile.tsx`      | Agent details and expertise section  |
-| `PopularLocalities` | `components/PopularLocalities.tsx` | Grid of popular locations            |
-| `InquiryCTA`        | `components/InquiryCTA.tsx`        | Call to action for inquiries         |
-| `ScrollToButton`    | `components/ScrollToButton.tsx`    | Button to scroll to specific section |
+| Component             | Path                                 | Description                              |
+| --------------------- | ------------------------------------ | ---------------------------------------- |
+| `Header`              | `components/Header.tsx`              | Navigation header with mobile menu       |
+| `Footer`              | `components/Footer.tsx`              | Site footer with links                   |
+| `PropertyCard`        | `components/PropertyCard.tsx`        | Property listing card                    |
+| `PropertyFilters`     | `components/PropertyFilters.tsx`     | Search and filter form                   |
+| `ImageGallery`        | `components/ImageGallery.tsx`        | Property image gallery                   |
+| `ContactForm`         | `components/ContactForm.tsx`         | Inquiry submission form                  |
+| `EMICalculator`       | `components/EMICalculator.tsx`       | EMI calculator widget                    |
+| `MortgageCalculator`  | `components/MortgageCalculator.tsx`  | Detailed mortgage/loan calculator        |
+| `ROICalculator`       | `components/ROICalculator.tsx`       | Investment ROI analysis calculator       |
+| `LeadCaptureForm`     | `components/LeadCaptureForm.tsx`     | Lead generation form                     |
+| `WhyChooseUs`         | `components/WhyChooseUs.tsx`         | Value propositions                       |
+| `TrustIndicators`     | `components/TrustIndicators.tsx`     | Trust badges                             |
+| `FloatingWhatsApp`    | `components/FloatingWhatsApp.tsx`    | WhatsApp chat button                     |
+| `AgentProfile`        | `components/AgentProfile.tsx`        | Agent details and expertise section      |
+| `PopularLocalities`   | `components/PopularLocalities.tsx`   | Grid of popular locations                |
+| `InquiryCTA`          | `components/InquiryCTA.tsx`          | Call to action for inquiries             |
+| `ScrollToButton`      | `components/ScrollToButton.tsx`      | Button to scroll to specific section     |
 
 ### Admin Components
 
 | Component     | Path                         | Description            |
 | ------------- | ---------------------------- | ---------------------- |
 | `AdminLayout` | `components/AdminLayout.tsx` | Admin dashboard layout |
+
+### Pages
+
+| Page                | Path                              | Description                            |
+| ------------------- | --------------------------------- | -------------------------------------- |
+| Home                | `app/page.tsx`                    | Landing page with hero and features    |
+| Properties          | `app/properties/page.tsx`         | Property listings with filters         |
+| Property Details    | `app/properties/[id]/page.tsx`    | Individual property page               |
+| Real Estate Guide   | `app/real-estate-guide/page.tsx`  | Educational guide on real estate       |
+| Calculators         | `app/calculators/page.tsx`        | Financial calculators (EMI, Mortgage, ROI) |
+| Admin Dashboard     | `app/admin/page.tsx`              | Admin overview and statistics          |
+| Admin Login         | `app/admin/login/page.tsx`        | Admin authentication page              |
+| Manage Properties   | `app/admin/properties/page.tsx`   | Property CRUD operations               |
+| Manage Inquiries    | `app/admin/inquiries/page.tsx`    | Inquiry management                     |
 
 ---
 
@@ -319,13 +334,16 @@ For additional support:
 
 ## Changelog
 
-### v0.1.0 (Initial Release)
+### v1.0.0 (December 2024)
 
 - Property listing and details pages
+- Real Estate Guide page with educational content
+- Calculators page with EMI, Mortgage, and ROI calculators
 - Admin dashboard with CRUD operations
 - Contact form with inquiry management
 - Supabase integration for database and storage
-- Responsive design with Tailwind CSS
+- Mobile-first responsive design with Tailwind CSS
+- SEO optimized for all pages
 
 ---
 
