@@ -138,7 +138,7 @@ export function generateWebsiteSchema() {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${siteConfig.url}/properties?city={search_term_string}`,
+        urlTemplate: `${siteConfig.url}/properties?area={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
@@ -158,7 +158,7 @@ export function generatePropertySchema(property: {
   id: string;
   title: string;
   description: string;
-  city: string;
+  area: string;
   address: string;
   price: number;
   images: string[];
@@ -190,7 +190,7 @@ export function generatePropertySchema(property: {
     address: {
       "@type": "PostalAddress",
       streetAddress: property.address,
-      addressLocality: property.city,
+      addressLocality: property.area,
       addressRegion: "Maharashtra",
       addressCountry: "IN",
     },
@@ -213,7 +213,7 @@ export function generatePropertyMetadata(property: {
   id: string;
   title: string;
   description: string;
-  city: string;
+  area: string;
   price: number;
   images: string[];
   property_type: string;
@@ -223,23 +223,23 @@ export function generatePropertyMetadata(property: {
     property.property_type.charAt(0).toUpperCase() +
     property.property_type.slice(1)
   } for ${property.listing_type === "sale" ? "Sale" : "Rent"} in ${
-    property.city
+    property.area
   }`;
   const description = `${
     property.property_type.charAt(0).toUpperCase() +
     property.property_type.slice(1)
   } for ${property.listing_type === "sale" ? "sale" : "rent"} in ${
-    property.city
+    property.area
   }. ${property.description?.slice(0, 140)}... Contact Ghardaar24 for details.`;
 
   return {
     title,
     description,
     keywords: [
-      `${property.property_type} for ${property.listing_type} ${property.city}`,
-      `buy ${property.property_type} ${property.city}`,
-      `${property.city} property`,
-      `real estate ${property.city}`,
+      `${property.property_type} for ${property.listing_type} ${property.area}`,
+      `buy ${property.property_type} ${property.area}`,
+      `${property.area} property`,
+      `real estate ${property.area}`,
     ],
     openGraph: {
       title,

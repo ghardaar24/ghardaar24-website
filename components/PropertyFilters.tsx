@@ -6,7 +6,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
 interface FilterState {
-  city: string;
+  area: string;
   property_type: string;
   listing_type: string;
   min_price: string;
@@ -15,7 +15,7 @@ interface FilterState {
   possession: string;
 }
 
-const cities = [
+const areas = [
   "Pune",
   "Pimpri-Chinchwad",
   "Hinjewadi",
@@ -30,11 +30,11 @@ const bedroomOptions = ["1", "2", "3", "4", "5+"];
 
 const filterFields = [
   {
-    name: "city",
-    label: "City",
+    name: "area",
+    label: "Area",
     options: [
-      { value: "", label: "All Cities" },
-      ...cities.map((c) => ({ value: c, label: c })),
+      { value: "", label: "All Areas" },
+      ...areas.map((c) => ({ value: c, label: c })),
     ],
   },
   {
@@ -110,7 +110,7 @@ export default function PropertyFilters() {
   // Initialize filters from URL params, update when searchParams change
   const initialFilters = useMemo<FilterState>(
     () => ({
-      city: searchParams.get("city") || "",
+      area: searchParams.get("area") || "",
       property_type: searchParams.get("property_type") || "",
       listing_type: searchParams.get("listing_type") || "",
       min_price: searchParams.get("min_price") || "",
@@ -131,7 +131,7 @@ export default function PropertyFilters() {
   ) {
     // Only update if there's a mismatch and we have search params
     const urlFilters = {
-      city: searchParams.get("city") || "",
+      area: searchParams.get("area") || "",
       property_type: searchParams.get("property_type") || "",
       listing_type: searchParams.get("listing_type") || "",
       min_price: searchParams.get("min_price") || "",
@@ -165,7 +165,7 @@ export default function PropertyFilters() {
 
   const clearFilters = () => {
     const newFilters = {
-      city: "",
+      area: "",
       property_type: "",
       listing_type: "", // Also clear listing type? Or keep it? Usually clear all resets all.
       min_price: "",
@@ -235,9 +235,9 @@ export default function PropertyFilters() {
           </div>
 
           <div className="active-tags">
-            {filters.city && (
+            {filters.area && (
               <span className="filter-tag">
-                {filters.city} <X onClick={() => removeFilter("city")} />
+                {filters.area} <X onClick={() => removeFilter("area")} />
               </span>
             )}
             {filters.property_type && (

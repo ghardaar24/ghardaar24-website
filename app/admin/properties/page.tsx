@@ -67,7 +67,7 @@ export default function AdminPropertiesPage() {
   const filteredProperties = properties.filter(
     (p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.city.toLowerCase().includes(searchQuery.toLowerCase())
+      p.area.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -144,7 +144,7 @@ export default function AdminPropertiesPage() {
               <thead>
                 <tr>
                   <th>Property</th>
-                  <th>City</th>
+                  <th>Area</th>
                   <th>Type</th>
                   <th>Listing</th>
                   <th>Price</th>
@@ -179,7 +179,7 @@ export default function AdminPropertiesPage() {
                         </span>
                       </div>
                     </td>
-                    <td>{property.city}</td>
+                    <td>{property.area}</td>
                     <td className="capitalize">{property.property_type}</td>
                     <td className="capitalize">{property.listing_type}</td>
                     <td>{formatPrice(property.price)}</td>

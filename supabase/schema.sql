@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS properties (
   price BIGINT NOT NULL,
   
   -- Location
-  city TEXT NOT NULL,
+  area TEXT NOT NULL,
   address TEXT NOT NULL,
   
   -- Property Specifications
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
 -- =============================================
 
 -- Properties Indexes (for faster queries)
-CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);
+CREATE INDEX IF NOT EXISTS idx_properties_area ON properties(area);
 CREATE INDEX IF NOT EXISTS idx_properties_property_type ON properties(property_type);
 CREATE INDEX IF NOT EXISTS idx_properties_listing_type ON properties(listing_type);
 CREATE INDEX IF NOT EXISTS idx_properties_featured ON properties(featured);
@@ -107,8 +107,8 @@ CREATE INDEX IF NOT EXISTS idx_properties_price ON properties(price);
 CREATE INDEX IF NOT EXISTS idx_properties_created_at ON properties(created_at DESC);
 
 -- Composite index for common filter combinations
-CREATE INDEX IF NOT EXISTS idx_properties_city_type_listing 
-  ON properties(city, property_type, listing_type);
+CREATE INDEX IF NOT EXISTS idx_properties_area_type_listing 
+  ON properties(area, property_type, listing_type);
 
 -- Inquiries Indexes
 CREATE INDEX IF NOT EXISTS idx_inquiries_property_id ON inquiries(property_id);

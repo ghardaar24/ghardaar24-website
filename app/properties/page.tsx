@@ -11,7 +11,7 @@ import { generatePropertiesListMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 interface SearchParams {
-  city?: string;
+  area?: string;
   property_type?: string;
   listing_type?: string;
   min_price?: string;
@@ -28,7 +28,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams;
   return generatePropertiesListMetadata({
-    city: params.city,
+    city: params.area,
     property_type: params.property_type,
     listing_type: params.listing_type,
   });
@@ -40,8 +40,8 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (searchParams.city) {
-    query = query.ilike("city", `%${searchParams.city}%`);
+  if (searchParams.area) {
+    query = query.ilike("area", `%${searchParams.area}%`);
   }
 
   if (searchParams.property_type) {
@@ -105,8 +105,8 @@ function getPageTitle(searchParams: SearchParams): string {
     parts.push("All Properties");
   }
 
-  if (searchParams.city) {
-    parts.push(`in ${searchParams.city}`);
+  if (searchParams.area) {
+    parts.push(`in ${searchParams.area}`);
   }
 
   if (searchParams.property_type) {

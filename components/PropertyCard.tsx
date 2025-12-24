@@ -85,7 +85,7 @@ export default function PropertyCard({
         <div className="property-card-body">
           <div className="property-card-location">
             <MapPin className="w-3.5 h-3.5" />
-            <span>{property.city}</span>
+            <span>{property.area}</span>
           </div>
 
           <h3 className="property-card-title">{property.title}</h3>

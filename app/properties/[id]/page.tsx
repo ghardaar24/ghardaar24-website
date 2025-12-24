@@ -64,7 +64,7 @@ async function getSimilarProperties(property: Property): Promise<Property[]> {
   const { data } = await supabase
     .from("properties")
     .select("*")
-    .eq("city", property.city)
+    .eq("area", property.area)
     .eq("property_type", property.property_type)
     .neq("id", property.id)
     .limit(4);
@@ -168,7 +168,7 @@ export default async function PropertyDetailsPage({
                         <span className="location-address">
                           {property.address}
                         </span>
-                        <span className="location-city">{property.city}</span>
+                        <span className="location-city">{property.area}</span>
                       </div>
                       <ScrollToButton
                         targetId="property-map"
@@ -430,7 +430,7 @@ export default async function PropertyDetailsPage({
                     <h2 className="section-heading">Location</h2>
                     <div className="location-text-block">
                       <p className="location-address-text">
-                        {property.address}, {property.city}
+                        {property.address}, {property.area}
                       </p>
                       <div className="location-inquiry-prompt">
                         <p>
@@ -483,7 +483,7 @@ export default async function PropertyDetailsPage({
                       </div>
                       <div className="similar-card-content">
                         <h3>{prop.title}</h3>
-                        <p>{prop.city}</p>
+                        <p>{prop.area}</p>
                         <span className="similar-price">
                           {formatPrice(prop.price)}
                         </span>

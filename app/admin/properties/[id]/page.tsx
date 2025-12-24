@@ -21,7 +21,7 @@ export default function EditPropertyPage({
     title: "",
     description: "",
     price: "",
-    city: "",
+    area: "",
     address: "",
     bedrooms: "",
     bathrooms: "",
@@ -73,7 +73,7 @@ export default function EditPropertyPage({
           title: data.title || "",
           description: data.description || "",
           price: data.price?.toString() || "",
-          city: data.city || "",
+          area: data.area || "",
           address: data.address || "",
           bedrooms: data.bedrooms?.toString() || "",
           bathrooms: data.bathrooms?.toString() || "",
@@ -120,13 +120,13 @@ export default function EditPropertyPage({
     try {
       const { data, error } = await supabase
         .from("properties")
-        .select("city");
+        .select("area");
 
       if (error) throw error;
 
       if (data) {
         const uniqueAreas = Array.from(
-          new Set(data.map((item) => item.city))
+          new Set(data.map((item) => item.area))
         )
           .filter((area) => area && area.trim().length > 0)
           .sort();
@@ -272,7 +272,7 @@ export default function EditPropertyPage({
       if (
         !formData.title ||
         !formData.price ||
-        !formData.city ||
+        !formData.area ||
         !formData.address
       ) {
         throw new Error("Please fill in all required fields");
@@ -296,7 +296,7 @@ export default function EditPropertyPage({
           title: formData.title,
           description: formData.description,
           price: parseInt(formData.price),
-          city: formData.city,
+          area: formData.area,
           address: formData.address,
           bedrooms: parseInt(formData.bedrooms) || 0,
           bathrooms: parseInt(formData.bathrooms) || 0,
@@ -493,13 +493,13 @@ export default function EditPropertyPage({
 
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="city">Area *</label>
+              <label htmlFor="area">Area *</label>
               <div className="relative">
                 <input
                   type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
+                  id="area"
+                  name="area"
+                  value={formData.area}
                   onChange={handleChange}
                   list="area-suggestions"
                   placeholder="Enter or select Area"
