@@ -18,6 +18,7 @@ const navLinks = [
   { href: "/properties?listing_type=sale", label: "Buy" },
   { href: "/properties?listing_type=rent", label: "Rent" },
   { href: "/calculators", label: "Calculators" },
+  { href: "/real-estate-guide", label: "RE Guide" },
 ];
 
 export default function Header() {

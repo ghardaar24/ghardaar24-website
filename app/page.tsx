@@ -25,6 +25,7 @@ import {
   Wallet,
   Building2,
   Calendar,
+  BookOpen,
 } from "lucide-react";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 import { ReactNode } from "react";
@@ -121,6 +122,13 @@ export default async function HomePage() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
+
+              <Link href="/real-estate-guide" className="hero-learn-link">
+                <BookOpen className="w-4 h-4" />
+                New to Real Estate? Learn the basics
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+
 
               <div className="hero-trust-badges">
                 <div className="hero-trust-item">

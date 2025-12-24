@@ -11,6 +11,7 @@ const quickLinks = [
   { href: "/properties?listing_type=sale", label: "Buy Property" },
   { href: "/properties?listing_type=rent", label: "Rent Property" },
   { href: "/calculators", label: "Calculators" },
+  { href: "/real-estate-guide", label: "Real Estate Guide" },
 ];
 
 const propertyTypes = [
