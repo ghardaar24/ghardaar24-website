@@ -22,12 +22,12 @@ Ghardaar24 follows a modern Next.js 16 architecture with the App Router pattern.
 
 ### Core Technologies
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Frontend | React 19 + Next.js 16 | UI rendering and routing |
-| Styling | Tailwind CSS 4 | Utility-first CSS framework |
-| Backend | Supabase | Database, Auth, and Storage |
-| Animations | Framer Motion | Smooth UI transitions |
+| Layer      | Technology            | Purpose                     |
+| ---------- | --------------------- | --------------------------- |
+| Frontend   | React 19 + Next.js 16 | UI rendering and routing    |
+| Styling    | Tailwind CSS 4        | Utility-first CSS framework |
+| Backend    | Supabase              | Database, Auth, and Storage |
+| Animations | Framer Motion         | Smooth UI transitions       |
 
 ### Application Flow
 
@@ -64,41 +64,41 @@ Ghardaar24 follows a modern Next.js 16 architecture with the App Router pattern.
 
 Stores all property listings with their details.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `title` | TEXT | Property title |
-| `description` | TEXT | Detailed description |
-| `price` | BIGINT | Price in INR |
-| `city` | TEXT | City location |
-| `address` | TEXT | Full address |
-| `bedrooms` | INTEGER | Number of bedrooms |
-| `bathrooms` | INTEGER | Number of bathrooms |
-| `area_sqft` | INTEGER | Area in square feet |
-| `property_type` | TEXT | apartment, house, villa, plot, commercial |
-| `listing_type` | TEXT | sale or rent |
-| `images` | TEXT[] | Array of image URLs |
-| `amenities` | TEXT[] | Array of amenities |
-| `featured` | BOOLEAN | Featured listing flag |
-| `status` | TEXT | active, sold, rented, inactive |
-| `possession` | TEXT | Immediate, 2025, 2026, etc. |
-| `created_at` | TIMESTAMPTZ | Creation timestamp |
-| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+| Column          | Type        | Description                               |
+| --------------- | ----------- | ----------------------------------------- |
+| `id`            | UUID        | Primary key                               |
+| `title`         | TEXT        | Property title                            |
+| `description`   | TEXT        | Detailed description                      |
+| `price`         | BIGINT      | Price in INR                              |
+| `city`          | TEXT        | City location                             |
+| `address`       | TEXT        | Full address                              |
+| `bedrooms`      | INTEGER     | Number of bedrooms                        |
+| `bathrooms`     | INTEGER     | Number of bathrooms                       |
+| `area_sqft`     | INTEGER     | Area in square feet                       |
+| `property_type` | TEXT        | apartment, house, villa, plot, commercial |
+| `listing_type`  | TEXT        | sale or rent                              |
+| `images`        | TEXT[]      | Array of image URLs                       |
+| `amenities`     | TEXT[]      | Array of amenities                        |
+| `featured`      | BOOLEAN     | Featured listing flag                     |
+| `status`        | TEXT        | active, sold, rented, inactive            |
+| `possession`    | TEXT        | Immediate, 2025, 2026, etc.               |
+| `created_at`    | TIMESTAMPTZ | Creation timestamp                        |
+| `updated_at`    | TIMESTAMPTZ | Last update timestamp                     |
 
 ### Inquiries Table
 
 Stores customer inquiries submitted through contact forms.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `property_id` | UUID | Reference to property (nullable) |
-| `name` | TEXT | Customer name |
-| `email` | TEXT | Customer email |
-| `phone` | TEXT | Customer phone |
-| `message` | TEXT | Inquiry message |
-| `is_read` | BOOLEAN | Read status |
-| `created_at` | TIMESTAMPTZ | Submission timestamp |
+| Column        | Type        | Description                      |
+| ------------- | ----------- | -------------------------------- |
+| `id`          | UUID        | Primary key                      |
+| `property_id` | UUID        | Reference to property (nullable) |
+| `name`        | TEXT        | Customer name                    |
+| `email`       | TEXT        | Customer email                   |
+| `phone`       | TEXT        | Customer phone                   |
+| `message`     | TEXT        | Inquiry message                  |
+| `is_read`     | BOOLEAN     | Read status                      |
+| `created_at`  | TIMESTAMPTZ | Submission timestamp             |
 
 ---
 
@@ -109,12 +109,12 @@ Stores customer inquiries submitted through contact forms.
 The Supabase client is initialized in `lib/supabase.ts`:
 
 ```typescript
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+);
 ```
 
 ### Common Queries
@@ -123,60 +123,58 @@ export const supabase = createClient(
 
 ```typescript
 const { data, error } = await supabase
-  .from('properties')
-  .select('*')
-  .eq('status', 'active')
-  .order('created_at', { ascending: false })
+  .from("properties")
+  .select("*")
+  .eq("status", "active")
+  .order("created_at", { ascending: false });
 ```
 
 #### Fetch Featured Properties
 
 ```typescript
 const { data, error } = await supabase
-  .from('properties')
-  .select('*')
-  .eq('featured', true)
-  .eq('status', 'active')
+  .from("properties")
+  .select("*")
+  .eq("featured", true)
+  .eq("status", "active");
 ```
 
 #### Fetch Property by ID
 
 ```typescript
 const { data, error } = await supabase
-  .from('properties')
-  .select('*')
-  .eq('id', propertyId)
-  .single()
+  .from("properties")
+  .select("*")
+  .eq("id", propertyId)
+  .single();
 ```
 
 #### Submit Inquiry
 
 ```typescript
-const { error } = await supabase
-  .from('inquiries')
-  .insert({
-    property_id: propertyId,
-    name: formData.name,
-    email: formData.email,
-    phone: formData.phone,
-    message: formData.message
-  })
+const { error } = await supabase.from("inquiries").insert({
+  property_id: propertyId,
+  name: formData.name,
+  email: formData.email,
+  phone: formData.phone,
+  message: formData.message,
+});
 ```
 
 #### Filter Properties
 
 ```typescript
-let query = supabase.from('properties').select('*').eq('status', 'active')
+let query = supabase.from("properties").select("*").eq("status", "active");
 
-if (city) query = query.eq('city', city)
-if (propertyType) query = query.eq('property_type', propertyType)
-if (listingType) query = query.eq('listing_type', listingType)
-if (minPrice) query = query.gte('price', minPrice)
-if (maxPrice) query = query.lte('price', maxPrice)
-if (bedrooms) query = query.eq('bedrooms', bedrooms)
-if (possession) query = query.ilike('possession', `%${possession}%`)
+if (city) query = query.eq("city", city);
+if (propertyType) query = query.eq("property_type", propertyType);
+if (listingType) query = query.eq("listing_type", listingType);
+if (minPrice) query = query.gte("price", minPrice);
+if (maxPrice) query = query.lte("price", maxPrice);
+if (bedrooms) query = query.eq("bedrooms", bedrooms);
+if (possession) query = query.ilike("possession", `%${possession}%`);
 
-const { data, error } = await query
+const { data, error } = await query;
 ```
 
 ---
@@ -185,25 +183,29 @@ const { data, error } = await query
 
 ### Public Components
 
-| Component | Path | Description |
-|-----------|------|-------------|
-| `Header` | `components/Header.tsx` | Navigation header with mobile menu |
-| `Footer` | `components/Footer.tsx` | Site footer with links |
-| `PropertyCard` | `components/PropertyCard.tsx` | Property listing card |
-| `PropertyFilters` | `components/PropertyFilters.tsx` | Search and filter form |
-| `ImageGallery` | `components/ImageGallery.tsx` | Property image gallery |
-| `ContactForm` | `components/ContactForm.tsx` | Inquiry submission form |
-| `EMICalculator` | `components/EMICalculator.tsx` | Mortgage calculator |
-| `LeadCaptureForm` | `components/LeadCaptureForm.tsx` | Lead generation form |
-| `Testimonials` | `components/Testimonials.tsx` | Customer testimonials |
-| `WhyChooseUs` | `components/WhyChooseUs.tsx` | Value propositions |
-| `TrustIndicators` | `components/TrustIndicators.tsx` | Trust badges |
-| `FloatingWhatsApp` | `components/FloatingWhatsApp.tsx` | WhatsApp chat button |
+| Component           | Path                               | Description                          |
+| ------------------- | ---------------------------------- | ------------------------------------ |
+| `Header`            | `components/Header.tsx`            | Navigation header with mobile menu   |
+| `Footer`            | `components/Footer.tsx`            | Site footer with links               |
+| `PropertyCard`      | `components/PropertyCard.tsx`      | Property listing card                |
+| `PropertyFilters`   | `components/PropertyFilters.tsx`   | Search and filter form               |
+| `ImageGallery`      | `components/ImageGallery.tsx`      | Property image gallery               |
+| `ContactForm`       | `components/ContactForm.tsx`       | Inquiry submission form              |
+| `EMICalculator`     | `components/EMICalculator.tsx`     | Mortgage calculator                  |
+| `LeadCaptureForm`   | `components/LeadCaptureForm.tsx`   | Lead generation form                 |
+| `Testimonials`      | `components/Testimonials.tsx`      | Customer testimonials                |
+| `WhyChooseUs`       | `components/WhyChooseUs.tsx`       | Value propositions                   |
+| `TrustIndicators`   | `components/TrustIndicators.tsx`   | Trust badges                         |
+| `FloatingWhatsApp`  | `components/FloatingWhatsApp.tsx`  | WhatsApp chat button                 |
+| `AgentProfile`      | `components/AgentProfile.tsx`      | Agent details and expertise section  |
+| `PopularLocalities` | `components/PopularLocalities.tsx` | Grid of popular locations            |
+| `InquiryCTA`        | `components/InquiryCTA.tsx`        | Call to action for inquiries         |
+| `ScrollToButton`    | `components/ScrollToButton.tsx`    | Button to scroll to specific section |
 
 ### Admin Components
 
-| Component | Path | Description |
-|-----------|------|-------------|
+| Component     | Path                         | Description            |
+| ------------- | ---------------------------- | ---------------------- |
 | `AdminLayout` | `components/AdminLayout.tsx` | Admin dashboard layout |
 
 ---
@@ -218,9 +220,9 @@ The application uses a comprehensive design system defined in `app/globals.css` 
 
 ```css
 :root {
-  --primary: #1a365d;      /* Deep blue */
+  --primary: #1a365d; /* Deep blue */
   --primary-light: #2a4a7f;
-  --accent: #e53e3e;       /* Coral red */
+  --accent: #e53e3e; /* Coral red */
   --neutral-50: #fafafa;
   --neutral-100: #f4f4f5;
   --neutral-900: #18181b;
@@ -238,13 +240,13 @@ Consistent spacing using Tailwind's spacing scale (4px base unit).
 
 ### Responsive Breakpoints
 
-| Breakpoint | Minimum Width | Usage |
-|------------|---------------|-------|
-| `sm` | 640px | Small tablets |
-| `md` | 768px | Tablets |
-| `lg` | 1024px | Small laptops |
-| `xl` | 1280px | Desktops |
-| `2xl` | 1536px | Large screens |
+| Breakpoint | Minimum Width | Usage         |
+| ---------- | ------------- | ------------- |
+| `sm`       | 640px         | Small tablets |
+| `md`       | 768px         | Tablets       |
+| `lg`       | 1024px        | Small laptops |
+| `xl`       | 1280px        | Desktops      |
+| `2xl`      | 1536px        | Large screens |
 
 ---
 
@@ -259,15 +261,15 @@ Authentication is handled by Supabase Auth with email/password login for admin u
 The auth context (`lib/auth.tsx`) provides authentication state throughout the application:
 
 ```typescript
-import { useAuth } from '@/lib/auth'
+import { useAuth } from "@/lib/auth";
 
 function MyComponent() {
-  const { user, loading, signIn, signOut } = useAuth()
-  
-  if (loading) return <LoadingSpinner />
-  if (!user) return <LoginForm />
-  
-  return <Dashboard user={user} />
+  const { user, loading, signIn, signOut } = useAuth();
+
+  if (loading) return <LoadingSpinner />;
+  if (!user) return <LoginForm />;
+
+  return <Dashboard user={user} />;
 }
 ```
 
@@ -308,6 +310,7 @@ Admin routes are protected using the `AdminLayout` component which checks authen
 ### Getting Help
 
 For additional support:
+
 - Check the [Supabase Documentation](https://supabase.com/docs)
 - Review [Next.js Documentation](https://nextjs.org/docs)
 - Open an issue on GitHub
@@ -317,11 +320,13 @@ For additional support:
 ## Changelog
 
 ### v0.1.0 (Initial Release)
+
 - Property listing and details pages
 - Admin dashboard with CRUD operations
 - Contact form with inquiry management
 - Supabase integration for database and storage
 - Responsive design with Tailwind CSS
+
 ---
 
 ## 👨‍💻 Developer

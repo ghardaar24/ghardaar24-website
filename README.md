@@ -19,14 +19,21 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 ## ✨ Features
 
 ### 🏠 Public Features
+
 - **Property Listings** - Browse apartments, houses, villas, plots, and commercial properties
 - **Advanced Search & Filters** - Filter by city, price range, property type, bedrooms, listing type, and possession status
 - **Property Details** - Comprehensive property pages with image galleries, amenities, and location info
 - **EMI Calculator** - Built-in mortgage calculator for quick affordability checks
+- **Agent Profile** - Showcase agent details and expertise
+- **Popular Localities** - Explore properties in top trending areas
+- **Customer Testimonials** - Social proof with verified client reviews
+- **Trust Indicators** - Badges highlighting reliability and security
+- **WhatsApp Integration** - Instant floating chat button for quick inquiries
 - **Contact Forms** - Direct inquiry submission for properties of interest
 - **Responsive Design** - Mobile-first approach with seamless experience across all devices
 
 ### 🔐 Admin Dashboard
+
 - **Secure Authentication** - Supabase Auth integration
 - **Property Management** - Full CRUD operations for listings
 - **Image Upload** - Multi-image support with Supabase Storage
@@ -34,6 +41,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Statistics Dashboard** - Overview of listings and inquiries
 
 ### 🛠️ Technical Features
+
 - **SEO Optimized** - Dynamic meta tags, sitemap generation, and structured data
 - **Modern Animations** - Smooth transitions powered by Framer Motion
 - **Type Safety** - Full TypeScript implementation
@@ -43,17 +51,17 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 
 ## 🚀 Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js 16 (App Router) |
-| **Language** | TypeScript 5 |
-| **Styling** | Tailwind CSS 4 |
-| **Database** | Supabase (PostgreSQL) |
-| **Authentication** | Supabase Auth |
-| **Storage** | Supabase Storage |
-| **Animations** | Framer Motion |
-| **Icons** | Lucide React |
-| **Deployment** | Vercel |
+| Category           | Technology              |
+| ------------------ | ----------------------- |
+| **Framework**      | Next.js 16 (App Router) |
+| **Language**       | TypeScript 5            |
+| **Styling**        | Tailwind CSS 4          |
+| **Database**       | Supabase (PostgreSQL)   |
+| **Authentication** | Supabase Auth           |
+| **Storage**        | Supabase Storage        |
+| **Animations**     | Framer Motion           |
+| **Icons**          | Lucide React            |
+| **Deployment**     | Vercel                  |
 
 ---
 
@@ -107,6 +115,7 @@ Navigate to `/admin/login` and sign in with your Supabase auth credentials.
 ## 📚 Documentation
 
 For detailed documentation, see:
+
 - [Documentation](DOCUMENTATION.md) - Complete project documentation
 - [Security](SECURITY.md) - Security policies and guidelines
 
