@@ -146,7 +146,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("This phone number is already registered") };
     }
 
-    // Create auth user
+    // Check if email already exists
+    const { data: existingEmail } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (existingEmail) {
+      return { error: new Error("This email is already registered") };
+    }
+
+    // Create auth user with metadata
+    // The user profile will be created by a database trigger on auth.users insert
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -155,6 +167,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name,
           phone,
         },
+        emailRedirectTo:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/`
+            : undefined,
       },
     });
 
@@ -162,19 +178,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: authError as Error };
     }
 
-    // Create user profile
-    if (authData.user) {
+    // If user was created and we have an active session, create the profile
+    // This handles the case where email confirmation is disabled
+    if (authData.user && authData.session) {
       const { error: profileError } = await supabase
         .from("user_profiles")
-        .insert({
-          id: authData.user.id,
-          name,
-          phone,
-          email,
-        });
+        .upsert(
+          {
+            id: authData.user.id,
+            name,
+            phone,
+            email,
+          },
+          { onConflict: "id" }
+        );
 
       if (profileError) {
-        return { error: profileError as Error };
+        console.error("Profile creation error:", profileError);
+        // Don't fail signup if profile creation fails - user can update later
       }
     }
 
