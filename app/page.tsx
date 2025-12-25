@@ -9,7 +9,6 @@ import LeadCaptureForm from "@/components/LeadCaptureForm";
 import Link from "next/link";
 import {
   Search,
-  MapPin,
   Building,
   Bed,
   DollarSign,
@@ -144,22 +143,6 @@ export default async function HomePage() {
               action="/properties"
               className="search-form search-form-horizontal"
             >
-              <div className="search-filter">
-                <span className="search-filter-label">Location</span>
-                <div className="search-filter-value">
-                  <MapPin className="w-4 h-4" />
-                  <select name="city" defaultValue="">
-                    <option value="">All</option>
-                    <option value="Pune">Pune</option>
-                    <option value="Pimpri-Chinchwad">PCMC</option>
-                    <option value="Hinjewadi">Hinjewadi</option>
-                    <option value="Wakad">Wakad</option>
-                    <option value="Baner">Baner</option>
-                    <option value="Kharadi">Kharadi</option>
-                  </select>
-                </div>
-              </div>
-
               <div className="search-filter">
                 <span className="search-filter-label">Type</span>
                 <div className="search-filter-value">

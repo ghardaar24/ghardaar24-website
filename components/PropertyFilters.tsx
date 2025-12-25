@@ -15,28 +15,10 @@ interface FilterState {
   possession: string;
 }
 
-const areas = [
-  "Pune",
-  "Pimpri-Chinchwad",
-  "Hinjewadi",
-  "Wakad",
-  "Baner",
-  "Kharadi",
-  "Hadapsar",
-  "Wagholi",
-];
 const propertyTypes = ["apartment", "house", "villa", "plot", "commercial"];
 const bedroomOptions = ["1", "2", "3", "4", "5+"];
 
 const filterFields = [
-  {
-    name: "area",
-    label: "Area",
-    options: [
-      { value: "", label: "All Areas" },
-      ...areas.map((c) => ({ value: c, label: c })),
-    ],
-  },
   {
     name: "property_type",
     label: "Property Type",
@@ -235,11 +217,6 @@ export default function PropertyFilters() {
           </div>
 
           <div className="active-tags">
-            {filters.area && (
-              <span className="filter-tag">
-                {filters.area} <X onClick={() => removeFilter("area")} />
-              </span>
-            )}
             {filters.property_type && (
               <span className="filter-tag">
                 {filters.property_type}{" "}
