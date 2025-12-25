@@ -25,7 +25,7 @@ interface Inquiry {
   created_at: string;
   property?: {
     title: string;
-    city: string;
+    area: string;
     price: number;
   };
 }
@@ -48,7 +48,7 @@ export default function AdminInquiriesPage() {
         .select(
           `
           *,
-          property:properties(title, city, price)
+          property:properties(title, area, price)
         `
         )
         .order("created_at", { ascending: false });
@@ -166,9 +166,13 @@ export default function AdminInquiriesPage() {
                 <p className="inquiry-preview">
                   {inquiry.message.substring(0, 80)}...
                 </p>
-                {inquiry.property && (
+                {inquiry.property ? (
                   <span className="inquiry-property">
                     {inquiry.property.title}
+                  </span>
+                ) : (
+                  <span className="inquiry-property inquiry-general">
+                    General Consultation
                   </span>
                 )}
               </motion.div>
@@ -199,10 +203,11 @@ export default function AdminInquiriesPage() {
                 <div className="inquiry-detail-header">
                   <h2>{selectedInquiry.name}</h2>
                   <motion.button
-                    className="action-btn delete"
+                    className="inquiry-delete-btn"
                     onClick={() => setDeleteId(selectedInquiry.id)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Delete inquiry"
                   >
                     <Trash2 className="w-4 h-4" />
                   </motion.button>
@@ -250,7 +255,7 @@ export default function AdminInquiriesPage() {
                         {selectedInquiry.property.title}
                       </Link>
                       <span className="property-meta">
-                        {selectedInquiry.property.city} •{" "}
+                        {selectedInquiry.property.area} •{" "}
                         {formatPrice(selectedInquiry.property.price)}
                       </span>
                     </div>
@@ -264,7 +269,11 @@ export default function AdminInquiriesPage() {
                   transition={{ delay: 0.15 }}
                 >
                   <h3>Message</h3>
-                  <p>{selectedInquiry.message}</p>
+                  <div className="message-content">
+                    {selectedInquiry.message.split('\n').map((line, index) => (
+                      <p key={index}>{line}</p>
+                    ))}
+                  </div>
                 </motion.div>
 
                 <motion.div

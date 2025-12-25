@@ -294,9 +294,6 @@ export default async function HomePage() {
       {/* Trust Indicators */}
       <TrustIndicators />
 
-      {/* Why Choose Us */}
-      <WhyChooseUs />
-
       {/* Featured Properties */}
       {featuredProperties.length > 0 && (
         <MotionSection className="section featured-section-new">
@@ -327,6 +324,9 @@ export default async function HomePage() {
           </div>
         </MotionSection>
       )}
+
+      {/* Why Choose Us */}
+      <WhyChooseUs />
 
       {/* Popular Localities */}
       <PopularLocalities />
