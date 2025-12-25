@@ -4,8 +4,6 @@ import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import TrustIndicators from "@/components/TrustIndicators";
 import WhyChooseUs from "@/components/WhyChooseUs";
-
-import PopularLocalities from "@/components/PopularLocalities";
 import AgentProfile from "@/components/AgentProfile";
 import LeadCaptureForm from "@/components/LeadCaptureForm";
 import Link from "next/link";
@@ -26,6 +24,7 @@ import {
   Building2,
   Calendar,
   BookOpen,
+  Tag,
 } from "lucide-react";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 import { ReactNode } from "react";
@@ -136,17 +135,23 @@ export default async function HomePage() {
             </MotionSection>
           </div>
 
-          {/* Search Bar */}
-          <MotionSection className="hero-search hero-search-compact" delay={0.4}>
-            <form action="/properties" className="search-form search-form-compact">
+          {/* Horizontal Search Bar */}
+          <MotionSection
+            className="hero-search hero-search-horizontal"
+            delay={0.4}
+          >
+            <form
+              action="/properties"
+              className="search-form search-form-horizontal"
+            >
               <div className="search-filter">
                 <span className="search-filter-label">Location</span>
                 <div className="search-filter-value">
                   <MapPin className="w-4 h-4" />
                   <select name="city" defaultValue="">
-                    <option value="">All Locations</option>
+                    <option value="">All</option>
                     <option value="Pune">Pune</option>
-                    <option value="Pimpri-Chinchwad">Pimpri-Chinchwad</option>
+                    <option value="Pimpri-Chinchwad">PCMC</option>
                     <option value="Hinjewadi">Hinjewadi</option>
                     <option value="Wakad">Wakad</option>
                     <option value="Baner">Baner</option>
@@ -156,22 +161,75 @@ export default async function HomePage() {
               </div>
 
               <div className="search-filter">
+                <span className="search-filter-label">Type</span>
+                <div className="search-filter-value">
+                  <Building className="w-4 h-4" />
+                  <select name="type" defaultValue="">
+                    <option value="">All</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="villa">Villa</option>
+                    <option value="plot">Plot</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="search-filter">
+                <span className="search-filter-label">BHK</span>
+                <div className="search-filter-value">
+                  <Bed className="w-4 h-4" />
+                  <select name="bedrooms" defaultValue="">
+                    <option value="">Any</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="search-filter">
                 <span className="search-filter-label">Budget</span>
                 <div className="search-filter-value">
                   <Wallet className="w-4 h-4" />
                   <select name="price_range" defaultValue="">
-                    <option value="">Any Budget</option>
+                    <option value="">Any</option>
                     <option value="0-2500000">Under ₹25L</option>
-                    <option value="2500000-5000000">₹25L - ₹50L</option>
-                    <option value="5000000-10000000">₹50L - ₹1Cr</option>
-                    <option value="10000000-">Above ₹1Cr</option>
+                    <option value="2500000-5000000">₹25L-50L</option>
+                    <option value="5000000-10000000">₹50L-1Cr</option>
+                    <option value="10000000-">₹1Cr+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="search-filter">
+                <span className="search-filter-label">For</span>
+                <div className="search-filter-value">
+                  <Tag className="w-4 h-4" />
+                  <select name="listing_type" defaultValue="">
+                    <option value="">All</option>
+                    <option value="sale">Sale</option>
+                    <option value="rent">Rent</option>
+                    <option value="resale">Resale</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="search-filter">
+                <span className="search-filter-label">Possession</span>
+                <div className="search-filter-value">
+                  <Calendar className="w-4 h-4" />
+                  <select name="possession" defaultValue="">
+                    <option value="">Any</option>
+                    <option value="ready">Ready</option>
+                    <option value="under_construction">Building</option>
                   </select>
                 </div>
               </div>
 
               <button type="submit" className="search-button">
                 <Search className="w-5 h-5" />
-                Search
+                Search Properties
               </button>
             </form>
           </MotionSection>
@@ -214,9 +272,6 @@ export default async function HomePage() {
 
       {/* Why Choose Us */}
       <WhyChooseUs />
-
-      {/* Popular Localities */}
-      <PopularLocalities />
 
       {/* Property Types */}
       <MotionSection className="section types-section">
