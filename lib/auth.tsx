@@ -75,20 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
 
-      if (session?.user) {
-        await Promise.all([
-          fetchUserProfile(session.user.id),
-          checkAdminStatus(session.user.id),
-        ]);
+        if (session?.user) {
+          await Promise.all([
+            fetchUserProfile(session.user.id),
+            checkAdminStatus(session.user.id),
+          ]);
+        }
+      } catch (error) {
+        console.error("Error getting session:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     getSession();
@@ -96,10 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Logic for handling auth state changes
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        // Refresh profile/admin status on sign in or token refresh
         await Promise.all([
           fetchUserProfile(session.user.id),
           checkAdminStatus(session.user.id),
@@ -110,43 +116,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false);
-
-      if (event === "SIGNED_OUT" && pathname?.startsWith("/admin")) {
-        router.push("/admin/login");
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [router, pathname]);
+  }, []);
 
   // Sign in with email or phone
   const signIn = async (emailOrPhone: string, password: string) => {
-    let email = emailOrPhone;
+    try {
+      let email = emailOrPhone;
 
-    // Check if input looks like a phone number (contains mostly digits)
-    const isPhone = /^[+]?[\d\s-]{10,}$/.test(emailOrPhone.replace(/\s/g, ""));
+      // Check if input looks like a phone number (contains mostly digits)
+      const isPhone = /^[+]?[\d\s-]{10,}$/.test(
+        emailOrPhone.replace(/\s/g, "")
+      );
 
-    if (isPhone) {
-      // Lookup email by phone number
-      const { data: profileData, error: lookupError } = await supabase
-        .from("user_profiles")
-        .select("email")
-        .eq("phone", emailOrPhone)
-        .single();
+      if (isPhone) {
+        // Lookup email by phone number
+        const { data: profileData, error: lookupError } = await supabase
+          .from("user_profiles")
+          .select("email")
+          .eq("phone", emailOrPhone)
+          .single();
 
-      if (lookupError || !profileData) {
-        return { error: new Error("No account found with this phone number") };
+        if (lookupError || !profileData) {
+          return {
+            error: new Error("No account found with this phone number"),
+          };
+        }
+
+        email = profileData.email;
       }
 
-      email = profileData.email;
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      return { error: error as Error | null };
+    } catch (error) {
+      console.error("Sign in error:", error);
+      return { error: error as Error };
     }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { error: error as Error | null };
   };
 
   // Sign up with name, phone, email, password
