@@ -131,7 +131,7 @@ export default function Footer() {
                   <Instagram className="w-5 h-5" />
                 </motion.a>
                 <motion.a
-                  href="https://www.facebook.com/Ghardaar24"
+                  href="https://www.facebook.com/share/1BsxSR87Pm/?mibextid=wwXIfr"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.2, rotate: -5 }}

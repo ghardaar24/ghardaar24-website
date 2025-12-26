@@ -5,7 +5,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Phone, X } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Phone,
+  X,
+  User,
+  CheckCircle,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface LoginModalProps {
@@ -14,24 +24,31 @@ interface LoginModalProps {
   redirectUrl?: string;
   title?: string;
   subtitle?: string;
+  defaultMode?: "login" | "signup";
 }
 
 export default function LoginModal({
   isOpen,
   onClose,
   redirectUrl = "/",
-  title = "Login Required",
-  subtitle = "Please login to continue browsing properties",
+  title,
+  subtitle,
+  defaultMode = "signup",
 }: LoginModalProps) {
+  const [mode, setMode] = useState<"login" | "signup">(defaultMode);
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [success, setSuccess] = useState(false);
+  const { signIn, signUp } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -60,10 +77,79 @@ export default function LoginModal({
     router.push(redirectUrl);
   };
 
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    // Validation
+    if (!name.trim()) {
+      setError("Please enter your name");
+      setLoading(false);
+      return;
+    }
+
+    if (!phone.trim() || phone.length < 10) {
+      setError("Please enter a valid phone number");
+      setLoading(false);
+      return;
+    }
+
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+
+    const { error: signUpError } = await signUp(name, phone, email, password);
+
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+      setMode("login");
+      // Reset signup fields
+      setName("");
+      setPhone("");
+      setEmail("");
+      setPassword("");
+    }, 2000);
+    setLoading(false);
+  };
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  const switchMode = (newMode: "login" | "signup") => {
+    setMode(newMode);
+    setError("");
+    setPassword("");
+  };
+
+  const getTitle = () => {
+    if (title) return title;
+    return mode === "signup" ? "Create Account" : "Welcome Back";
+  };
+
+  const getSubtitle = () => {
+    if (subtitle) return subtitle;
+    return mode === "signup"
+      ? "Sign up to explore premium properties"
+      : "Login to continue browsing properties";
   };
 
   return (
@@ -97,93 +183,252 @@ export default function LoginModal({
                   className="login-modal-logo-img"
                 />
               </Link>
-              <h2 className="login-modal-title">{title}</h2>
-              <p className="login-modal-subtitle">{subtitle}</p>
+              <h2 className="login-modal-title">{getTitle()}</h2>
+              <p className="login-modal-subtitle">{getSubtitle()}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="login-modal-form">
-              <div className="login-modal-input-group">
-                <label htmlFor="modal-emailOrPhone">
-                  Email or Phone Number
-                </label>
-                <div className="login-modal-input-wrapper">
-                  <Mail className="login-modal-input-icon" />
-                  <input
-                    id="modal-emailOrPhone"
-                    type="text"
-                    placeholder="Enter email or phone number"
-                    value={emailOrPhone}
-                    onChange={(e) => setEmailOrPhone(e.target.value)}
-                    className="login-modal-input"
-                    disabled={loading}
-                  />
-                </div>
-                <span className="login-modal-input-hint">
-                  <Phone className="w-3 h-3" />
-                  You can login with your registered phone number
-                </span>
-              </div>
+            {/* Mode Toggle */}
+            <div className="login-modal-toggle">
+              <button
+                type="button"
+                className={`login-modal-toggle-btn ${
+                  mode === "signup" ? "active" : ""
+                }`}
+                onClick={() => switchMode("signup")}
+              >
+                Sign Up
+              </button>
+              <button
+                type="button"
+                className={`login-modal-toggle-btn ${
+                  mode === "login" ? "active" : ""
+                }`}
+                onClick={() => switchMode("login")}
+              >
+                Login
+              </button>
+            </div>
 
-              <div className="login-modal-input-group">
-                <label htmlFor="modal-password">Password</label>
-                <div className="login-modal-input-wrapper">
-                  <Lock className="login-modal-input-icon" />
-                  <input
-                    id="modal-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="login-modal-input"
-                    disabled={loading}
-                  />
+            {success ? (
+              <motion.div
+                className="login-modal-success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="login-modal-success-icon">
+                  <CheckCircle className="w-12 h-12" />
+                </div>
+                <h3>Account Created!</h3>
+                <p>
+                  Please check your email to verify your account, then login.
+                </p>
+              </motion.div>
+            ) : mode === "signup" ? (
+              <form onSubmit={handleSignupSubmit} className="login-modal-form">
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-name">Full Name</label>
+                  <div className="login-modal-input-wrapper">
+                    <User className="login-modal-input-icon" />
+                    <input
+                      id="modal-name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-phone">Phone Number</label>
+                  <div className="login-modal-input-wrapper">
+                    <Phone className="login-modal-input-icon" />
+                    <input
+                      id="modal-phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-email">Email Address</label>
+                  <div className="login-modal-input-wrapper">
+                    <Mail className="login-modal-input-icon" />
+                    <input
+                      id="modal-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-signup-password">Password</label>
+                  <div className="login-modal-input-wrapper">
+                    <Lock className="login-modal-input-icon" />
+                    <input
+                      id="modal-signup-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password (min 6 characters)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="login-modal-password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <motion.div
+                    className="login-modal-error"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {error}
+                  </motion.div>
+                )}
+
+                <button
+                  type="submit"
+                  className="login-modal-submit-btn"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="login-modal-loading">
+                      Creating Account...
+                    </span>
+                  ) : (
+                    <>
+                      Create Account
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+
+                <p className="login-modal-footer-text">
+                  Already have an account?{" "}
                   <button
                     type="button"
-                    className="login-modal-password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
+                    className="login-modal-link"
+                    onClick={() => switchMode("login")}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
+                    Login here
                   </button>
+                </p>
+              </form>
+            ) : (
+              <form onSubmit={handleLoginSubmit} className="login-modal-form">
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-emailOrPhone">
+                    Email or Phone Number
+                  </label>
+                  <div className="login-modal-input-wrapper">
+                    <Mail className="login-modal-input-icon" />
+                    <input
+                      id="modal-emailOrPhone"
+                      type="text"
+                      placeholder="Enter email or phone number"
+                      value={emailOrPhone}
+                      onChange={(e) => setEmailOrPhone(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                  </div>
+                  <span className="login-modal-input-hint">
+                    <Phone className="w-3 h-3" />
+                    You can login with your registered phone number
+                  </span>
                 </div>
-              </div>
 
-              {error && (
-                <motion.div
-                  className="login-modal-error"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  {error}
-                </motion.div>
-              )}
+                <div className="login-modal-input-group">
+                  <label htmlFor="modal-password">Password</label>
+                  <div className="login-modal-input-wrapper">
+                    <Lock className="login-modal-input-icon" />
+                    <input
+                      id="modal-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="login-modal-input"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="login-modal-password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              <button
-                type="submit"
-                className="login-modal-submit-btn"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="login-modal-loading">Signing in...</span>
-                ) : (
-                  <>
-                    Login
-                    <ArrowRight className="w-5 h-5" />
-                  </>
+                {error && (
+                  <motion.div
+                    className="login-modal-error"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {error}
+                  </motion.div>
                 )}
-              </button>
 
-              <p className="login-modal-footer-text">
-                Don&apos;t have an account?{" "}
-                <Link href="/auth/signup" className="login-modal-link">
-                  Sign up here
-                </Link>
-              </p>
-            </form>
+                <button
+                  type="submit"
+                  className="login-modal-submit-btn"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="login-modal-loading">Signing in...</span>
+                  ) : (
+                    <>
+                      Login
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+
+                <p className="login-modal-footer-text">
+                  Don&apos;t have an account?{" "}
+                  <button
+                    type="button"
+                    className="login-modal-link"
+                    onClick={() => switchMode("signup")}
+                  >
+                    Sign up here
+                  </button>
+                </p>
+              </form>
+            )}
           </motion.div>
         </motion.div>
       )}

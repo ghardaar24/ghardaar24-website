@@ -10961,11 +10961,83 @@ body {
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
 }
 
 .login-modal-link:hover {
   color: var(--primary-dark);
   text-decoration: underline;
+}
+
+/* Login Modal Toggle */
+.login-modal-toggle {
+  display: flex;
+  background: var(--gray-100);
+  border-radius: var(--radius-full);
+  padding: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.login-modal-toggle-btn {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-modal-toggle-btn.active {
+  background: white;
+  color: var(--charcoal);
+  box-shadow: var(--shadow-sm);
+}
+
+.login-modal-toggle-btn:hover:not(.active) {
+  color: var(--charcoal);
+}
+
+/* Login Modal Success */
+.login-modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.login-modal-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.login-modal-success h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0 0 0.5rem;
+}
+
+.login-modal-success p {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin: 0;
 }
 
 /* ============================================
