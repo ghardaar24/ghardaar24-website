@@ -130,16 +130,17 @@ export default function AdminPropertiesPage() {
         </motion.span>
       </motion.div>
 
-      {/* Properties Table */}
+      {/* Properties Table & Mobile Cards */}
       {filteredProperties.length > 0 ? (
         <motion.div
-          className="admin-section-card"
+          className="admin-section-card properties-section-responsive"
           style={{ padding: 0 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="admin-table-container">
+          {/* Desktop Table View */}
+          <div className="admin-table-container properties-table-desktop">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -244,6 +245,94 @@ export default function AdminPropertiesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="properties-cards-mobile">
+            {filteredProperties.map((property, index) => (
+              <motion.div
+                key={property.id}
+                className="property-card-admin"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <div className="property-card-admin-header">
+                  <div className="property-card-admin-image">
+                    {property.images?.[0] ? (
+                      <Image
+                        src={property.images[0]}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="property-card-admin-placeholder">
+                        <Plus className="w-6 h-6" />
+                      </div>
+                    )}
+                    {property.featured && (
+                      <span className="property-card-admin-featured">
+                        <Star className="w-3 h-3" /> Featured
+                      </span>
+                    )}
+                  </div>
+                  <div className="property-card-admin-info">
+                    <h3 className="property-card-admin-title">
+                      {property.title}
+                    </h3>
+                    <p className="property-card-admin-area">{property.area}</p>
+                    <div className="property-card-admin-meta">
+                      <span className="property-card-admin-type capitalize">
+                        {property.property_type}
+                      </span>
+                      <span className="property-card-admin-listing capitalize">
+                        {property.listing_type}
+                      </span>
+                    </div>
+                    <p className="property-card-admin-price">
+                      {formatPrice(property.price)}
+                    </p>
+                  </div>
+                </div>
+                <div className="property-card-admin-actions">
+                  <motion.button
+                    className={`featured-toggle-mobile ${
+                      property.featured ? "active" : ""
+                    }`}
+                    onClick={() =>
+                      toggleFeatured(property.id, property.featured)
+                    }
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Star className="w-4 h-4" />
+                    {property.featured ? "Featured" : "Feature"}
+                  </motion.button>
+                  <Link
+                    href={`/properties/${property.id}`}
+                    target="_blank"
+                    className="action-btn-mobile view"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View
+                  </Link>
+                  <Link
+                    href={`/admin/properties/${property.id}`}
+                    className="action-btn-mobile edit"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </Link>
+                  <button
+                    className="action-btn-mobile delete"
+                    onClick={() => setDeleteId(property.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       ) : (
