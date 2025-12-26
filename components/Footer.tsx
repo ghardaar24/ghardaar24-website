@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, Instagram, Facebook, Youtube } from "lucide-react";
 import { motion, fadeInUp, staggerContainer } from "@/lib/motion";
 
 const quickLinks = [
@@ -114,6 +114,46 @@ export default function Footer() {
                 <a href="mailto:ghardaar24@gmail.com">ghardaar24@gmail.com</a>
               </motion.li>
             </ul>
+            <div className="footer-social">
+              <h4 className="footer-heading" style={{ marginTop: "1.5rem" }}>
+                Follow Us
+              </h4>
+              <div className="social-links">
+                <motion.a
+                  href="https://www.instagram.com/ghardaar24"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
+                  className="social-link instagram"
+                  aria-label="Follow us on Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </motion.a>
+                <motion.a
+                  href="https://www.facebook.com/Ghardaar24"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, rotate: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="social-link facebook"
+                  aria-label="Follow us on Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                </motion.a>
+                <motion.a
+                  href="https://www.youtube.com/channel/UCGZv7IVyfV61fH_mq1O4WHQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
+                  className="social-link youtube"
+                  aria-label="Subscribe to our YouTube channel"
+                >
+                  <Youtube className="w-5 h-5" />
+                </motion.a>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
 

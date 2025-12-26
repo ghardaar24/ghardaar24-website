@@ -2166,6 +2166,25 @@ body {
   transform: translateY(-3px);
 }
 
+.social-link.instagram:hover {
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+}
+
+.social-link.facebook:hover {
+  background: #1877f2;
+}
+
+.social-link.youtube:hover {
+  background: #ff0000;
+}
+
 .footer-heading {
   font-size: 1.125rem;
   font-weight: 600;
