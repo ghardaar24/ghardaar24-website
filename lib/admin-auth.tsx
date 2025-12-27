@@ -11,9 +11,17 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
 import { useRouter, usePathname } from "next/navigation";
 
+export interface AdminProfile {
+  id: string;
+  email: string;
+  name?: string;
+  created_at?: string;
+}
+
 interface AdminAuthContextType {
   user: User | null;
   session: Session | null;
+  adminProfile: AdminProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -26,9 +34,34 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Fetch admin profile from admins table
+  const fetchAdminProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("admins")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!error && data) {
+        setAdminProfile(data);
+        return true;
+      } else {
+        console.error("Admin profile fetch error:", error);
+        setAdminProfile(null);
+        return false;
+      }
+    } catch (err) {
+      console.error("Admin profile fetch exception:", err);
+      setAdminProfile(null);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const getSession = async () => {
@@ -38,6 +71,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         } = await supabaseAdmin.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Verify user is actually an admin by fetching profile
+          await fetchAdminProfile(session.user.id);
+        }
       } catch (error) {
         console.error("Error getting admin session:", error);
       } finally {
@@ -52,6 +90,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     } = supabaseAdmin.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        await fetchAdminProfile(session.user.id);
+      } else {
+        setAdminProfile(null);
+      }
+
       setLoading(false);
     });
 
@@ -60,12 +105,28 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabaseAdmin.auth.signInWithPassword({
+      const { data, error } = await supabaseAdmin.auth.signInWithPassword({
         email,
         password,
       });
 
-      return { error: error as Error | null };
+      if (error) {
+        return { error: error as Error };
+      }
+
+      // Verify user is an admin
+      if (data.user) {
+        const isAdmin = await fetchAdminProfile(data.user.id);
+        if (!isAdmin) {
+          // Sign out if not an admin
+          await supabaseAdmin.auth.signOut();
+          return {
+            error: new Error("This account is not authorized as an admin."),
+          };
+        }
+      }
+
+      return { error: null };
     } catch (error) {
       console.error("Admin sign in error:", error);
       return { error: error as Error };
@@ -74,6 +135,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabaseAdmin.auth.signOut();
+    setAdminProfile(null);
     router.push("/admin/login");
   };
 
@@ -82,6 +144,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
+        adminProfile,
         loading,
         signIn,
         signOut,

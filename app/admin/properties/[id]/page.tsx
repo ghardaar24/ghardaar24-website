@@ -11,7 +11,6 @@ import {
   defaultAmenitiesWithIcons,
   defaultAmenityNames,
 } from "@/lib/amenityIcons";
-import { applyWatermark } from "@/lib/imageWatermark";
 
 export default function EditPropertyPage({
   params,
@@ -199,21 +198,12 @@ export default function EditPropertyPage({
     const urls: string[] = [];
 
     for (const image of newImages) {
-      // Apply watermark to image before upload
-      let imageToUpload: File = image;
-      try {
-        imageToUpload = await applyWatermark(image);
-      } catch (watermarkError) {
-        console.warn("Watermark failed, uploading original:", watermarkError);
-        // Continue with original image if watermarking fails
-      }
-
       const fileName = `${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}-${image.name}`;
       const { data, error } = await supabase.storage
         .from("property-images")
-        .upload(fileName, imageToUpload);
+        .upload(fileName, image);
 
       if (error) throw error;
 

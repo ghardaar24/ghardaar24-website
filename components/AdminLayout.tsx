@@ -34,7 +34,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, signOut } = useAdminAuth();
+  const { user, adminProfile, loading, signOut } = useAdminAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -192,6 +192,27 @@ export default function AdminLayout({
         </nav>
 
         <div className="sidebar-footer">
+          {/* Admin Info */}
+          {adminProfile && (
+            <motion.div
+              className="sidebar-admin-info"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+            >
+              <div className="sidebar-admin-avatar">
+                <User className="w-5 h-5" />
+              </div>
+              <div className="sidebar-admin-details">
+                <span className="sidebar-admin-name">
+                  {adminProfile.name || "Admin"}
+                </span>
+                <span className="sidebar-admin-email">
+                  {adminProfile.email}
+                </span>
+              </div>
+            </motion.div>
+          )}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

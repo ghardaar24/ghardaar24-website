@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X, User, LogOut, Plus, LayoutDashboard } from "lucide-react";
-import { AuthProvider, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import {
   motion,
   AnimatePresence,
@@ -267,9 +267,5 @@ function HeaderContent() {
 }
 
 export default function Header() {
-  return (
-    <AuthProvider>
-      <HeaderContent />
-    </AuthProvider>
-  );
+  return <HeaderContent />;
 }
