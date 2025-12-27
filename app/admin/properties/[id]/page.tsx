@@ -337,7 +337,6 @@ export default function EditPropertyPage({
           images: allImages,
           amenities: amenities,
           brochure_urls: allBrochureUrls,
-          brochure_url: null, // Clear legacy field if possible, or ignore it
           // Project Details
           land_parcel: parseInt(formData.land_parcel) || 0,
           towers: parseInt(formData.towers) || 0,
@@ -356,8 +355,12 @@ export default function EditPropertyPage({
 
       router.push("/admin/properties");
     } catch (err) {
+      console.error("Update error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update property";
+      const errorDetails = (err as { details?: string })?.details;
       setError(
-        err instanceof Error ? err.message : "Failed to update property"
+        errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage
       );
     } finally {
       setSaving(false);
