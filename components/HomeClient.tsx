@@ -349,7 +349,6 @@ export function HeroSearchBar() {
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(
     []
   );
-  const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
 
   useEffect(() => {
@@ -363,15 +362,9 @@ export function HeroSearchBar() {
     fetchLocations();
   }, []);
 
-  const uniqueStates = Array.from(
-    new Set(locations.map((l) => l.state))
+  const availableCities = Array.from(
+    new Set(locations.map((l) => l.city))
   ).sort();
-  const availableCities = selectedState
-    ? locations
-        .filter((l) => l.state === selectedState)
-        .map((l) => l.city)
-        .sort()
-    : [];
 
   // Use router for navigation
   const router = useRouter();
@@ -381,7 +374,6 @@ export function HeroSearchBar() {
     if (loading) return;
 
     const params = new URLSearchParams();
-    if (selectedState) params.set("state", selectedState);
     if (selectedCity) params.set("city", selectedCity);
 
     const formData = new FormData(e.currentTarget);
@@ -417,34 +409,12 @@ export function HeroSearchBar() {
           onSubmit={handleSubmit}
         >
           <div className="search-filter">
-            <span className="search-filter-label">State</span>
-            <div className="search-filter-value">
-              <MapPin className="w-4 h-4" />
-              <select
-                value={selectedState}
-                onChange={(e) => {
-                  setSelectedState(e.target.value);
-                  setSelectedCity(""); // Reset city
-                }}
-              >
-                <option value="">All States</option>
-                {uniqueStates.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="search-filter">
             <span className="search-filter-label">City</span>
             <div className="search-filter-value">
               <MapPin className="w-4 h-4" />
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                disabled={!selectedState}
               >
                 <option value="">All Cities</option>
                 {availableCities.map((city) => (
