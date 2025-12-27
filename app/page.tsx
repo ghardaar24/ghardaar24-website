@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import TrustIndicators from "@/components/TrustIndicators";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import AgentProfile from "@/components/AgentProfile";
-import LeadCaptureForm from "@/components/LeadCaptureForm";
+
 import HomeClient, { HeroSearchBar } from "@/components/HomeClient";
 import Link from "next/link";
 import { Search, ArrowRight } from "lucide-react";
@@ -117,12 +117,8 @@ export default async function HomePage() {
       <WhyChooseUs />
 
       {/* Agent Profile */}
+      {/* Agent Profile (includes contact form) */}
       <AgentProfile />
-
-      {/* Lead Capture Form */}
-      <div id="consultation">
-        <LeadCaptureForm />
-      </div>
 
       {/* CTA Section */}
       <MotionSection className="section cta-section-new">
