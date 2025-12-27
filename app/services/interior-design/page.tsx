@@ -135,13 +135,6 @@ const features = [
   "Post-completion support",
 ];
 
-const stats = [
-  { value: "500+", label: "Homes Designed" },
-  { value: "98%", label: "Happy Customers" },
-  { value: "45", label: "Days Average Delivery" },
-  { value: "1 Year", label: "Warranty" },
-];
-
 export default function InteriorDesignPage() {
   return (
     <main className="service-page">
@@ -174,26 +167,6 @@ export default function InteriorDesignPage() {
                 Find Your Home First
               </Link>
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="service-stats">
-        <div className="container">
-          <motion.div
-            className="stats-grid"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            {stats.map((stat) => (
-              <div key={stat.label} className="stat-card">
-                <span className="stat-value">{stat.value}</span>
-                <span className="stat-label">{stat.label}</span>
-              </div>
-            ))}
           </motion.div>
         </div>
       </section>
