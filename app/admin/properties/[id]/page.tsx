@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { Upload, X, Save, ArrowLeft, Plus, FileText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
