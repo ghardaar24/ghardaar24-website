@@ -12,8 +12,8 @@ const stats = [
   },
   {
     icon: Users,
-    value: "1000+",
-    label: "Happy Customers",
+    value: "100%",
+    label: "Client Satisfaction",
     color: "#10b981",
   },
   {

@@ -90,8 +90,8 @@ export default async function HomePage() {
                 </div>
                 <div className="hero-trust-divider" />
                 <div className="hero-trust-item">
-                  <span className="hero-trust-value">1000+</span>
-                  <span className="hero-trust-label">Happy Clients</span>
+                  <span className="hero-trust-value">100%</span>
+                  <span className="hero-trust-label">Satisfaction</span>
                 </div>
                 <div className="hero-trust-divider" />
                 <div className="hero-trust-item">

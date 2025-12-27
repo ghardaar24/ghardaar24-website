@@ -124,50 +124,6 @@ const processSteps = [
   },
 ];
 
-const packages = [
-  {
-    name: "Essential",
-    price: "₹4.5 Lakh",
-    unit: "for 2BHK",
-    features: [
-      "Living room design",
-      "Master bedroom design",
-      "Modular kitchen",
-      "Basic lighting",
-      "45-day delivery",
-    ],
-    popular: false,
-  },
-  {
-    name: "Premium",
-    price: "₹7.5 Lakh",
-    unit: "for 2BHK",
-    features: [
-      "All Essential features",
-      "All bedrooms design",
-      "Bathroom renovation",
-      "False ceiling",
-      "Designer lighting",
-      "35-day delivery",
-    ],
-    popular: true,
-  },
-  {
-    name: "Luxury",
-    price: "₹12 Lakh+",
-    unit: "for 2BHK",
-    features: [
-      "All Premium features",
-      "Premium materials",
-      "Custom furniture",
-      "Home automation",
-      "Art curation",
-      "Priority delivery",
-    ],
-    popular: false,
-  },
-];
-
 const features = [
   "Customized designs tailored to your lifestyle",
   "End-to-end project management",
@@ -355,61 +311,6 @@ export default function InteriorDesignPage() {
                 <span className="process-step-number">{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Packages Section */}
-      <section className="service-packages">
-        <div className="container">
-          <motion.div
-            className="section-header section-header-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="section-label">Pricing</span>
-            <h2 className="section-title-new">Choose Your Package</h2>
-            <p className="section-subtitle">
-              Transparent pricing with options to suit every budget
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="packages-grid"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {packages.map((pkg) => (
-              <motion.div
-                key={pkg.name}
-                className={`package-card ${pkg.popular ? "popular" : ""}`}
-                variants={fadeInUp}
-              >
-                {pkg.popular && (
-                  <span className="package-badge">Most Popular</span>
-                )}
-                <h3>{pkg.name}</h3>
-                <div className="package-price">
-                  <span className="price">{pkg.price}</span>
-                  <span className="unit">{pkg.unit}</span>
-                </div>
-                <ul className="package-features">
-                  {pkg.features.map((feature) => (
-                    <li key={feature}>
-                      <CheckCircle className="w-4 h-4" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="#contact" className="package-cta">
-                  Get Quote
-                </Link>
               </motion.div>
             ))}
           </motion.div>
