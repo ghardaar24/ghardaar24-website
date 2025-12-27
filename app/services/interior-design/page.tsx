@@ -9,66 +9,181 @@ import {
   Phone,
   ArrowRight,
   CheckCircle,
+  Bed,
+  UtensilsCrossed,
+  Bath,
+  Tv,
+  Armchair,
+  Home,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
 const services = [
   {
     icon: Sofa,
-    title: "Living Spaces",
-    description: "Modern living room designs that blend comfort with style",
+    title: "Living Room Design",
+    description:
+      "Create a stunning living space that's perfect for entertaining guests and relaxing with family. Modern sofas, accent pieces, and curated décor.",
+  },
+  {
+    icon: Bed,
+    title: "Bedroom Interiors",
+    description:
+      "Transform your bedroom into a luxurious retreat with custom wardrobes, elegant beds, ambient lighting, and calming color schemes.",
+  },
+  {
+    icon: UtensilsCrossed,
+    title: "Modular Kitchen",
+    description:
+      "Functional and stylish modular kitchens with smart storage, premium fittings, and designs that make cooking a joy.",
+  },
+  {
+    icon: Bath,
+    title: "Bathroom Design",
+    description:
+      "Spa-like bathrooms with quality tiles, modern fittings, vanities, and smart storage solutions.",
+  },
+  {
+    icon: Tv,
+    title: "Entertainment Units",
+    description:
+      "Custom TV units, home theaters, and entertainment centers designed for your viewing pleasure.",
   },
   {
     icon: Lightbulb,
     title: "Lighting Design",
-    description: "Ambient lighting solutions to enhance your home's atmosphere",
-  },
-  {
-    icon: Ruler,
-    title: "Space Planning",
-    description: "Optimize your space with smart layout and storage solutions",
+    description:
+      "Create the perfect ambiance with layered lighting - accent, task, and ambient lights for every room.",
   },
 ];
 
 const designStyles = [
-  "Contemporary",
-  "Minimalist",
-  "Traditional Indian",
-  "Modern Luxury",
-  "Scandinavian",
-  "Industrial",
+  {
+    name: "Contemporary",
+    description: "Clean lines, neutral colors, open spaces",
+  },
+  {
+    name: "Minimalist",
+    description: "Less is more - simple, functional, clutter-free",
+  },
+  {
+    name: "Traditional Indian",
+    description: "Rich colors, wooden elements, cultural motifs",
+  },
+  {
+    name: "Modern Luxury",
+    description: "Premium materials, statement pieces, sophisticated",
+  },
+  {
+    name: "Scandinavian",
+    description: "Light woods, whites, cozy textiles, functional",
+  },
+  {
+    name: "Industrial",
+    description: "Raw textures, exposed elements, urban chic",
+  },
 ];
 
 const processSteps = [
   {
     step: "01",
-    title: "Consultation",
-    description: "Free consultation to understand your vision and requirements",
+    title: "Free Consultation",
+    description:
+      "Meet our designers to discuss your vision, preferences, budget, and timeline. We visit your space to understand it better.",
   },
   {
     step: "02",
     title: "Design Concept",
-    description: "Custom design concepts with 3D visualizations",
+    description:
+      "Receive detailed 3D renders and mood boards. Visualize your space before any work begins. Unlimited revisions until you're satisfied.",
   },
   {
     step: "03",
-    title: "Execution",
-    description: "Professional execution with quality materials",
+    title: "Material Selection",
+    description:
+      "Choose from curated premium materials, finishes, and products. We guide you through options that fit your budget.",
   },
   {
     step: "04",
-    title: "Handover",
-    description: "Final walkthrough and seamless handover",
+    title: "Execution",
+    description:
+      "Our skilled craftsmen bring the design to life. Regular updates and quality checks at every stage.",
+  },
+  {
+    step: "05",
+    title: "Quality Assurance",
+    description:
+      "Rigorous quality checks before handover. We ensure every detail meets our high standards.",
+  },
+  {
+    step: "06",
+    title: "Handover & Support",
+    description:
+      "Final walkthrough and handover. 1-year warranty on all work with dedicated after-sales support.",
+  },
+];
+
+const packages = [
+  {
+    name: "Essential",
+    price: "₹4.5 Lakh",
+    unit: "for 2BHK",
+    features: [
+      "Living room design",
+      "Master bedroom design",
+      "Modular kitchen",
+      "Basic lighting",
+      "45-day delivery",
+    ],
+    popular: false,
+  },
+  {
+    name: "Premium",
+    price: "₹7.5 Lakh",
+    unit: "for 2BHK",
+    features: [
+      "All Essential features",
+      "All bedrooms design",
+      "Bathroom renovation",
+      "False ceiling",
+      "Designer lighting",
+      "35-day delivery",
+    ],
+    popular: true,
+  },
+  {
+    name: "Luxury",
+    price: "₹12 Lakh+",
+    unit: "for 2BHK",
+    features: [
+      "All Premium features",
+      "Premium materials",
+      "Custom furniture",
+      "Home automation",
+      "Art curation",
+      "Priority delivery",
+    ],
+    popular: false,
   },
 ];
 
 const features = [
-  "Customized designs tailored to your taste",
+  "Customized designs tailored to your lifestyle",
   "End-to-end project management",
-  "Quality materials and finishes",
+  "Premium quality materials and finishes",
   "Transparent pricing with no hidden costs",
-  "On-time project delivery",
+  "On-time project delivery guaranteed",
+  "1-year warranty on all work",
+  "Dedicated project manager",
   "Post-completion support",
+];
+
+const stats = [
+  { value: "500+", label: "Homes Designed" },
+  { value: "98%", label: "Happy Customers" },
+  { value: "45", label: "Days Average Delivery" },
+  { value: "1 Year", label: "Warranty" },
 ];
 
 export default function InteriorDesignPage() {
@@ -83,14 +198,16 @@ export default function InteriorDesignPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="service-hero-icon">
+            <div className="service-hero-icon interior">
               <Palette className="w-12 h-12" />
             </div>
             <h1 className="service-hero-title">Interior Design Services</h1>
             <p className="service-hero-subtitle">
-              Transform your new home into a personalized sanctuary. Our expert
-              designers create stunning interiors that reflect your style and
-              enhance your lifestyle.
+              Your home is a reflection of who you are. Our expert designers
+              create stunning, personalized interiors that combine aesthetics
+              with functionality. From concept to completion, we handle
+              everything while you sit back and watch your dream home come to
+              life.
             </p>
             <div className="service-hero-cta">
               <Link href="#contact" className="btn-primary">
@@ -101,6 +218,26 @@ export default function InteriorDesignPage() {
                 Find Your Home First
               </Link>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="service-stats">
+        <div className="container">
+          <motion.div
+            className="stats-grid"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            {stats.map((stat) => (
+              <div key={stat.label} className="stat-card">
+                <span className="stat-value">{stat.value}</span>
+                <span className="stat-label">{stat.label}</span>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -116,11 +253,17 @@ export default function InteriorDesignPage() {
             transition={{ duration: 0.6 }}
           >
             <span className="section-label">Our Expertise</span>
-            <h2 className="section-title-new">What We Offer</h2>
+            <h2 className="section-title-new">
+              Complete Home Interior Solutions
+            </h2>
+            <p className="section-subtitle">
+              From living rooms to bathrooms, we design every corner of your
+              home with equal care and attention
+            </p>
           </motion.div>
 
           <motion.div
-            className="service-benefits-grid"
+            className="service-benefits-grid extended"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
@@ -156,22 +299,23 @@ export default function InteriorDesignPage() {
             <span className="section-label">Design Styles</span>
             <h2 className="section-title-new">Pick Your Style</h2>
             <p className="section-subtitle">
-              From contemporary to traditional, we create designs that match
-              your personality
+              Whether you prefer contemporary minimalism or traditional warmth,
+              we create designs that reflect your personality
             </p>
           </motion.div>
 
           <motion.div
-            className="styles-grid"
+            className="styles-grid extended"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             {designStyles.map((style) => (
-              <div key={style} className="style-card">
-                <Palette className="w-6 h-6" />
-                <span>{style}</span>
+              <div key={style.name} className="style-card extended">
+                <Sparkles className="w-6 h-6" />
+                <span className="style-name">{style.name}</span>
+                <span className="style-desc">{style.description}</span>
               </div>
             ))}
           </motion.div>
@@ -188,12 +332,15 @@ export default function InteriorDesignPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="section-label">How It Works</span>
-            <h2 className="section-title-new">Our Process</h2>
+            <span className="section-label">Our Process</span>
+            <h2 className="section-title-new">How We Work</h2>
+            <p className="section-subtitle">
+              A transparent, step-by-step approach to bring your vision to life
+            </p>
           </motion.div>
 
           <motion.div
-            className="process-steps"
+            className="process-steps extended"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
@@ -214,6 +361,61 @@ export default function InteriorDesignPage() {
         </div>
       </section>
 
+      {/* Packages Section */}
+      <section className="service-packages">
+        <div className="container">
+          <motion.div
+            className="section-header section-header-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="section-label">Pricing</span>
+            <h2 className="section-title-new">Choose Your Package</h2>
+            <p className="section-subtitle">
+              Transparent pricing with options to suit every budget
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="packages-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {packages.map((pkg) => (
+              <motion.div
+                key={pkg.name}
+                className={`package-card ${pkg.popular ? "popular" : ""}`}
+                variants={fadeInUp}
+              >
+                {pkg.popular && (
+                  <span className="package-badge">Most Popular</span>
+                )}
+                <h3>{pkg.name}</h3>
+                <div className="package-price">
+                  <span className="price">{pkg.price}</span>
+                  <span className="unit">{pkg.unit}</span>
+                </div>
+                <ul className="package-features">
+                  {pkg.features.map((feature) => (
+                    <li key={feature}>
+                      <CheckCircle className="w-4 h-4" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="#contact" className="package-cta">
+                  Get Quote
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features List */}
       <section className="service-features-list">
         <div className="container">
@@ -224,7 +426,7 @@ export default function InteriorDesignPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2>Why Choose Our Interior Design Services?</h2>
+            <h2>Why Choose Ghardaar24 Interior Design?</h2>
             <div className="features-checklist">
               {features.map((feature) => (
                 <div key={feature} className="feature-check-item">
@@ -251,7 +453,9 @@ export default function InteriorDesignPage() {
               <h2>Ready to Transform Your Space?</h2>
               <p>
                 Get a free consultation with our interior design experts.
-                Let&apos;s bring your vision to life.
+                We&apos;ll visit your home, understand your requirements, and
+                provide a detailed quote - all at no cost. Let&apos;s bring your
+                vision to life.
               </p>
             </div>
             <div className="service-contact-cta">
@@ -260,7 +464,7 @@ export default function InteriorDesignPage() {
                 Call Now
               </a>
               <a
-                href="https://wa.me/919876543210?text=Hi, I'm interested in interior design services"
+                href="https://wa.me/919876543210?text=Hi, I'm interested in interior design services from Ghardaar24"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary"

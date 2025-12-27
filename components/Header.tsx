@@ -27,16 +27,10 @@ const propertyDropdownLinks = [
   { href: "/properties?listing_type=resale", label: "Resale" },
 ];
 
-const servicesDropdownLinks = [
-  { href: "/services/home-loans", label: "Home Loans" },
-  { href: "/services/interior-design", label: "Interior Design" },
-];
-
 function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, userProfile, loading, signOut } = useAuth();
 
@@ -134,48 +128,19 @@ function HeaderContent() {
               </AnimatePresence>
             </div>
 
-            {/* Services Dropdown */}
-            <div
-              className="nav-dropdown-container"
-              onMouseEnter={() => setIsServicesOpen(true)}
-              onMouseLeave={() => setIsServicesOpen(false)}
-            >
-              <motion.button
-                className="nav-link nav-dropdown-trigger"
-                variants={fadeInDown}
-                whileHover={{ y: -2 }}
-              >
-                Services
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${
-                    isServicesOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </motion.button>
+            {/* Home Loans Link */}
+            <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
+              <Link href="/services/home-loans" className="nav-link">
+                Home Loans
+              </Link>
+            </motion.div>
 
-              <AnimatePresence>
-                {isServicesOpen && (
-                  <motion.div
-                    className="nav-dropdown-menu"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {servicesDropdownLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="nav-dropdown-item"
-                        onClick={() => setIsServicesOpen(false)}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Interior Design Link */}
+            <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
+              <Link href="/services/interior-design" className="nav-link">
+                Interior Design
+              </Link>
+            </motion.div>
           </motion.div>
 
           {/* Mobile Menu Button */}
@@ -327,31 +292,35 @@ function HeaderContent() {
                 </motion.div>
               ))}
 
-              {/* Services Section */}
+              {/* Home Loans */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mobile-nav-section-header"
               >
-                Services
-              </motion.div>
-              {servicesDropdownLinks.map((link, index) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.55 + index * 0.1 }}
+                <Link
+                  href="/services/home-loans"
+                  className="mobile-nav-link"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  <Link
-                    href={link.href}
-                    className="mobile-nav-link mobile-nav-sublink"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
+                  Home Loans
+                </Link>
+              </motion.div>
+
+              {/* Interior Design */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Link
+                  href="/services/interior-design"
+                  className="mobile-nav-link"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Interior Design
+                </Link>
+              </motion.div>
 
               {/* Mobile auth links */}
               <div className="mobile-auth-section">
