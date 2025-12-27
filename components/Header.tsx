@@ -3,15 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import {
-  Menu,
-  X,
-  Phone,
-  User,
-  LogOut,
-  Plus,
-  LayoutDashboard,
-} from "lucide-react";
+import { Menu, X, User, LogOut, Plus, LayoutDashboard } from "lucide-react";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import {
   motion,
@@ -126,9 +118,6 @@ function HeaderContent() {
                       <div className="header-user-avatar">
                         <User className="w-4 h-4" />
                       </div>
-                      <span className="header-user-name">
-                        {userProfile?.name || "User"}
-                      </span>
                     </motion.div>
                     <motion.button
                       className="header-logout-btn"
@@ -157,16 +146,6 @@ function HeaderContent() {
                 )}
               </>
             )}
-
-            <motion.a
-              href="tel:+919673655631"
-              className="cta-button"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Phone className="w-4 h-4" />
-              <span className="hidden sm:inline">Contact Us</span>
-            </motion.a>
 
             <motion.button
               className="mobile-menu-btn"

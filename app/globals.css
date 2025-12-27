@@ -13566,3 +13566,1256 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(243, 106, 42, 0.4);
 }
+
+/* ============================================
+   ADMIN MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Desktop/Mobile View Toggles */
+.properties-table-desktop,
+.inquiries-table-desktop,
+.approvals-table-desktop,
+.leads-table-desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .properties-table-desktop,
+  .inquiries-table-desktop,
+  .approvals-table-desktop,
+  .leads-table-desktop {
+    display: block;
+  }
+}
+
+.properties-cards-mobile,
+.inquiries-cards-mobile,
+.approvals-cards-mobile,
+.leads-cards-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .properties-cards-mobile,
+  .inquiries-cards-mobile,
+  .approvals-cards-mobile,
+  .leads-cards-mobile {
+    display: none;
+  }
+}
+
+/* Admin Property Card (Mobile) */
+.property-card-admin {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.property-card-admin:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.property-card-admin-header {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.property-card-admin-image {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-soft);
+}
+
+.property-card-admin-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.property-card-admin-featured {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  background: var(--primary);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.property-card-admin-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.property-card-admin-title {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.property-card-admin-area {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.property-card-admin-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.property-card-admin-type,
+.property-card-admin-listing {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.688rem;
+  font-weight: 500;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.property-card-admin-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.property-card-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--surface-soft);
+  background: var(--surface-soft);
+}
+
+.featured-toggle-mobile {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.featured-toggle-mobile:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.featured-toggle-mobile.active {
+  background: rgba(243, 106, 42, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.featured-toggle-mobile.active svg {
+  fill: currentColor;
+}
+
+.action-btn-mobile {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-mobile.view:hover {
+  border-color: var(--info);
+  color: var(--info);
+}
+
+.action-btn-mobile.edit:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.action-btn-mobile.delete:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(220, 38, 38, 0.05);
+}
+
+/* Admin Inquiry Card (Mobile) */
+.inquiry-card-admin {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.inquiry-card-admin:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.inquiry-card-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.inquiry-card-admin-info h4 {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+}
+
+.inquiry-card-admin-property {
+  font-size: 0.813rem;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+  font-weight: 500;
+}
+
+.inquiry-card-admin-date {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.inquiry-card-admin-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.inquiry-card-admin-contact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.inquiry-card-admin-contact:hover {
+  color: var(--primary);
+}
+
+.inquiry-card-admin-message {
+  padding: 0.75rem 1rem;
+  background: var(--surface-soft);
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+}
+
+.inquiry-card-admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--surface-soft);
+}
+
+/* Admin Approval Card (Mobile) */
+.approval-card-admin {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.approval-card-admin:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.approval-card-admin-header {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.approval-card-admin-image {
+  position: relative;
+  width: 100px;
+  height: 75px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-soft);
+}
+
+.approval-card-admin-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.approval-card-admin-title {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.approval-card-admin-area {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+  margin: 0 0 0.375rem;
+}
+
+.approval-card-admin-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.approval-card-admin-submitter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-soft);
+  border-top: 1px solid var(--border);
+}
+
+.approval-card-admin-submitter-label {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.approval-card-admin-submitter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.approval-card-admin-submitter-info span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.approval-card-admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.approval-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.813rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approval-action-btn.approve {
+  background: var(--success);
+  color: white;
+}
+
+.approval-action-btn.approve:hover {
+  background: #15803d;
+}
+
+.approval-action-btn.reject {
+  background: transparent;
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+.approval-action-btn.reject:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.approval-action-btn.view {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.approval-action-btn.view:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Admin Leads Card (Mobile) */
+.lead-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  transition: all 0.2s;
+}
+
+.lead-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.lead-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.lead-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lead-name-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.lead-name {
+  display: block;
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.lead-date {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.lead-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lead-contact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.lead-contact:hover {
+  color: var(--primary);
+}
+
+/* Leads Stats Row */
+.leads-stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .leads-stats-row {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.leads-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.leads-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(243, 106, 42, 0.1);
+  color: var(--primary);
+  border-radius: var(--radius);
+}
+
+.leads-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.leads-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leads-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.2;
+}
+
+.leads-search {
+  flex: 1;
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .leads-search {
+    max-width: 400px;
+  }
+}
+
+/* Admin Export Button */
+.btn-admin-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-admin-export:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 479px) {
+  .admin-page-header {
+    gap: 1rem;
+  }
+
+  .admin-page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .btn-admin-primary {
+    padding: 0.75rem 1rem;
+    font-size: 0.813rem;
+  }
+
+  .property-card-admin-actions,
+  .inquiry-card-admin-actions,
+  .approval-card-admin-actions {
+    flex-wrap: wrap;
+  }
+
+  .property-card-admin-image {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* ============================================
+   ADMIN INQUIRIES PAGE
+   ============================================ */
+
+/* Inquiries Layout - Split Panel */
+.inquiries-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .inquiries-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+  }
+}
+
+.inquiries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: none;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .inquiries-list {
+    max-height: calc(100vh - 200px);
+    position: sticky;
+    top: 0;
+  }
+}
+
+.inquiry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inquiry-card:hover {
+  border-color: var(--border-hover);
+  background: white;
+}
+
+.inquiry-card.active {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 2px rgba(243, 106, 42, 0.15);
+}
+
+.inquiry-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inquiry-name {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.inquiry-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.inquiry-preview {
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.inquiry-property {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(243, 106, 42, 0.1);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+}
+
+.inquiry-property.inquiry-general {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--text-secondary);
+}
+
+/* Inquiry Detail Panel */
+.inquiry-detail {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.inquiry-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inquiry-detail-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.inquiry-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inquiry-delete-btn:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(220, 38, 38, 0.05);
+}
+
+.inquiry-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contact-item svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+a.contact-item:hover {
+  color: var(--primary);
+}
+
+.inquiry-property-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(243, 106, 42, 0.05);
+  border: 1px solid rgba(243, 106, 42, 0.2);
+  border-radius: var(--radius);
+}
+
+.inquiry-property-card svg {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.property-link {
+  display: block;
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.property-link:hover {
+  color: var(--primary);
+}
+
+.property-meta {
+  display: block;
+  font-size: 0.813rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.inquiry-message h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.75rem;
+}
+
+.message-content {
+  padding: 1rem;
+  background: var(--surface-soft);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.message-content p {
+  margin: 0 0 0.5rem;
+}
+
+.message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.inquiry-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 640px) {
+  .inquiry-actions {
+    flex-direction: row;
+  }
+}
+
+.btn-admin-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: #22c55e;
+  color: white;
+  font-size: 0.938rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-admin-whatsapp:hover {
+  background: #16a34a;
+}
+
+.empty-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-detail svg {
+  margin-bottom: 1rem;
+}
+
+.empty-detail p {
+  font-size: 0.938rem;
+}
+
+/* ============================================
+   ADMIN APPROVALS PAGE
+   ============================================ */
+
+.approval-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.approval-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.approval-tab:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.approval-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Approval Cards Grid */
+.approval-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .approval-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .approval-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.approval-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.approval-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.approval-card-image {
+  position: relative;
+  height: 160px;
+  background: var(--surface-soft);
+}
+
+.approval-card-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.approval-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.688rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.approval-badge.rent {
+  background: var(--info);
+}
+
+.approval-badge.resale {
+  background: #7c3aed;
+}
+
+.approval-card-content {
+  padding: 1rem;
+}
+
+.approval-card-title {
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.approval-card-location {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.approval-card-price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 0.75rem;
+}
+
+.approval-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.approval-card-meta span {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.approval-card-submitter {
+  padding: 0.75rem;
+  background: var(--surface-soft);
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+}
+
+.approval-card-submitter h4 {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem;
+}
+
+.submitter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.submitter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.submitter-row svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.approval-card-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.rejection-reason {
+  padding: 0.75rem;
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+}
+
+.rejection-reason strong {
+  display: block;
+  font-size: 0.688rem;
+  color: var(--error);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.rejection-reason p {
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.approval-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.action-btn-approval {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.813rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-approval.view {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.action-btn-approval.view:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.action-btn-approval.approve {
+  background: var(--success);
+  color: white;
+}
+
+.action-btn-approval.approve:hover {
+  background: #15803d;
+}
+
+.action-btn-approval.reject {
+  background: transparent;
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+.action-btn-approval.reject:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* Approval Modal */
+.approval-modal {
+  max-width: 450px;
+  text-align: center;
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+}
+
+.modal-icon.approve {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--success);
+}
+
+.modal-icon.reject {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--error);
+}
+
+.rejection-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 0.938rem;
+  color: var(--foreground);
+  background: var(--surface-soft);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-top: 1rem;
+}
+
+.rejection-input:focus {
+  border-color: var(--primary);
+}
+
+.btn-admin-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--success);
+  color: white;
+  font-size: 0.938rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-admin-success:hover {
+  background: #15803d;
+}
+
+.btn-admin-success:disabled,
+.btn-admin-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
