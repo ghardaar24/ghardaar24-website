@@ -35,6 +35,9 @@ export interface Property {
   amenities: string[];
   featured: boolean;
   status?: string;
+  // Location Details
+  state?: string;
+  city?: string;
   // Project Details
   land_parcel?: number;
   towers?: number;
