@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Menu, X, Phone, User, LogOut } from "lucide-react";
+import { Menu, X, Phone, User, LogOut, Plus } from "lucide-react";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import {
   motion,
@@ -90,6 +90,20 @@ function HeaderContent() {
               <>
                 {user ? (
                   <div className="header-user-menu">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Link
+                        href="/properties/submit"
+                        className="header-submit-btn"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">
+                          Submit Property
+                        </span>
+                      </Link>
+                    </motion.div>
                     <motion.div
                       className="header-user-info"
                       whileHover={{ scale: 1.02 }}
@@ -203,6 +217,14 @@ function HeaderContent() {
               <div className="mobile-auth-section">
                 {user ? (
                   <>
+                    <Link
+                      href="/properties/submit"
+                      className="mobile-nav-link mobile-submit-link"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Plus className="w-5 h-5" />
+                      Submit Property
+                    </Link>
                     <div className="mobile-user-info">
                       <User className="w-5 h-5" />
                       <span>{userProfile?.name || "User"}</span>

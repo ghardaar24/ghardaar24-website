@@ -15,6 +15,7 @@ import {
   Plus,
   Settings,
   User,
+  CheckCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/properties", icon: Building, label: "Properties" },
   { href: "/admin/properties/new", icon: Plus, label: "Add Property" },
+  { href: "/admin/approvals", icon: CheckCircle, label: "Approvals" },
   { href: "/admin/inquiries", icon: MessageSquare, label: "Inquiries" },
   { href: "/admin/leads", icon: User, label: "Leads" },
 ];

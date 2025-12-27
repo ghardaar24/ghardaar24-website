@@ -48,5 +48,11 @@ export interface Property {
   litigation?: boolean;
   // Brochure
   brochure_urls?: string[];
+  // Approval workflow
+  approval_status?: "pending" | "approved" | "rejected";
+  submitted_by?: string;
+  submission_date?: string;
+  approval_date?: string;
+  rejection_reason?: string;
   created_at: string;
 }

@@ -38,6 +38,7 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
   let query = supabase
     .from("properties")
     .select("*")
+    .or("approval_status.eq.approved,approval_status.is.null")
     .order("created_at", { ascending: false });
 
   if (searchParams.area) {

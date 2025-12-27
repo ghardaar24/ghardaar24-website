@@ -12147,3 +12147,932 @@ body {
     padding: 1.25rem;
   }
 }
+
+/* ============================================
+   USER PROPERTY SUBMISSION PAGE
+   ============================================ */
+
+.submit-property-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  padding: 6rem 1rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .submit-property-page {
+    padding: 7rem 2rem 4rem;
+  }
+}
+
+.submit-property-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+.submit-property-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .submit-property-header h1 {
+    font-size: 2.5rem;
+  }
+}
+
+.submit-property-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+.back-link-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+}
+
+.back-link-submit:hover {
+  color: var(--primary);
+}
+
+.submit-error {
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+  padding: 1rem;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: var(--radius);
+  color: #fca5a5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.submit-info-banner {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.25rem;
+  background: rgba(243, 106, 42, 0.15);
+  border: 1px solid rgba(243, 106, 42, 0.3);
+  border-radius: var(--radius);
+  color: #fdba74;
+}
+
+.submit-info-banner p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.submit-property-form {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.submit-section-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .submit-section-card {
+    padding: 2rem;
+  }
+}
+
+.submit-section-card h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin: -0.5rem 0 1.25rem;
+}
+
+.submit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .submit-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .submit-form-grid .form-group.full {
+    grid-column: span 2;
+  }
+}
+
+.submit-section-card .form-group label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.submit-section-card .form-group input,
+.submit-section-card .form-group select,
+.submit-section-card .form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  color: white;
+  font-size: 0.938rem;
+  transition: all 0.2s;
+}
+
+.submit-section-card .form-group input::placeholder,
+.submit-section-card .form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.submit-section-card .form-group input:focus,
+.submit-section-card .form-group select:focus,
+.submit-section-card .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.submit-section-card .form-group select option {
+  background: #1e293b;
+  color: white;
+}
+
+.checkbox-label-submit {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.checkbox-label-submit input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--primary);
+}
+
+/* Amenities Grid for Submit */
+.amenities-grid-submit {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .amenities-grid-submit {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .amenities-grid-submit {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.amenity-checkbox-submit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.813rem;
+}
+
+.amenity-checkbox-submit:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.amenity-checkbox-submit.selected {
+  background: rgba(243, 106, 42, 0.2);
+  border-color: var(--primary);
+  color: white;
+}
+
+.amenity-checkbox-submit input {
+  display: none;
+}
+
+.custom-amenity-input-submit {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.custom-amenity-input-submit input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  color: white;
+  font-size: 0.875rem;
+}
+
+.custom-amenity-input-submit input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.custom-amenity-input-submit button {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-amenity-input-submit button:hover {
+  background: var(--primary-hover);
+}
+
+.custom-amenities-submit {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-amenities-list-submit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.custom-amenity-tag-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(243, 106, 42, 0.2);
+  border: 1px solid rgba(243, 106, 42, 0.3);
+  border-radius: var(--radius-full);
+  color: #fdba74;
+  font-size: 0.813rem;
+}
+
+.custom-amenity-tag-submit button {
+  background: none;
+  border: none;
+  color: #fdba74;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+}
+
+/* Image Upload for Submit */
+.image-upload-area-submit {
+  margin-top: 0.5rem;
+}
+
+.image-previews-submit {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .image-previews-submit {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .image-previews-submit {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.image-preview-submit {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.remove-image-submit {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.upload-trigger-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-trigger-submit:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.upload-hint-submit {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Brochure Upload for Submit */
+.brochure-upload-area-submit {
+  margin-top: 0.5rem;
+}
+
+.brochure-list-submit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.brochure-preview-submit {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+}
+
+.brochure-info-submit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.brochure-info-submit .brochure-name {
+  color: white;
+  font-weight: 500;
+}
+
+.brochure-info-submit .brochure-size {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.remove-brochure-submit {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* Form Actions for Submit */
+.submit-form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .submit-form-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.btn-submit-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-submit-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-submit-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: var(--gradient-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(243, 106, 42, 0.3);
+}
+
+.btn-submit-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(243, 106, 42, 0.4);
+}
+
+.btn-submit-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Success Card */
+.submit-success-card {
+  max-width: 500px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.submit-success-card .success-icon {
+  margin-bottom: 1.5rem;
+}
+
+.submit-success-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1rem;
+}
+
+.submit-success-card .success-message {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.submit-success-card .success-note {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+}
+
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-success-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--gradient-accent);
+  color: white;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-success-primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-success-secondary {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-success-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   ADMIN APPROVALS PAGE
+   ============================================ */
+
+.approval-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--surface);
+  padding: 0.375rem;
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.approval-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approval-tab:hover {
+  background: var(--surface-soft);
+  color: var(--foreground);
+}
+
+.approval-tab.active {
+  background: var(--foreground);
+  color: white;
+}
+
+.approval-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .approval-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .approval-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.approval-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.approval-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.approval-card-image {
+  position: relative;
+  height: 180px;
+  background: var(--surface-soft);
+}
+
+.approval-card-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 0.5rem;
+}
+
+.approval-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.approval-badge.rent {
+  background: var(--info);
+  color: white;
+}
+
+.approval-badge.resale {
+  background: var(--success);
+  color: white;
+}
+
+.approval-card-content {
+  padding: 1.25rem;
+}
+
+.approval-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.375rem;
+  line-height: 1.4;
+}
+
+.approval-card-location {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem;
+}
+
+.approval-card-price {
+  color: var(--primary);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.approval-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.approval-card-meta span {
+  padding: 0.25rem 0.625rem;
+  background: var(--surface-soft);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.approval-card-submitter {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.approval-card-submitter h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.submitter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.submitter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.submitter-row svg {
+  color: var(--text-muted);
+}
+
+.approval-card-date {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0.75rem 0 0;
+}
+
+.rejection-reason {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  border-radius: var(--radius);
+}
+
+.rejection-reason strong {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--error);
+  margin-bottom: 0.25rem;
+}
+
+.rejection-reason p {
+  margin: 0;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.approval-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-soft);
+  border-top: 1px solid var(--border);
+}
+
+.action-btn-approval {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.813rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-approval.view {
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.action-btn-approval.view:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.action-btn-approval.approve {
+  background: var(--success);
+  color: white;
+}
+
+.action-btn-approval.approve:hover {
+  background: #15803d;
+}
+
+.action-btn-approval.reject {
+  background: var(--error);
+  color: white;
+}
+
+.action-btn-approval.reject:hover {
+  background: #b91c1c;
+}
+
+/* Approval Modal */
+.approval-modal {
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+}
+
+.modal-icon.approve {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--success);
+}
+
+.modal-icon.reject {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--error);
+}
+
+.rejection-input {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  resize: none;
+}
+
+.rejection-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.btn-admin-success {
+  padding: 0.75rem 1.5rem;
+  background: var(--success);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-admin-success:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.btn-admin-success:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   HEADER SUBMIT BUTTON
+   ============================================ */
+
+.header-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: var(--gradient-accent);
+  color: white;
+  font-size: 0.813rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(243, 106, 42, 0.25);
+}
+
+.header-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(243, 106, 42, 0.35);
+}
+
+/* Mobile Submit Link */
+.mobile-submit-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(243, 106, 42, 0.1);
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+.mobile-submit-link:hover {
+  background: rgba(243, 106, 42, 0.2) !important;
+}
