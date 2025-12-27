@@ -4,7 +4,7 @@ import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import {
   ShieldCheck,
   BadgePercent,
-  Video,
+  Palette,
   Landmark,
   Headphones,
   Clock,
@@ -26,10 +26,10 @@ const features = [
     color: "#10b981",
   },
   {
-    icon: Video,
-    title: "Virtual Tours",
+    icon: Palette,
+    title: "Interior Design",
     description:
-      "Explore properties from the comfort of your home with 360° virtual tours",
+      "Transform your new home with our professional interior design services",
     color: "#8b5cf6",
   },
   {
