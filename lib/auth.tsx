@@ -52,59 +52,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user profile from user_profiles table
   const fetchUserProfile = async (userId: string) => {
     try {
-      // 10s timeout to prevent hanging
-      const timeoutPromise = new Promise<{
-        data: UserProfile | null;
-        error: any;
-      }>((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 10000)
-      );
-
-      const dbPromise = supabase
+      const { data, error } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
-      const { data, error } = (await Promise.race([
-        dbPromise,
-        timeoutPromise,
-      ])) as any;
-
       if (!error && data) {
         setUserProfile(data);
-      } else if (error) {
+      } else if (error && error.code !== "PGRST116") {
+        // PGRST116 = no rows returned, which is fine for new users
         console.error("Error fetching user profile:", error);
       }
     } catch (err) {
-      console.error("Profile check failed or timed out:", err);
+      console.error("Profile fetch error:", err);
     }
   };
 
   // Check if user is an admin
+  // Note: This may fail with 406 if RLS policies block access - that's expected for regular users
   const checkAdminStatus = async (userId: string) => {
     try {
-      // 10s timeout
-      const timeoutPromise = new Promise<{ data: any; error: any }>(
-        (_, reject) =>
-          setTimeout(() => reject(new Error("Admin check timeout")), 10000)
-      );
-
-      const dbPromise = supabase
+      const { data, error } = await supabase
         .from("admins")
         .select("id")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
-      const { data, error } = (await Promise.race([
-        dbPromise,
-        timeoutPromise,
-      ])) as any;
-
+      // If we get data back, user is an admin
+      // Any error (including RLS/406) means user is not an admin or can't be verified
       setIsAdmin(!!data && !error);
     } catch (err) {
-      console.error("Admin check failed or timed out:", err);
-      setIsAdmin(false); // Default to false on error
+      // Silently fail - regular users won't have admin access anyway
+      setIsAdmin(false);
     }
   };
 
