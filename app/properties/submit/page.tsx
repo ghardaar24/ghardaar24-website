@@ -327,13 +327,14 @@ export default function SubmitPropertyPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <motion.div
-          className="text-white text-lg"
+          className="flex flex-col items-center gap-4"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          Loading...
+          <div className="w-12 h-12 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[var(--text-secondary)] font-medium">Loading...</p>
         </motion.div>
       </div>
     );
@@ -345,36 +346,47 @@ export default function SubmitPropertyPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
         <motion.div
-          className="submit-success-card"
+          className="max-w-md w-full bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-8 text-center"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
         >
           <motion.div
-            className="success-icon"
+            className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring" }}
           >
-            <CheckCircle className="w-16 h-16 text-green-500" />
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </motion.div>
-          <h1>Property Submitted Successfully!</h1>
-          <p className="success-message">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">
+            Property Submitted!
+          </h1>
+          <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">
             Thank you for submitting your property. Our team will review it and
-            <strong> approve it within 2 business days</strong>.
+            <strong className="text-[var(--foreground)]">
+              {" "}
+              approve it within 2 business days
+            </strong>
+            .
+          </p>{" "}
+          <p className="text-sm text-[var(--text-muted)] mb-8 bg-[var(--surface-soft)] p-3 rounded-[var(--radius)]">
+            You will be notified once your property is approved and listed.
           </p>
-          <p className="success-note">
-            You will be notified once your property is approved and listed on
-            our platform.
-          </p>
-          <div className="success-actions">
-            <Link href="/" className="btn-success-primary">
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/"
+              className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-[var(--foreground)] text-white rounded-[var(--radius-full)] font-semibold hover:bg-black transition-all"
+            >
               <Home className="w-5 h-5" />
               Go to Homepage
             </Link>
-            <Link href="/properties" className="btn-success-secondary">
+            <Link
+              href="/properties"
+              className="flex items-center justify-center w-full py-3 px-6 bg-white border border-[var(--border)] text-[var(--foreground)] rounded-[var(--radius-full)] font-semibold hover:bg-[var(--surface-soft)] transition-all"
+            >
               Browse Properties
             </Link>
           </div>
@@ -384,553 +396,696 @@ export default function SubmitPropertyPage() {
   }
 
   return (
-    <div className="submit-property-page">
-      <motion.div
-        className="submit-property-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <Link href="/" className="back-link-submit">
-            <ArrowLeft className="w-4 h-4" /> Back to Home
-          </Link>
-          <h1>Submit Your Property</h1>
-          <p>List your property for rent or resale on Ghardaar24</p>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            className="submit-error"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <X className="w-5 h-5" />
-            <span>{error}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.div
-        className="submit-info-banner"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <p>
-          <strong>Note:</strong> Submitted properties will be reviewed by our
-          team and approved within 2 business days.
-        </p>
-      </motion.div>
-
-      <motion.form
-        onSubmit={handleSubmit}
-        className="submit-property-form"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
+    <div className="min-h-screen bg-[var(--background)] pt-28 pb-12">
+      <div className="container max-w-4xl mx-auto px-4">
         <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ duration: 0.4 }}
         >
-          <h2>Basic Information</h2>
-
-          <div className="submit-form-grid">
-            <div className="form-group full">
-              <label htmlFor="title">Property Title *</label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="e.g., Modern 3BHK Apartment in Andheri West"
-                required
-              />
-            </div>
-
-            <div className="form-group full">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Describe your property..."
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="property_type">Property Type *</label>
-              <select
-                id="property_type"
-                name="property_type"
-                value={formData.property_type}
-                onChange={handleChange}
-                required
-              >
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="villa">Villa</option>
-                <option value="plot">Plot</option>
-                <option value="commercial">Commercial</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="listing_type">Listing Type *</label>
-              <select
-                id="listing_type"
-                name="listing_type"
-                value={formData.listing_type}
-                onChange={handleChange}
-                required
-              >
-                <option value="rent">For Rent</option>
-                <option value="resale">Resale</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="price">Price (₹) *</label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="e.g., 5000000"
-                required
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Home
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)]">
+              Submit Your Property
+            </h1>
+            <p className="text-[var(--text-secondary)] text-lg">
+              List your property for rent or resale on Ghardaar24
+            </p>
           </div>
         </motion.div>
 
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-[var(--radius)] flex items-center gap-2 mb-6"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <X className="w-5 h-5 shrink-0" />
+              <span className="font-medium">{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
-          className="submit-section-card"
+          className="bg-blue-50 border border-blue-100 rounded-[var(--radius-lg)] p-4 mb-8 flex items-start gap-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="bg-blue-100 p-1 rounded-full shrink-0 mt-0.5">
+            <CheckCircle className="w-4 h-4 text-blue-600" />
+          </div>
+          <p className="text-blue-800 text-sm md:text-base">
+            <strong className="font-semibold block mb-0.5">
+              Submission Process
+            </strong>
+            Submitted properties will be reviewed by our team and approved
+            within 2 business days.
+          </p>
+        </motion.div>
+
+        <motion.form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.1 }}
         >
-          <h2>Location Details</h2>
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 pb-2 border-b border-[var(--border)]">
+              Basic Information
+            </h2>
 
-          <div className="submit-form-grid">
-            <div className="form-group">
-              <label htmlFor="area">Area *</label>
-              <div className="relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2 space-y-2">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Property Title *
+                </label>
                 <input
                   type="text"
-                  id="area"
-                  name="area"
-                  value={formData.area}
+                  id="title"
+                  name="title"
+                  value={formData.title}
                   onChange={handleChange}
-                  list="area-suggestions"
-                  placeholder="Enter or select Area"
+                  placeholder="e.g., Modern 3BHK Apartment in Andheri West"
                   required
-                  className="w-full"
-                  autoComplete="off"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
                 />
-                <datalist id="area-suggestions">
-                  {existingAreas.map((area) => (
-                    <option key={area} value={area} />
-                  ))}
-                </datalist>
               </div>
-            </div>
 
-            <div className="form-group full">
-              <label htmlFor="address">Full Address *</label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="e.g., 123, ABC Street, Andheri West"
-                required
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2>Property Details</h2>
-
-          <div className="submit-form-grid">
-            <div className="form-group">
-              <label htmlFor="bedrooms">Bedrooms</label>
-              <input
-                type="number"
-                id="bedrooms"
-                name="bedrooms"
-                value={formData.bedrooms}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="bathrooms">Bathrooms</label>
-              <input
-                type="number"
-                id="bathrooms"
-                name="bathrooms"
-                value={formData.bathrooms}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="carpet_area">Carpet Area</label>
-              <input
-                type="text"
-                id="carpet_area"
-                name="carpet_area"
-                value={formData.carpet_area}
-                onChange={handleChange}
-                placeholder="e.g., 746-947 sqft"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="config">Configuration</label>
-              <input
-                type="text"
-                id="config"
-                name="config"
-                value={formData.config}
-                onChange={handleChange}
-                placeholder="e.g., 2, 3 BHK"
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.42 }}
-        >
-          <h2>RERA & Legal Details</h2>
-
-          <div className="submit-form-grid">
-            <div className="form-group">
-              <label htmlFor="rera_no">RERA Number</label>
-              <input
-                type="text"
-                id="rera_no"
-                name="rera_no"
-                value={formData.rera_no}
-                onChange={handleChange}
-                placeholder="e.g., P52100047..."
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="possession_status">Possession Status</label>
-              <select
-                id="possession_status"
-                name="possession_status"
-                value={formData.possession_status}
-                onChange={handleChange}
-              >
-                <option value="">Select Status</option>
-                <option value="Pre-Launch">Pre-Launch</option>
-                <option value="Under Construction">Under Construction</option>
-                <option value="Mid Stage">Mid Stage</option>
-                <option value="Nearing Possession">Nearing Possession</option>
-                <option value="Ready to Move">Ready to Move</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="target_possession">Target Possession</label>
-              <input
-                type="text"
-                id="target_possession"
-                name="target_possession"
-                value={formData.target_possession}
-                onChange={handleChange}
-                placeholder="e.g., Jun 2027"
-              />
-            </div>
-
-            <div className="form-group full">
-              <label className="checkbox-label-submit">
-                <input
-                  type="checkbox"
-                  name="litigation"
-                  checked={formData.litigation}
+              <div className="md:col-span-2 space-y-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
                   onChange={handleChange}
+                  rows={4}
+                  placeholder="Describe your property..."
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)] resize-y min-h-[120px]"
                 />
-                <span>Property under Litigation</span>
-              </label>
-            </div>
-          </div>
-        </motion.div>
+              </div>
 
-        <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-        >
-          <h2>Amenities</h2>
+              <div className="space-y-2">
+                <label
+                  htmlFor="property_type"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Property Type *
+                </label>
+                <select
+                  id="property_type"
+                  name="property_type"
+                  value={formData.property_type}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all bg-white text-[var(--foreground)]"
+                >
+                  <option value="apartment">Apartment</option>
+                  <option value="house">House</option>
+                  <option value="villa">Villa</option>
+                  <option value="plot">Plot</option>
+                  <option value="commercial">Commercial</option>
+                </select>
+              </div>
 
-          <div className="amenities-grid-submit">
-            {defaultAmenitiesWithIcons.map(({ name, Icon }) => (
-              <motion.label
-                key={name}
-                className={`amenity-checkbox-submit ${
-                  amenities.includes(name) ? "selected" : ""
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <div className="space-y-2">
+                <label
+                  htmlFor="listing_type"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Listing Type *
+                </label>
+                <select
+                  id="listing_type"
+                  name="listing_type"
+                  value={formData.listing_type}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all bg-white text-[var(--foreground)]"
+                >
+                  <option value="rent">For Rent</option>
+                  <option value="resale">Resale</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="price"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Price (₹) *
+                </label>
                 <input
-                  type="checkbox"
-                  checked={amenities.includes(name)}
-                  onChange={() => toggleAmenity(name)}
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="e.g., 5000000"
+                  required
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
                 />
-                <Icon className="w-4 h-4" />
-                <span>{name}</span>
-              </motion.label>
-            ))}
-          </div>
-
-          <div className="custom-amenity-input-submit">
-            <input
-              type="text"
-              placeholder="Add custom amenity..."
-              value={customAmenity}
-              onChange={(e) => setCustomAmenity(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addCustomAmenity())
-              }
-            />
-            <motion.button
-              type="button"
-              onClick={addCustomAmenity}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Plus className="w-4 h-4" />
-              Add
-            </motion.button>
-          </div>
-
-          {amenities.filter((a) => !defaultAmenityNames.includes(a)).length >
-            0 && (
-            <div className="custom-amenities-submit">
-              <p className="custom-amenities-label">Custom amenities:</p>
-              <div className="custom-amenities-list-submit">
-                {amenities
-                  .filter((a) => !defaultAmenityNames.includes(a))
-                  .map((amenity) => (
-                    <motion.span
-                      key={amenity}
-                      className="custom-amenity-tag-submit"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      {amenity}
-                      <button
-                        type="button"
-                        onClick={() => toggleAmenity(amenity)}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </motion.span>
-                  ))}
               </div>
             </div>
-          )}
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h2>Images</h2>
-          <p className="section-hint">
-            Upload up to 10 images of your property
-          </p>
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 pb-2 border-b border-[var(--border)]">
+              Location Details
+            </h2>
 
-          <div className="image-upload-area-submit">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              multiple
-              hidden
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label
+                  htmlFor="area"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Area *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="area"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    list="area-suggestions"
+                    placeholder="Enter or select Area"
+                    required
+                    autoComplete="off"
+                    className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                  />
+                  <datalist id="area-suggestions">
+                    {existingAreas.map((area) => (
+                      <option key={area} value={area} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
 
-            <div className="image-previews-submit">
-              <AnimatePresence>
-                {imagePreviews.map((preview, index) => (
-                  <motion.div
-                    key={index}
-                    className="image-preview-submit"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Image
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                    <motion.button
-                      type="button"
-                      className="remove-image-submit"
-                      onClick={() => removeImage(index)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <X className="w-4 h-4" />
-                    </motion.button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              <div className="md:col-span-2 space-y-2">
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Full Address *
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="e.g., 123, ABC Street, Andheri West"
+                  required
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+            </div>
+          </motion.div>
 
-              {images.length < 10 && (
-                <motion.button
-                  type="button"
-                  className="upload-trigger-submit"
-                  onClick={() => fileInputRef.current?.click()}
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 pb-2 border-b border-[var(--border)]">
+              Property Details
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label
+                  htmlFor="bedrooms"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Bedrooms
+                </label>
+                <input
+                  type="number"
+                  id="bedrooms"
+                  name="bedrooms"
+                  value={formData.bedrooms}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min="0"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="bathrooms"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Bathrooms
+                </label>
+                <input
+                  type="number"
+                  id="bathrooms"
+                  name="bathrooms"
+                  value={formData.bathrooms}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min="0"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="carpet_area"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Carpet Area
+                </label>
+                <input
+                  type="text"
+                  id="carpet_area"
+                  name="carpet_area"
+                  value={formData.carpet_area}
+                  onChange={handleChange}
+                  placeholder="e.g., 746-947 sqft"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="config"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Configuration
+                </label>
+                <input
+                  type="text"
+                  id="config"
+                  name="config"
+                  value={formData.config}
+                  onChange={handleChange}
+                  placeholder="e.g., 2, 3 BHK"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 pb-2 border-b border-[var(--border)]">
+              RERA & Legal Details
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label
+                  htmlFor="rera_no"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  RERA Number
+                </label>
+                <input
+                  type="text"
+                  id="rera_no"
+                  name="rera_no"
+                  value={formData.rera_no}
+                  onChange={handleChange}
+                  placeholder="e.g., P52100047..."
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="possession_status"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Possession Status
+                </label>
+                <select
+                  id="possession_status"
+                  name="possession_status"
+                  value={formData.possession_status}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all bg-white text-[var(--foreground)]"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Pre-Launch">Pre-Launch</option>
+                  <option value="Under Construction">Under Construction</option>
+                  <option value="Mid Stage">Mid Stage</option>
+                  <option value="Nearing Possession">Nearing Possession</option>
+                  <option value="Ready to Move">Ready to Move</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="target_possession"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Target Possession
+                </label>
+                <input
+                  type="text"
+                  id="target_possession"
+                  name="target_possession"
+                  value={formData.target_possession}
+                  onChange={handleChange}
+                  placeholder="e.g., Jun 2027"
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="md:col-span-2 flex items-center pt-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    name="litigation"
+                    checked={formData.litigation}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-[var(--foreground)] font-medium group-hover:text-[var(--primary)] transition-colors">
+                    Property under Litigation
+                  </span>
+                </label>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 pb-2 border-b border-[var(--border)]">
+              Amenities
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+              {defaultAmenitiesWithIcons.map(({ name, Icon }) => (
+                <motion.label
+                  key={name}
+                  className={`flex items-center gap-3 p-3 rounded-[var(--radius)] border cursor-pointer transition-all ${
+                    amenities.includes(name)
+                      ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-md"
+                      : "bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-soft)]"
+                  }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Upload className="w-6 h-6" />
-                  <span>Add Images</span>
-                  <span className="upload-hint-submit">{images.length}/10</span>
-                </motion.button>
-              )}
+                  <input
+                    type="checkbox"
+                    checked={amenities.includes(name)}
+                    onChange={() => toggleAmenity(name)}
+                    className="hidden"
+                  />
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span className="text-sm font-medium">{name}</span>
+                </motion.label>
+              ))}
             </div>
-          </div>
-        </motion.div>
 
-        <motion.div
-          className="submit-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55 }}
-        >
-          <h2>Brochure (PDF)</h2>
-          <p className="section-hint">
-            Upload up to 2 brochures (Max 10MB each)
-          </p>
-
-          <div className="brochure-upload-area-submit">
-            <input
-              type="file"
-              ref={brochureInputRef}
-              onChange={handleBrochureChange}
-              accept="application/pdf"
-              multiple
-              hidden
-            />
-
-            {brochures.length > 0 && (
-              <div className="brochure-list-submit">
-                {brochureNames.map((name, index) => (
-                  <motion.div
-                    key={index}
-                    className="brochure-preview-submit"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                  >
-                    <FileText className="w-8 h-8 text-primary" />
-                    <div className="brochure-info-submit">
-                      <span className="brochure-name">{name}</span>
-                      <span className="brochure-size">PDF Document</span>
-                    </div>
-                    <motion.button
-                      type="button"
-                      className="remove-brochure-submit"
-                      onClick={() => removeBrochure(index)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <X className="w-4 h-4" />
-                    </motion.button>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            {brochures.length < 2 && (
+            <div className="flex gap-3 mb-6">
+              <input
+                type="text"
+                placeholder="Add custom amenity..."
+                value={customAmenity}
+                onChange={(e) => setCustomAmenity(e.target.value)}
+                onKeyPress={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addCustomAmenity())
+                }
+                className="flex-1 px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)]"
+              />
               <motion.button
                 type="button"
-                className="upload-trigger-submit"
-                onClick={() => brochureInputRef.current?.click()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                onClick={addCustomAmenity}
+                className="bg-[var(--foreground)] text-white px-6 rounded-[var(--radius)] font-medium hover:bg-black transition-all flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Upload className="w-6 h-6" />
-                <span>Add Brochure</span>
-                <span className="upload-hint-submit">{brochures.length}/2</span>
+                <Plus className="w-4 h-4" />
+                Add
               </motion.button>
-            )}
-          </div>
-        </motion.div>
+            </div>
 
-        <motion.div
-          className="submit-form-actions"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/" className="btn-submit-secondary">
-              Cancel
-            </Link>
-          </motion.div>
-          <motion.button
-            type="submit"
-            className="btn-submit-primary"
-            disabled={uploading}
-            whileHover={{ scale: uploading ? 1 : 1.02, y: uploading ? 0 : -2 }}
-            whileTap={{ scale: uploading ? 1 : 0.98 }}
-          >
-            {uploading ? (
-              <motion.span
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                Submitting...
-              </motion.span>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Submit Property
-              </>
+            {amenities.filter((a) => !defaultAmenityNames.includes(a)).length >
+              0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-[var(--text-secondary)]">
+                  Custom amenities:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {amenities
+                    .filter((a) => !defaultAmenityNames.includes(a))
+                    .map((amenity) => (
+                      <motion.span
+                        key={amenity}
+                        className="inline-flex items-center gap-2 bg-[var(--surface-soft)] text-[var(--foreground)] px-3 py-1.5 rounded-full text-sm font-medium border border-[var(--border)]"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                      >
+                        {amenity}
+                        <button
+                          type="button"
+                          onClick={() => toggleAmenity(amenity)}
+                          className="hover:text-red-500 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.span>
+                    ))}
+                </div>
+              </div>
             )}
-          </motion.button>
-        </motion.div>
-      </motion.form>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-2 pb-2 border-b border-[var(--border)]">
+              Images
+            </h2>
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              Upload up to 10 images of your property
+            </p>
+
+            <div className="space-y-6">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                multiple
+                hidden
+              />
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <AnimatePresence>
+                  {imagePreviews.map((preview, index) => (
+                    <motion.div
+                      key={index}
+                      className="relative aspect-square rounded-[var(--radius)] overflow-hidden border border-[var(--border)] group"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Image
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-110"
+                      />
+                      <motion.button
+                        type="button"
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                        onClick={() => removeImage(index)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <X className="w-4 h-4" />
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {images.length < 10 && (
+                  <motion.button
+                    type="button"
+                    className="aspect-square flex flex-col items-center justify-center gap-3 rounded-[var(--radius)] border-2 border-dashed border-[var(--border-hover)] bg-[var(--surface-soft)] text-[var(--text-secondary)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all"
+                    onClick={() => fileInputRef.current?.click()}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Upload className="w-8 h-8 opacity-50" />
+                    <span className="text-sm font-medium">Add Images</span>
+                    <span className="text-xs text-[var(--text-muted)]">
+                      {images.length}/10
+                    </span>
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-2 pb-2 border-b border-[var(--border)]">
+              Brochure (PDF)
+            </h2>
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              Upload up to 2 brochures (Max 10MB each)
+            </p>
+
+            <div className="space-y-6">
+              <input
+                type="file"
+                ref={brochureInputRef}
+                onChange={handleBrochureChange}
+                accept="application/pdf"
+                multiple
+                hidden
+              />
+
+              <div className="flex flex-col gap-3">
+                {brochures.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {brochureNames.map((name, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-center gap-4 p-4 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-soft)] relative group"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                      >
+                        <div className="bg-red-100 p-2 rounded-lg text-red-600">
+                          <FileText className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="block text-sm font-medium truncate text-[var(--foreground)]">
+                            {name}
+                          </span>
+                          <span className="text-xs text-[var(--text-muted)]">
+                            PDF Document
+                          </span>
+                        </div>
+                        <motion.button
+                          type="button"
+                          className="p-1.5 text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                          onClick={() => removeBrochure(index)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <X className="w-4 h-4" />
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {brochures.length < 2 && (
+                  <motion.button
+                    type="button"
+                    className="w-full py-4 border-2 border-dashed border-[var(--border-hover)] rounded-[var(--radius)] text-[var(--text-secondary)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all flex items-center justify-center gap-2"
+                    onClick={() => brochureInputRef.current?.click()}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Upload className="w-5 h-5 mx-auto md:mx-0" />
+                    <span className="font-medium">Add Brochure</span>
+                    <span className="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      {brochures.length}/2
+                    </span>
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="flex items-center justify-end gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                href="/"
+                className="px-6 py-3 rounded-[var(--radius-full)] border border-[var(--border)] font-semibold text-[var(--foreground)] bg-white hover:bg-[var(--surface-soft)] transition-all"
+              >
+                Cancel
+              </Link>
+            </motion.div>
+            <motion.button
+              type="submit"
+              className="px-8 py-3 rounded-[var(--radius-full)] bg-[var(--gradient-accent)] text-white font-semibold flex items-center gap-2 shadow-[var(--shadow-lg)] hover:shadow-orange-200 hover:-translate-y-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={uploading}
+              whileHover={{
+                scale: uploading ? 1 : 1.02,
+                y: uploading ? 0 : -2,
+              }}
+              whileTap={{ scale: uploading ? 1 : 0.98 }}
+            >
+              {uploading ? (
+                <motion.span
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Submitting...
+                </motion.span>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Submit Property
+                </>
+              )}
+            </motion.button>
+          </motion.div>
+        </motion.form>
+      </div>
     </div>
   );
 }
