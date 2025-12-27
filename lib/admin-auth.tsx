@@ -99,9 +99,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Only fetch admin profile if we have a valid session with access token
         if (session?.user && session.access_token) {
-          await fetchAdminProfile(session.user.id);
+          // Don't await admin profile fetch
+          fetchAdminProfile(session.user.id);
         }
       } catch (error) {
         console.error("Error getting admin session:", error);
@@ -128,7 +128,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user && session.access_token) {
-        await fetchAdminProfile(session.user.id);
+        fetchAdminProfile(session.user.id);
       } else {
         setAdminProfile(null);
       }

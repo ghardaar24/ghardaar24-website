@@ -23,6 +23,7 @@ const navLinks = [
 
 function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, userProfile, loading, signOut } = useAuth();
 
@@ -37,6 +38,7 @@ function HeaderContent() {
   const handleLogout = async () => {
     await signOut();
     setIsMenuOpen(false);
+    setIsProfileOpen(false);
   };
 
   return (
@@ -83,51 +85,62 @@ function HeaderContent() {
             ))}
           </motion.div>
 
+          {/* Mobile Menu Button */}
           <div className="nav-actions">
             {!loading && (
               <>
                 {user ? (
-                  <div className="header-user-menu">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Link href="/dashboard" className="header-dashboard-btn">
-                        <LayoutDashboard className="w-4 h-4" />
-                        <span className="hidden sm:inline">Dashboard</span>
-                      </Link>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Link
-                        href="/properties/submit"
-                        className="header-submit-btn"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">
-                          Submit Property
-                        </span>
-                      </Link>
-                    </motion.div>
-                    <motion.div
-                      className="header-user-info"
+                  <div className="header-user-menu relative">
+                    <motion.button
+                      className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white hover:shadow-md transition-all"
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
                       whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <div className="header-user-avatar">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
                         <User className="w-4 h-4" />
                       </div>
-                    </motion.div>
-                    <motion.button
-                      className="header-logout-btn"
-                      onClick={handleLogout}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span className="hidden sm:inline">Logout</span>
+                      <span className="font-medium text-sm text-gray-700 hidden sm:inline">
+                        {userProfile?.name || "User"}
+                      </span>
                     </motion.button>
+
+                    <AnimatePresence>
+                      {isProfileOpen && (
+                        <motion.div
+                          className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50"
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                            onClick={() => setIsProfileOpen(false)}
+                          >
+                            <LayoutDashboard className="w-4 h-4" />
+                            Dashboard
+                          </Link>
+                          <Link
+                            href="/properties/submit"
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                            onClick={() => setIsProfileOpen(false)}
+                          >
+                            <Plus className="w-4 h-4" />
+                            Submit Property
+                          </Link>
+                          <div className="h-px bg-gray-100 my-1" />
+                          <button
+                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                            onClick={handleLogout}
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Logout
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 ) : (
                   <div className="header-auth-buttons">

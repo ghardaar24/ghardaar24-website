@@ -99,11 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
           console.log("Session found, fetching details for:", session.user.id);
-          await Promise.all([
+          // Don't await profile fetch to avoid blocking UI
+          Promise.all([
             fetchUserProfile(session.user.id),
             checkAdminStatus(session.user.id),
-          ]);
-          console.log("User details fetched successfully");
+          ]).then(() => {
+            console.log("User details fetched successfully");
+          });
         } else {
           console.log("No active session found");
         }
@@ -125,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (session?.user) {
         // Refresh profile/admin status on sign in or token refresh
-        await Promise.all([
+        Promise.all([
           fetchUserProfile(session.user.id),
           checkAdminStatus(session.user.id),
         ]);

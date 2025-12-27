@@ -28,17 +28,15 @@ export default function AgentProfile() {
             </div>
 
             <div className="agent-info">
-              <span className="agent-greeting">
-                Hi, I&apos;m your property expert
-              </span>
-              <h2 className="agent-name">Sanket Hire</h2>
-              <p className="agent-title">Senior Property Consultant</p>
+              <span className="agent-greeting">Talk to our experts</span>
+              <h2 className="agent-name">Our Expert Team</h2>
+              <p className="agent-title">Property Consultants</p>
 
               <p className="agent-bio">
-                Specializing in Pune and its outskirts, I help families find their
-                perfect homes in growing neighborhoods. Let me guide you through
-                your property journey with personalized service and expert
-                advice.
+                Specializing in Pune and its outskirts, we help families find
+                their perfect homes in growing neighborhoods. Let us guide you
+                through your property journey with personalized service and
+                expert advice.
               </p>
 
               <div className="agent-stats">
