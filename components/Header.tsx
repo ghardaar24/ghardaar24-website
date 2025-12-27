@@ -3,7 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Menu, X, User, LogOut, Plus, LayoutDashboard } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  Plus,
+  LayoutDashboard,
+  ChevronDown,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
   motion,
@@ -13,9 +21,7 @@ import {
   menuSlide,
 } from "@/lib/motion";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/properties", label: "Properties" },
+const propertyDropdownLinks = [
   { href: "/properties?listing_type=sale", label: "Buy" },
   { href: "/properties?listing_type=rent", label: "Rent" },
   { href: "/properties?listing_type=resale", label: "Resale" },
@@ -24,6 +30,7 @@ const navLinks = [
 function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, userProfile, loading, signOut } = useAuth();
 
@@ -71,18 +78,55 @@ function HeaderContent() {
             initial="hidden"
             animate="visible"
           >
-            {navLinks.map((link, index) => (
-              <motion.div
-                key={link.href}
+            {/* Properties Dropdown */}
+            <div
+              className="nav-dropdown-container"
+              onMouseEnter={() => setIsPropertiesOpen(true)}
+              onMouseLeave={() => setIsPropertiesOpen(false)}
+            >
+              <motion.button
+                className="nav-link nav-dropdown-trigger"
                 variants={fadeInDown}
-                custom={index}
                 whileHover={{ y: -2 }}
               >
-                <Link href={link.href} className="nav-link">
-                  {link.label}
-                </Link>
-              </motion.div>
-            ))}
+                Properties
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    isPropertiesOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {isPropertiesOpen && (
+                  <motion.div
+                    className="nav-dropdown-menu"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href="/properties"
+                      className="nav-dropdown-item"
+                      onClick={() => setIsPropertiesOpen(false)}
+                    >
+                      All Properties
+                    </Link>
+                    {propertyDropdownLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="nav-dropdown-item"
+                        onClick={() => setIsPropertiesOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
           {/* Mobile Menu Button */}
@@ -203,16 +247,30 @@ function HeaderContent() {
               animate="open"
               exit="closed"
             >
-              {navLinks.map((link, index) => (
+              {/* Properties Section */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Link
+                  href="/properties"
+                  className="mobile-nav-link"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  All Properties
+                </Link>
+              </motion.div>
+              {propertyDropdownLinks.map((link, index) => (
                 <motion.div
                   key={link.href}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: (index + 1) * 0.1 }}
                 >
                   <Link
                     href={link.href}
-                    className="mobile-nav-link"
+                    className="mobile-nav-link mobile-nav-sublink"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}

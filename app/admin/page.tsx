@@ -5,7 +5,6 @@ import { supabase, Property } from "@/lib/supabase";
 import {
   Building,
   MessageSquare,
-  TrendingUp,
   Plus,
   Eye,
   ArrowRight,
@@ -13,7 +12,6 @@ import {
   MapPin,
   Star,
   Clock,
-  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -59,38 +57,6 @@ const statCards = [
   },
 ];
 
-const quickActions = [
-  {
-    href: "/admin/properties/new",
-    icon: Plus,
-    label: "Add Property",
-    description: "Create a new listing",
-    primary: true,
-  },
-  {
-    href: "/admin/properties",
-    icon: Building,
-    label: "All Properties",
-    description: "Manage listings",
-    primary: false,
-  },
-  {
-    href: "/admin/inquiries",
-    icon: MessageSquare,
-    label: "Inquiries",
-    description: "View messages",
-    primary: false,
-  },
-  {
-    href: "/",
-    icon: ExternalLink,
-    label: "View Site",
-    description: "See live website",
-    primary: false,
-    external: true,
-  },
-];
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
     totalProperties: 0,
@@ -104,29 +70,34 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [propertiesRes, featuredRes, inquiriesRes, recentRes, inquiriesListRes] =
-          await Promise.all([
-            supabase
-              .from("properties")
-              .select("id", { count: "exact", head: true }),
-            supabase
-              .from("properties")
-              .select("id", { count: "exact", head: true })
-              .eq("featured", true),
-            supabase
-              .from("inquiries")
-              .select("id", { count: "exact", head: true }),
-            supabase
-              .from("properties")
-              .select("*")
-              .order("created_at", { ascending: false })
-              .limit(4),
-            supabase
-              .from("inquiries")
-              .select("id, name, created_at, property_id")
-              .order("created_at", { ascending: false })
-              .limit(5),
-          ]);
+        const [
+          propertiesRes,
+          featuredRes,
+          inquiriesRes,
+          recentRes,
+          inquiriesListRes,
+        ] = await Promise.all([
+          supabase
+            .from("properties")
+            .select("id", { count: "exact", head: true }),
+          supabase
+            .from("properties")
+            .select("id", { count: "exact", head: true })
+            .eq("featured", true),
+          supabase
+            .from("inquiries")
+            .select("id", { count: "exact", head: true }),
+          supabase
+            .from("properties")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(4),
+          supabase
+            .from("inquiries")
+            .select("id, name, created_at, property_id")
+            .order("created_at", { ascending: false })
+            .limit(5),
+        ]);
 
         setStats({
           totalProperties: propertiesRes.count || 0,
@@ -149,8 +120,10 @@ export default function AdminDashboard() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     const diffInDays = Math.floor(diffInHours / 24);
@@ -192,10 +165,7 @@ export default function AdminDashboard() {
           <h1>Welcome Back! 👋</h1>
           <p>Here&apos;s what&apos;s happening with your properties today.</p>
         </div>
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-        >
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
           <Link href="/admin/properties/new" className="dashboard-cta-btn">
             <Plus className="w-5 h-5" />
             Add New Property
@@ -217,7 +187,12 @@ export default function AdminDashboard() {
             variants={fadeInUp}
             whileHover={{ y: -6, scale: 1.02 }}
             transition={{ duration: 0.2 }}
-            style={{ "--stat-gradient": stat.gradient, "--stat-bg": stat.bgLight } as React.CSSProperties}
+            style={
+              {
+                "--stat-gradient": stat.gradient,
+                "--stat-bg": stat.bgLight,
+              } as React.CSSProperties
+            }
           >
             <div className="dashboard-stat-icon">
               <stat.icon className="w-6 h-6" />
@@ -236,43 +211,6 @@ export default function AdminDashboard() {
             <div className="dashboard-stat-decoration" />
           </motion.div>
         ))}
-      </motion.div>
-
-      {/* Quick Actions */}
-      <motion.div
-        className="dashboard-section"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <h2 className="dashboard-section-title">Quick Actions</h2>
-        <div className="dashboard-quick-actions">
-          {quickActions.map((action, index) => (
-            <motion.div
-              key={action.href}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 + index * 0.05 }}
-              whileHover={{ y: -4 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                href={action.href}
-                className={`dashboard-action-card ${action.primary ? "primary" : ""}`}
-                target={action.external ? "_blank" : undefined}
-              >
-                <div className="dashboard-action-icon">
-                  <action.icon className="w-5 h-5" />
-                </div>
-                <div className="dashboard-action-text">
-                  <span className="dashboard-action-label">{action.label}</span>
-                  <span className="dashboard-action-desc">{action.description}</span>
-                </div>
-                <ArrowRight className="dashboard-action-arrow w-4 h-4" />
-              </Link>
-            </motion.div>
-          ))}
-        </div>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -326,7 +264,9 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     <div className="dashboard-property-info">
-                      <h3 className="dashboard-property-title">{property.title}</h3>
+                      <h3 className="dashboard-property-title">
+                        {property.title}
+                      </h3>
                       <div className="dashboard-property-meta">
                         <span className="dashboard-property-location">
                           <MapPin className="w-3 h-3" />
@@ -348,7 +288,10 @@ export default function AdminDashboard() {
             <div className="dashboard-empty-state">
               <Home className="w-12 h-12" />
               <p>No properties yet</p>
-              <Link href="/admin/properties/new" className="dashboard-empty-cta">
+              <Link
+                href="/admin/properties/new"
+                className="dashboard-empty-cta"
+              >
                 Add your first property
               </Link>
             </div>
@@ -383,7 +326,9 @@ export default function AdminDashboard() {
                     {inquiry.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="dashboard-inquiry-info">
-                    <span className="dashboard-inquiry-name">{inquiry.name}</span>
+                    <span className="dashboard-inquiry-name">
+                      {inquiry.name}
+                    </span>
                     <span className="dashboard-inquiry-time">
                       <Clock className="w-3 h-3" />
                       {formatTimeAgo(inquiry.created_at)}

@@ -161,7 +161,7 @@ export default function AdminLayout({
               transition={{ duration: 0.2 }}
             >
               <Image
-                src="/logo3.png"
+                src="/logo2.png"
                 alt="Ghardaar24"
                 width={140}
                 height={56}
