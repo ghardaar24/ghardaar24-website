@@ -8,6 +8,7 @@ import {
   HandshakeIcon,
   Phone,
   ArrowRight,
+  ArrowLeft,
   CheckCircle,
   Clock,
   BadgePercent,
@@ -143,6 +144,13 @@ export default function HomeLoansPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white transition-colors mb-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
             <div className="service-hero-icon">
               <Landmark className="w-12 h-12" />
             </div>

@@ -17,6 +17,7 @@ import {
   MapPin,
   Calendar,
   AlertTriangle,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
@@ -127,6 +128,13 @@ export default function DashboardPage() {
       >
         <div className="dashboard-header-content">
           <div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
             <h1>My Dashboard</h1>
             <p>Welcome back, {userProfile?.name || "User"}!</p>
           </div>

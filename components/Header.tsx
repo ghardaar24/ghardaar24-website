@@ -11,6 +11,8 @@ import {
   Plus,
   LayoutDashboard,
   ChevronDown,
+  Calculator,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
@@ -27,10 +29,16 @@ const propertyDropdownLinks = [
   { href: "/properties?listing_type=resale", label: "Resale" },
 ];
 
+const resourcesDropdownLinks = [
+  { href: "/calculators", label: "Calculators", icon: Calculator },
+  { href: "/real-estate-guide", label: "Real Estate Guide", icon: BookOpen },
+];
+
 function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, userProfile, loading, signOut } = useAuth();
 
@@ -141,6 +149,50 @@ function HeaderContent() {
                 Interior Design
               </Link>
             </motion.div>
+
+            {/* Resources Dropdown */}
+            <div
+              className="nav-dropdown-container"
+              onMouseEnter={() => setIsResourcesOpen(true)}
+              onMouseLeave={() => setIsResourcesOpen(false)}
+            >
+              <motion.button
+                className="nav-link nav-dropdown-trigger"
+                variants={fadeInDown}
+                whileHover={{ y: -2 }}
+              >
+                Resources
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    isResourcesOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {isResourcesOpen && (
+                  <motion.div
+                    className="nav-dropdown-menu"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {resourcesDropdownLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="nav-dropdown-item"
+                        onClick={() => setIsResourcesOpen(false)}
+                      >
+                        <link.icon className="w-4 h-4" />
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
           {/* Mobile Menu Button */}
@@ -321,6 +373,33 @@ function HeaderContent() {
                   Interior Design
                 </Link>
               </motion.div>
+
+              {/* Resources Section */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+                className="mobile-nav-section"
+              >
+                <span className="mobile-nav-section-title">Resources</span>
+              </motion.div>
+              {resourcesDropdownLinks.map((link, index) => (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.75 + index * 0.1 }}
+                >
+                  <Link
+                    href={link.href}
+                    className="mobile-nav-link mobile-nav-sublink"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <link.icon className="w-4 h-4" />
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
 
               {/* Mobile auth links */}
               <div className="mobile-auth-section">
