@@ -91,20 +91,24 @@ export default function PropertyCard({
           <h3 className="property-card-title">{property.title}</h3>
 
           <div className="property-card-features-new">
-            <div className="feature-item-new">
-              <Bed className="w-4 h-4" />
-              <span>{property.bedrooms}</span>
-            </div>
-            <div className="feature-item-new">
-              <Bath className="w-4 h-4" />
-              <span>{property.bathrooms}</span>
-            </div>
-            <div className="feature-item-new">
-              <Maximize className="w-4 h-4" />
-              <span>
-                {property.carpet_area || "N/A"}
-              </span>
-            </div>
+            {property.bedrooms > 0 && (
+              <div className="feature-item-new">
+                <Bed className="w-4 h-4" />
+                <span>{property.bedrooms}</span>
+              </div>
+            )}
+            {property.bathrooms > 0 && (
+              <div className="feature-item-new">
+                <Bath className="w-4 h-4" />
+                <span>{property.bathrooms}</span>
+              </div>
+            )}
+            {property.carpet_area && (
+              <div className="feature-item-new">
+                <Maximize className="w-4 h-4" />
+                <span>{property.carpet_area}</span>
+              </div>
+            )}
           </div>
 
           <div className="property-card-footer">

@@ -350,7 +350,7 @@ body {
   border-radius: var(--radius-full);
   text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(146, 154, 171, 0.3);
+  box-shadow: 0 4px 15px rgba(243, 106, 42, 0.3);
 }
 
 .cta-button span {
@@ -375,7 +375,7 @@ body {
 
 .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(146, 154, 171, 0.4);
+  box-shadow: 0 8px 25px rgba(243, 106, 42, 0.4);
 }
 
 .mobile-menu-btn {
@@ -1322,7 +1322,7 @@ body {
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(146, 154, 171, 0.3);
+  box-shadow: 0 4px 15px rgba(243, 106, 42, 0.3);
 }
 
 @media (min-width: 768px) {
@@ -1334,7 +1334,7 @@ body {
 
 .search-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(146, 154, 171, 0.4);
+  box-shadow: 0 8px 25px rgba(243, 106, 42, 0.4);
 }
 
 /* Horizontal Search Form Styles - Premium Design */
@@ -1753,6 +1753,111 @@ body {
   background: #1f1f1f;
   color: #ffffff;
   border-color: #1f1f1f;
+}
+
+/* Button Disabled States */
+.btn-primary-new:disabled,
+.btn-secondary-new:disabled,
+.btn-outline-new:disabled,
+.cta-button:disabled,
+.search-button:disabled,
+.hero-btn-primary:disabled,
+.hero-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* Ghost Button Variant */
+.btn-ghost-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-ghost-new:hover {
+  background: var(--surface-soft);
+  color: var(--primary);
+}
+
+.btn-ghost-new:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Destructive Button Variant */
+.btn-destructive-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: var(--error);
+  border: none;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+  cursor: pointer;
+}
+
+.btn-destructive-new:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.btn-destructive-new:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Focus-Visible Accessibility Outlines */
+.btn-primary-new:focus-visible,
+.btn-secondary-new:focus-visible,
+.btn-outline-new:focus-visible,
+.btn-ghost-new:focus-visible,
+.btn-destructive-new:focus-visible,
+.cta-button:focus-visible,
+.search-button:focus-visible,
+.hero-btn-primary:focus-visible,
+.hero-btn-secondary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Form Input Focus Visibility */
+.form-input:focus-visible,
+.login-modal-input:focus-visible,
+.filter-select:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(243, 106, 42, 0.15);
+}
+
+/* Link Focus Visibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Property Types Grid */

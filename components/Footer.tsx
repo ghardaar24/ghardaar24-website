@@ -106,10 +106,6 @@ export default function Footer() {
                 <a href="tel:+919673655631">+91 96736 55631</a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
-                <Phone className="w-4 h-4 text-[#B68D40]" />
-                <a href="tel:+919423565760">+91 94235 65760</a>
-              </motion.li>
-              <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                 <Mail className="w-4 h-4 text-[#B68D40]" />
                 <a href="mailto:ghardaar24@gmail.com">ghardaar24@gmail.com</a>
               </motion.li>
