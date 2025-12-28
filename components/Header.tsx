@@ -11,8 +11,6 @@ import {
   Plus,
   LayoutDashboard,
   ChevronDown,
-  Calculator,
-  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
@@ -30,8 +28,8 @@ const propertyDropdownLinks = [
 ];
 
 const resourcesDropdownLinks = [
-  { href: "/calculators", label: "Calculators", icon: Calculator },
-  { href: "/real-estate-guide", label: "Real Estate Guide", icon: BookOpen },
+  { href: "/calculators", label: "Calculators" },
+  { href: "/real-estate-guide", label: "Real Estate Guide" },
 ];
 
 function HeaderContent() {
@@ -185,7 +183,6 @@ function HeaderContent() {
                         className="nav-dropdown-item"
                         onClick={() => setIsResourcesOpen(false)}
                       >
-                        <link.icon className="w-4 h-4" />
                         {link.label}
                       </Link>
                     ))}
@@ -395,7 +392,6 @@ function HeaderContent() {
                     className="mobile-nav-link mobile-nav-sublink"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <link.icon className="w-4 h-4" />
                     {link.label}
                   </Link>
                 </motion.div>
