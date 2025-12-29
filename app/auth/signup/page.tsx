@@ -13,7 +13,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  ArrowLeft,
   CheckCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -221,13 +220,6 @@ export default function SignupPage() {
       >
         <div className="auth-card">
           <div className="auth-header">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
             <Link href="/" className="auth-logo">
               <Image
                 src="/logo2.png"

@@ -5,15 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ArrowLeft,
-  Phone,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 
 function LoginForm() {
@@ -189,13 +181,6 @@ export default function LoginPage() {
       >
         <div className="auth-card">
           <div className="auth-header">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
             <Link href="/" className="auth-logo">
               <Image
                 src="/logo2.png"
