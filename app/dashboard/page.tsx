@@ -341,7 +341,6 @@ export default function DashboardPage() {
               : `You don't have any ${activeTab} properties.`}
           </p>
           <Link href="/properties/submit" className="dashboard-empty-btn">
-            <Plus className="w-5 h-5" />
             Submit Your First Property
           </Link>
         </motion.div>

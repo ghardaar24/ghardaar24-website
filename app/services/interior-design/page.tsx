@@ -18,6 +18,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const services = [
   {
@@ -137,218 +139,223 @@ const features = [
 
 export default function InteriorDesignPage() {
   return (
-    <main className="service-page">
-      {/* Hero Section */}
-      <section className="service-hero service-hero-interior">
-        <div className="container">
-          <motion.div
-            className="service-hero-content"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="service-hero-icon interior">
-              <Palette className="w-12 h-12" />
-            </div>
-            <h1 className="service-hero-title">Interior Design Services</h1>
-            <p className="service-hero-subtitle">
-              Your home is a reflection of who you are. Our expert designers
-              create stunning, personalized interiors that combine aesthetics
-              with functionality. From concept to completion, we handle
-              everything while you sit back and watch your dream home come to
-              life.
-            </p>
-            <div className="service-hero-cta">
-              <Link href="#contact" className="btn-primary">
-                Get Free Quote
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link href="/properties" className="btn-secondary">
-                Find Your Home First
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="service-benefits">
-        <div className="container">
-          <motion.div
-            className="section-header section-header-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="section-label">Our Expertise</span>
-            <h2 className="section-title-new">
-              Complete Home Interior Solutions
-            </h2>
-            <p className="section-subtitle">
-              From living rooms to bathrooms, we design every corner of your
-              home with equal care and attention
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="service-benefits-grid extended"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {services.map((service) => (
-              <motion.div
-                key={service.title}
-                className="service-benefit-card"
-                variants={fadeInUp}
-              >
-                <div className="service-benefit-icon interior">
-                  <service.icon className="w-6 h-6" />
-                </div>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Design Styles */}
-      <section className="service-styles">
-        <div className="container">
-          <motion.div
-            className="section-header section-header-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="section-label">Design Styles</span>
-            <h2 className="section-title-new">Pick Your Style</h2>
-            <p className="section-subtitle">
-              Whether you prefer contemporary minimalism or traditional warmth,
-              we create designs that reflect your personality
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="styles-grid extended"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            {designStyles.map((style) => (
-              <div key={style.name} className="style-card extended">
-                <Sparkles className="w-6 h-6" />
-                <span className="style-name">{style.name}</span>
-                <span className="style-desc">{style.description}</span>
+    <>
+      <Header />
+      <main className="service-page">
+        {/* Hero Section */}
+        <section className="service-hero">
+          <div className="container">
+            <motion.div
+              className="service-hero-content"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="service-hero-icon">
+                <Palette className="w-12 h-12" />
               </div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+              <h1 className="service-hero-title">Interior Design Services</h1>
+              <p className="service-hero-subtitle">
+                Your home is a reflection of who you are. Our expert designers
+                create stunning, personalized interiors that combine aesthetics
+                with functionality. From concept to completion, we handle
+                everything while you sit back and watch your dream home come to
+                life.
+              </p>
+              <div className="service-hero-cta">
+                <Link href="#contact" className="btn-primary">
+                  Get Free Quote
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <Link href="/properties" className="btn-secondary">
+                  Find Your Home First
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Process Section */}
-      <section className="service-process">
-        <div className="container">
-          <motion.div
-            className="section-header section-header-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="section-label">Our Process</span>
-            <h2 className="section-title-new">How We Work</h2>
-            <p className="section-subtitle">
-              A transparent, step-by-step approach to bring your vision to life
-            </p>
-          </motion.div>
+        {/* Services Section */}
+        <section className="service-benefits">
+          <div className="container">
+            <motion.div
+              className="section-header section-header-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="section-label">Our Expertise</span>
+              <h2 className="section-title-new">
+                Complete Home Interior Solutions
+              </h2>
+              <p className="section-subtitle">
+                From living rooms to bathrooms, we design every corner of your
+                home with equal care and attention
+              </p>
+            </motion.div>
 
-          <motion.div
-            className="process-steps extended"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {processSteps.map((item) => (
-              <motion.div
-                key={item.step}
-                className="process-step-card"
-                variants={fadeInUp}
-              >
-                <span className="process-step-number">{item.step}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+            <motion.div
+              className="service-benefits-grid extended"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {services.map((service) => (
+                <motion.div
+                  key={service.title}
+                  className="service-benefit-card"
+                  variants={fadeInUp}
+                >
+                  <div className="service-benefit-icon">
+                    <service.icon className="w-6 h-6" />
+                  </div>
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Features List */}
-      <section className="service-features-list">
-        <div className="container">
-          <motion.div
-            className="features-list-content"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2>Why Choose Ghardaar24 Interior Design?</h2>
-            <div className="features-checklist">
-              {features.map((feature) => (
-                <div key={feature} className="feature-check-item">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>{feature}</span>
+        {/* Design Styles */}
+        <section className="service-styles">
+          <div className="container">
+            <motion.div
+              className="section-header section-header-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="section-label">Design Styles</span>
+              <h2 className="section-title-new">Pick Your Style</h2>
+              <p className="section-subtitle">
+                Whether you prefer contemporary minimalism or traditional
+                warmth, we create designs that reflect your personality
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="styles-grid extended"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {designStyles.map((style) => (
+                <div key={style.name} className="style-card extended">
+                  <Sparkles className="w-6 h-6" />
+                  <span className="style-name">{style.name}</span>
+                  <span className="style-desc">{style.description}</span>
                 </div>
               ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="service-contact">
-        <div className="container">
-          <motion.div
-            className="service-contact-card interior"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="service-contact-content">
-              <h2>Ready to Transform Your Space?</h2>
-              <p>
-                Get a free consultation with our interior design experts.
-                We&apos;ll visit your home, understand your requirements, and
-                provide a detailed quote - all at no cost. Let&apos;s bring your
-                vision to life.
+        {/* Process Section */}
+        <section className="service-process">
+          <div className="container">
+            <motion.div
+              className="section-header section-header-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="section-label">Our Process</span>
+              <h2 className="section-title-new">How We Work</h2>
+              <p className="section-subtitle">
+                A transparent, step-by-step approach to bring your vision to
+                life
               </p>
-            </div>
-            <div className="service-contact-cta">
-              <a href="tel:+919876543210" className="btn-primary">
-                <Phone className="w-5 h-5" />
-                Call Now
-              </a>
-              <a
-                href="https://wa.me/919876543210?text=Hi, I'm interested in interior design services from Ghardaar24"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary"
-              >
-                WhatsApp Us
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-    </main>
+            </motion.div>
+
+            <motion.div
+              className="process-steps extended"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {processSteps.map((item) => (
+                <motion.div
+                  key={item.step}
+                  className="process-step-card"
+                  variants={fadeInUp}
+                >
+                  <span className="process-step-number">{item.step}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features List */}
+        <section className="service-features-list">
+          <div className="container">
+            <motion.div
+              className="features-list-content"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2>Why Choose Ghardaar24 Interior Design?</h2>
+              <div className="features-checklist">
+                {features.map((feature) => (
+                  <div key={feature} className="feature-check-item">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="service-contact">
+          <div className="container">
+            <motion.div
+              className="service-contact-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="service-contact-content">
+                <h2>Ready to Transform Your Space?</h2>
+                <p>
+                  Get a free consultation with our interior design experts.
+                  We&apos;ll visit your home, understand your requirements, and
+                  provide a detailed quote - all at no cost. Let&apos;s bring
+                  your vision to life.
+                </p>
+              </div>
+              <div className="service-contact-cta">
+                <a href="tel:+919876543210" className="btn-primary">
+                  <Phone className="w-5 h-5" />
+                  Call Now
+                </a>
+                <a
+                  href="https://wa.me/919876543210?text=Hi, I'm interested in interior design services from Ghardaar24"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                >
+                  WhatsApp Us
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
   );
 }
