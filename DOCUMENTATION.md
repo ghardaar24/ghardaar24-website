@@ -64,29 +64,44 @@ Ghardaar24 follows a modern Next.js 16 architecture with the App Router pattern.
 
 Stores all property listings with their details.
 
-| Column            | Type        | Description                                        |
-| ----------------- | ----------- | -------------------------------------------------- |
-| `id`              | UUID        | Primary key                                        |
-| `title`           | TEXT        | Property title                                     |
-| `description`     | TEXT        | Detailed description                               |
-| `price`           | BIGINT      | Price in INR                                       |
-| `state`           | TEXT        | State name                                         |
-| `city`            | TEXT        | City name                                          |
-| `area`            | TEXT        | Area/Locality                                      |
-| `address`         | TEXT        | Full address                                       |
-| `bedrooms`        | INTEGER     | Number of bedrooms                                 |
-| `bathrooms`       | INTEGER     | Number of bathrooms                                |
-| `property_type`   | TEXT        | apartment, house, villa, plot, commercial          |
-| `listing_type`    | TEXT        | sale or rent                                       |
-| `images`          | TEXT[]      | Array of image URLs                                |
-| `amenities`       | TEXT[]      | Array of amenities                                 |
-| `featured`        | BOOLEAN     | Featured listing flag                              |
-| `status`          | TEXT        | active, sold, rented, inactive                     |
-| `possession`      | TEXT        | Immediate, 2025, 2026, etc.                        |
-| `approval_status` | TEXT        | pending, approved, rejected (for user submissions) |
-| `submitted_by`    | UUID        | User ID who submitted (nullable)                   |
-| `created_at`      | TIMESTAMPTZ | Creation timestamp                                 |
-| `updated_at`      | TIMESTAMPTZ | Last update timestamp                              |
+| Column              | Type        | Description                                        |
+| ------------------- | ----------- | -------------------------------------------------- |
+| `id`                | UUID        | Primary key                                        |
+| `title`             | TEXT        | Property title                                     |
+| `description`       | TEXT        | Detailed description                               |
+| `price`             | BIGINT      | Price in INR                                       |
+| `state`             | TEXT        | State name                                         |
+| `city`              | TEXT        | City name                                          |
+| `area`              | TEXT        | Area/Locality                                      |
+| `address`           | TEXT        | Full address                                       |
+| `bedrooms`          | INTEGER     | Number of bedrooms                                 |
+| `bathrooms`         | INTEGER     | Number of bathrooms                                |
+| `property_type`     | TEXT        | apartment, house, villa, plot, commercial          |
+| `listing_type`      | TEXT        | sale, rent, or resale                              |
+| `images`            | TEXT[]      | Array of image URLs                                |
+| `amenities`         | TEXT[]      | Array of amenities                                 |
+| `brochure_urls`     | TEXT[]      | Array of brochure URLs                             |
+| `featured`          | BOOLEAN     | Featured listing flag                              |
+| `status`            | TEXT        | active, sold, rented, inactive                     |
+| `land_parcel`       | INTEGER     | Land parcel size                                   |
+| `towers`            | INTEGER     | Number of towers                                   |
+| `floors`            | TEXT        | Floor information                                  |
+| `config`            | TEXT        | Property configuration                             |
+| `carpet_area`       | TEXT        | Carpet area details                                |
+| `rera_no`           | TEXT        | RERA registration number                           |
+| `possession_status` | TEXT        | Current possession status                          |
+| `target_possession` | TEXT        | Target possession date                             |
+| `litigation`        | BOOLEAN     | Litigation flag                                    |
+| `owner_name`        | TEXT        | Property owner's name (for user submissions)       |
+| `owner_phone`       | TEXT        | Property owner's phone (for user submissions)      |
+| `owner_email`       | TEXT        | Property owner's email (for user submissions)      |
+| `approval_status`   | TEXT        | pending, approved, rejected (for user submissions) |
+| `submitted_by`      | UUID        | User ID who submitted (nullable)                   |
+| `submission_date`   | TIMESTAMPTZ | Date of submission                                 |
+| `approval_date`     | TIMESTAMPTZ | Date of approval                                   |
+| `rejection_reason`  | TEXT        | Reason for rejection (if rejected)                 |
+| `created_at`        | TIMESTAMPTZ | Creation timestamp                                 |
+| `updated_at`        | TIMESTAMPTZ | Last update timestamp                              |
 
 ### Inquiries Table
 
@@ -100,7 +115,8 @@ Stores customer inquiries submitted through contact forms.
 | `email`       | TEXT        | Customer email                   |
 | `phone`       | TEXT        | Customer phone                   |
 | `message`     | TEXT        | Inquiry message                  |
-| `is_read`     | BOOLEAN     | Read status                      |
+| `state`       | TEXT        | Customer's state                 |
+| `city`        | TEXT        | Customer's city                  |
 | `created_at`  | TIMESTAMPTZ | Submission timestamp             |
 
 ### User Profiles Table
@@ -110,9 +126,9 @@ Stores registered user information.
 | Column       | Type        | Description                |
 | ------------ | ----------- | -------------------------- |
 | `id`         | UUID        | Primary key (matches auth) |
-| `full_name`  | TEXT        | User's full name           |
-| `phone`      | TEXT        | Phone number               |
-| `email`      | TEXT        | Email address              |
+| `name`       | TEXT        | User's full name           |
+| `phone`      | TEXT        | Phone number (unique)      |
+| `email`      | TEXT        | Email address (unique)     |
 | `created_at` | TIMESTAMPTZ | Registration timestamp     |
 
 ### Admins Table
@@ -123,28 +139,22 @@ Stores admin login credentials (separate from user auth).
 | ------------ | ----------- | ------------------ |
 | `id`         | UUID        | Primary key        |
 | `email`      | TEXT        | Admin email        |
+| `name`       | TEXT        | Admin name         |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 
-### States Table
+### Locations Table
 
-Stores Indian states for location filtering.
+Stores state/city combinations for location dropdown filtering.
 
-| Column       | Type        | Description        |
-| ------------ | ----------- | ------------------ |
-| `id`         | UUID        | Primary key        |
-| `name`       | TEXT        | State name         |
-| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| Column       | Type        | Description                |
+| ------------ | ----------- | -------------------------- |
+| `id`         | UUID        | Primary key                |
+| `state`      | TEXT        | State name                 |
+| `city`       | TEXT        | City name                  |
+| `is_active`  | BOOLEAN     | Whether location is active |
+| `created_at` | TIMESTAMPTZ | Creation timestamp         |
 
-### Cities Table
-
-Stores cities linked to states for location filtering.
-
-| Column       | Type        | Description               |
-| ------------ | ----------- | ------------------------- |
-| `id`         | UUID        | Primary key               |
-| `name`       | TEXT        | City name                 |
-| `state_id`   | UUID        | Reference to states table |
-| `created_at` | TIMESTAMPTZ | Creation timestamp        |
+> **Note**: State and city are stored together with a unique constraint on the combination.
 
 ---
 
@@ -162,6 +172,20 @@ export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 ```
+
+### Lib Utilities
+
+| Utility         | Path                   | Description                            |
+| --------------- | ---------------------- | -------------------------------------- |
+| `supabase`      | `lib/supabase.ts`      | Supabase client configuration          |
+| `auth`          | `lib/auth.tsx`         | User authentication context provider   |
+| `admin-auth`    | `lib/admin-auth.tsx`   | Admin authentication context provider  |
+| `seo`           | `lib/seo.ts`           | SEO configuration and metadata         |
+| `motion`        | `lib/motion.tsx`       | Animation utilities with Framer Motion |
+| `rate-limit`    | `lib/rate-limit.ts`    | API rate limiting utilities            |
+| `amenityIcons`  | `lib/amenityIcons.ts`  | Amenity icon mappings                  |
+| `indian-cities` | `lib/indian-cities.ts` | State and city data for India          |
+| `utils`         | `lib/utils.ts`         | General helper functions               |
 
 ### Common Queries
 
@@ -247,7 +271,7 @@ const { data, error } = await query;
 | `PopularLocalities`     | `components/PopularLocalities.tsx`     | Grid of popular locations                  |
 | `InquiryCTA`            | `components/InquiryCTA.tsx`            | Call to action for inquiries               |
 | `ScrollToButton`        | `components/ScrollToButton.tsx`        | Button to scroll to specific section       |
-| `LoginModal`            | `components/LoginModal.tsx`            | User login/signup modal                    |
+| `LoginModal`            | `components/LoginModal.tsx`            | User login/signup modal with forgot pass   |
 | `PropertyAuthGuard`     | `components/PropertyAuthGuard.tsx`     | Auth protection for property pages         |
 | `PropertyDetailsClient` | `components/PropertyDetailsClient.tsx` | Client-side property details wrapper       |
 | `HomeClient`            | `components/HomeClient.tsx`            | Client-side homepage components            |
@@ -260,24 +284,30 @@ const { data, error } = await query;
 
 ### Pages
 
-| Page               | Path                             | Description                                |
-| ------------------ | -------------------------------- | ------------------------------------------ |
-| Home               | `app/page.tsx`                   | Landing page with hero and features        |
-| Properties         | `app/properties/page.tsx`        | Property listings with filters             |
-| Property Details   | `app/properties/[id]/page.tsx`   | Individual property page                   |
-| Submit Property    | `app/properties/submit/page.tsx` | User property submission form              |
-| User Dashboard     | `app/dashboard/page.tsx`         | User's submitted properties overview       |
-| Real Estate Guide  | `app/real-estate-guide/page.tsx` | Educational guide on real estate           |
-| Calculators        | `app/calculators/page.tsx`       | Financial calculators (EMI, Mortgage, ROI) |
-| Admin Dashboard    | `app/admin/page.tsx`             | Admin overview and statistics              |
-| Admin Login        | `app/admin/login/page.tsx`       | Admin authentication page                  |
-| Manage Properties  | `app/admin/properties/page.tsx`  | Property CRUD operations                   |
-| Property Approvals | `app/admin/approvals/page.tsx`   | Review/approve user-submitted properties   |
-| Manage Locations   | `app/admin/locations/page.tsx`   | State and city management                  |
-| Manage Inquiries   | `app/admin/inquiries/page.tsx`   | Inquiry management                         |
-| Manage Leads       | `app/admin/leads/page.tsx`       | User leads management                      |
-| User Login         | `app/auth/login/page.tsx`        | User authentication page                   |
-| User Signup        | `app/auth/signup/page.tsx`       | User registration page                     |
+| Page                  | Path                                    | Description                                |
+| --------------------- | --------------------------------------- | ------------------------------------------ |
+| Home                  | `app/page.tsx`                          | Landing page with hero and features        |
+| Properties            | `app/properties/page.tsx`               | Property listings with filters             |
+| Property Details      | `app/properties/[id]/page.tsx`          | Individual property page                   |
+| Submit Property       | `app/properties/submit/page.tsx`        | User property submission form              |
+| User Dashboard        | `app/dashboard/page.tsx`                | User's submitted properties overview       |
+| Real Estate Guide     | `app/real-estate-guide/page.tsx`        | Educational guide on real estate           |
+| Calculators           | `app/calculators/page.tsx`              | Financial calculators (EMI, Mortgage, ROI) |
+| Home Loans            | `app/services/home-loans/page.tsx`      | Home loans service information             |
+| Interior Design       | `app/services/interior-design/page.tsx` | Interior design service information        |
+| Admin Dashboard       | `app/admin/page.tsx`                    | Admin overview and statistics              |
+| Admin Login           | `app/admin/login/page.tsx`              | Admin authentication page                  |
+| Admin Forgot Password | `app/admin/forgot-password/page.tsx`    | Admin password reset request               |
+| Admin Reset Password  | `app/admin/reset-password/page.tsx`     | Admin password reset confirmation          |
+| Manage Properties     | `app/admin/properties/page.tsx`         | Property CRUD operations                   |
+| Property Approvals    | `app/admin/approvals/page.tsx`          | Review/approve user-submitted properties   |
+| Manage Locations      | `app/admin/locations/page.tsx`          | State and city management                  |
+| Manage Inquiries      | `app/admin/inquiries/page.tsx`          | Inquiry management                         |
+| Manage Leads          | `app/admin/leads/page.tsx`              | User leads management                      |
+| User Login            | `app/auth/login/page.tsx`               | User authentication page                   |
+| User Signup           | `app/auth/signup/page.tsx`              | User registration page                     |
+| User Forgot Password  | `app/auth/forgot-password/page.tsx`     | User password reset request                |
+| User Reset Password   | `app/auth/reset-password/page.tsx`      | User password reset confirmation           |
 
 ### API Routes
 
@@ -415,6 +445,15 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.2.0 (December 2024)
+
+- Forgot Password / Reset Password functionality for users and admins
+- Services pages (Home Loans, Interior Design)
+- Rate limiting on API endpoints
+- Enhanced password complexity requirements
+- Security improvements with Content-Security-Policy headers
+- Owner details collection for user property submissions
 
 ### v1.1.0 (December 2024)
 

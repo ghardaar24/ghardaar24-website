@@ -31,6 +31,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **EMI Calculator** - Built-in mortgage calculator for quick affordability checks
 - **Mortgage Calculator** - Detailed loan amortization with monthly payment breakdown
 - **ROI Calculator** - Investment return analysis for rental properties
+- **Services Pages** - Home Loans and Interior Design service information
 - **Agent Profile** - Showcase agent details, expertise, and integrated contact form
 - **Popular Localities** - Explore properties in top trending areas
 - **Customer Testimonials** - Social proof with verified client reviews
@@ -39,11 +40,13 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Contact Forms** - Direct inquiry submission for properties of interest
 - **Responsive Design** - Mobile-first approach with seamless experience across all devices
 - **User Authentication** - Signup and login with phone number for property access
+- **Password Recovery** - Forgot password and reset password functionality
 - **Social Media Links** - Connect via Instagram, Facebook, and YouTube
 
 ### 🔐 Admin Dashboard
 
 - **Secure Admin Authentication** - Separate admin auth with Supabase integration
+- **Password Recovery** - Forgot password and reset password for admin accounts
 - **Property Management** - Full CRUD operations for listings
 - **Property Approvals** - Review and approve/reject user-submitted properties
 - **AI-Powered Descriptions** - Generate property descriptions using Google Gemini API
@@ -60,6 +63,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Modern Animations** - Smooth transitions powered by Framer Motion
 - **Type Safety** - Full TypeScript implementation
 - **Row Level Security** - Secure database access with Supabase RLS policies
+- **API Rate Limiting** - Protection against abuse with rate limiting utilities
 
 ---
 
@@ -100,12 +104,19 @@ ghardaar24-web/
 │   │   └── page.tsx              # Educational real estate guide
 │   ├── calculators/
 │   │   └── page.tsx              # Financial calculators page
+│   ├── services/
+│   │   ├── home-loans/           # Home loans service page
+│   │   └── interior-design/      # Interior design service page
 │   ├── auth/
 │   │   ├── login/page.tsx        # User login
-│   │   └── signup/page.tsx       # User signup
+│   │   ├── signup/page.tsx       # User signup
+│   │   ├── forgot-password/      # User password reset request
+│   │   └── reset-password/       # User password reset confirmation
 │   └── admin/
 │       ├── layout.tsx            # Admin layout
 │       ├── login/page.tsx        # Admin login
+│       ├── forgot-password/      # Admin password reset request
+│       ├── reset-password/       # Admin password reset confirmation
 │       ├── page.tsx              # Dashboard
 │       ├── properties/           # Property management
 │       ├── approvals/page.tsx    # User property approvals
@@ -123,7 +134,7 @@ ghardaar24-web/
 │   ├── EMICalculator.tsx         # EMI calculator widget
 │   ├── MortgageCalculator.tsx    # Detailed mortgage calculator
 │   ├── ROICalculator.tsx         # Investment ROI calculator
-│   ├── LoginModal.tsx            # User login modal
+│   ├── LoginModal.tsx            # User login modal with forgot password
 │   ├── PropertyAuthGuard.tsx     # Auth guard for property pages
 │   └── ...                       # Other components
 ├── lib/                          # Utility libraries
@@ -132,6 +143,7 @@ ghardaar24-web/
 │   ├── admin-auth.tsx            # Admin auth context provider
 │   ├── seo.ts                    # SEO configuration
 │   ├── motion.tsx                # Animation utilities
+│   ├── rate-limit.ts             # API rate limiting utilities
 │   ├── amenityIcons.ts           # Amenity icon mappings
 │   ├── indian-cities.ts          # State & city data
 │   └── utils.ts                  # Helper functions
