@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useMemo } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useState, useMemo, useRef } from "react";
+import { Search, SlidersHorizontal, X, IndianRupee } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
@@ -20,6 +20,67 @@ interface FilterState {
 
 const propertyTypes = ["apartment", "house", "villa", "plot", "commercial"];
 const bedroomOptions = ["1", "2", "3", "4", "5+"];
+
+// Price presets with Indian notation (K = Thousand, L = Lakh, Cr = Crore)
+const pricePresets = [
+  { value: "10000", label: "10K", fullLabel: "₹10,000" },
+  { value: "50000", label: "50K", fullLabel: "₹50,000" },
+  { value: "100000", label: "1L", fullLabel: "₹1 Lakh" },
+  { value: "500000", label: "5L", fullLabel: "₹5 Lakh" },
+  { value: "1000000", label: "10L", fullLabel: "₹10 Lakh" },
+  { value: "2500000", label: "25L", fullLabel: "₹25 Lakh" },
+  { value: "5000000", label: "50L", fullLabel: "₹50 Lakh" },
+  { value: "7500000", label: "75L", fullLabel: "₹75 Lakh" },
+  { value: "10000000", label: "1Cr", fullLabel: "₹1 Crore" },
+  { value: "15000000", label: "1.5Cr", fullLabel: "₹1.5 Crore" },
+  { value: "20000000", label: "2Cr", fullLabel: "₹2 Crore" },
+  { value: "30000000", label: "3Cr", fullLabel: "₹3 Crore" },
+  { value: "50000000", label: "5Cr", fullLabel: "₹5 Crore" },
+  { value: "100000000", label: "10Cr", fullLabel: "₹10 Crore" },
+];
+
+// Format price to Indian notation
+const formatPriceIndian = (value: string): string => {
+  if (!value) return "";
+  const num = parseInt(value);
+  if (num >= 10000000) {
+    return `₹${(num / 10000000).toFixed(num % 10000000 === 0 ? 0 : 1)} Cr`;
+  } else if (num >= 100000) {
+    return `₹${(num / 100000).toFixed(num % 100000 === 0 ? 0 : 1)} L`;
+  } else if (num >= 1000) {
+    return `₹${(num / 1000).toFixed(0)}K`;
+  }
+  return `₹${num.toLocaleString("en-IN")}`;
+};
+
+// Parse Indian notation to number
+const parseIndianNotation = (input: string): string => {
+  const cleaned = input.replace(/[₹,\s]/g, "").toUpperCase();
+
+  // Match patterns like 10K, 50L, 1CR, 1.5CR, etc.
+  const croreMatch = cleaned.match(/^(\d+\.?\d*)\s*CR$/);
+  if (croreMatch) {
+    return String(Math.round(parseFloat(croreMatch[1]) * 10000000));
+  }
+
+  const lakhMatch = cleaned.match(/^(\d+\.?\d*)\s*L$/);
+  if (lakhMatch) {
+    return String(Math.round(parseFloat(lakhMatch[1]) * 100000));
+  }
+
+  const thousandMatch = cleaned.match(/^(\d+\.?\d*)\s*K$/);
+  if (thousandMatch) {
+    return String(Math.round(parseFloat(thousandMatch[1]) * 1000));
+  }
+
+  // If just a number, return it
+  const numMatch = cleaned.match(/^(\d+)$/);
+  if (numMatch) {
+    return numMatch[1];
+  }
+
+  return "";
+};
 
 const filterFields = [
   {
@@ -46,33 +107,6 @@ const filterFields = [
     ],
   },
   {
-    name: "min_price",
-    label: "Min Price",
-    options: [
-      { value: "", label: "No Min" },
-      { value: "7500000", label: "₹75 Lakh" },
-      { value: "10000000", label: "₹1 Crore" },
-      { value: "15000000", label: "₹1.5 Crore" },
-      { value: "20000000", label: "₹2 Crore" },
-      { value: "25000000", label: "₹2.5 Crore" },
-      { value: "30000000", label: "₹3 Crore" },
-    ],
-  },
-  {
-    name: "max_price",
-    label: "Max Price",
-    options: [
-      { value: "", label: "No Max" },
-      { value: "10000000", label: "₹1 Crore" },
-      { value: "15000000", label: "₹1.5 Crore" },
-      { value: "20000000", label: "₹2 Crore" },
-      { value: "25000000", label: "₹2.5 Crore" },
-      { value: "30000000", label: "₹3 Crore" },
-      { value: "50000000", label: "₹5 Crore" },
-      { value: "100000000", label: "₹10 Crore" },
-    ],
-  },
-  {
     name: "possession",
     label: "Possession",
     options: [
@@ -94,6 +128,8 @@ export default function PropertyFilters() {
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(
     []
   );
+  const [customMinPrice, setCustomMinPrice] = useState("");
+  const [customMaxPrice, setCustomMaxPrice] = useState("");
 
   useEffect(() => {
     async function fetchLocations() {
@@ -350,6 +386,216 @@ export default function PropertyFilters() {
                   </select>
                 </div>
               ))}
+            </div>
+
+            {/* Enhanced Price Selector */}
+            <div className="price-filter-section">
+              <div className="price-filter-header">
+                <IndianRupee className="w-4 h-4" />
+                <span>Price Range</span>
+                {(filters.min_price || filters.max_price) && (
+                  <span className="price-range-display">
+                    {filters.min_price
+                      ? formatPriceIndian(filters.min_price)
+                      : "No Min"}
+                    {" - "}
+                    {filters.max_price
+                      ? formatPriceIndian(filters.max_price)
+                      : "No Max"}
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Select Buttons */}
+              <div className="price-quick-select">
+                <div className="price-quick-label">Quick Select:</div>
+                <div className="price-quick-buttons">
+                  {pricePresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      className={`price-preset-btn ${
+                        filters.min_price === preset.value ||
+                        filters.max_price === preset.value
+                          ? "active"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        // If clicking on a selected min_price, clear it
+                        if (filters.min_price === preset.value) {
+                          setFilters({ ...filters, min_price: "" });
+                        }
+                        // If clicking on a selected max_price, clear it
+                        else if (filters.max_price === preset.value) {
+                          setFilters({ ...filters, max_price: "" });
+                        }
+                        // If no min_price set, set it
+                        else if (!filters.min_price) {
+                          setFilters({ ...filters, min_price: preset.value });
+                          setCustomMinPrice(preset.label);
+                        }
+                        // If min_price set but no max_price, set max if greater than min
+                        else if (!filters.max_price) {
+                          if (
+                            parseInt(preset.value) >=
+                            parseInt(filters.min_price)
+                          ) {
+                            setFilters({ ...filters, max_price: preset.value });
+                            setCustomMaxPrice(preset.label);
+                          } else {
+                            // If less than min, make it the new min
+                            setFilters({
+                              ...filters,
+                              min_price: preset.value,
+                              max_price: filters.min_price,
+                            });
+                            setCustomMinPrice(preset.label);
+                          }
+                        }
+                        // Both set, replace the min_price
+                        else {
+                          setFilters({ ...filters, min_price: preset.value });
+                          setCustomMinPrice(preset.label);
+                        }
+                      }}
+                      title={preset.fullLabel}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Price Inputs */}
+              <div className="price-range-inputs">
+                <div className="price-input-group">
+                  <label className="filter-label">Min Price</label>
+                  <div className="price-input-wrapper">
+                    <span className="price-input-prefix">₹</span>
+                    <input
+                      type="text"
+                      className="price-input"
+                      placeholder="e.g., 10L or 50000"
+                      value={
+                        customMinPrice ||
+                        (filters.min_price
+                          ? formatPriceIndian(filters.min_price).replace(
+                              "₹",
+                              ""
+                            )
+                          : "")
+                      }
+                      onChange={(e) => {
+                        setCustomMinPrice(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        const parsed = parseIndianNotation(e.target.value);
+                        if (parsed) {
+                          setFilters({ ...filters, min_price: parsed });
+                          setCustomMinPrice("");
+                        } else if (!e.target.value) {
+                          setFilters({ ...filters, min_price: "" });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const parsed = parseIndianNotation(customMinPrice);
+                          if (parsed) {
+                            setFilters({ ...filters, min_price: parsed });
+                            setCustomMinPrice("");
+                          }
+                        }
+                      }}
+                    />
+                    {filters.min_price && (
+                      <button
+                        className="price-clear-btn"
+                        onClick={() => {
+                          setFilters({ ...filters, min_price: "" });
+                          setCustomMinPrice("");
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="price-input-hint">
+                    Use K, L, Cr (e.g., 50L, 1Cr)
+                  </span>
+                </div>
+
+                <div className="price-input-separator">to</div>
+
+                <div className="price-input-group">
+                  <label className="filter-label">Max Price</label>
+                  <div className="price-input-wrapper">
+                    <span className="price-input-prefix">₹</span>
+                    <input
+                      type="text"
+                      className="price-input"
+                      placeholder="e.g., 2Cr or 5000000"
+                      value={
+                        customMaxPrice ||
+                        (filters.max_price
+                          ? formatPriceIndian(filters.max_price).replace(
+                              "₹",
+                              ""
+                            )
+                          : "")
+                      }
+                      onChange={(e) => {
+                        setCustomMaxPrice(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        const parsed = parseIndianNotation(e.target.value);
+                        if (parsed) {
+                          setFilters({ ...filters, max_price: parsed });
+                          setCustomMaxPrice("");
+                        } else if (!e.target.value) {
+                          setFilters({ ...filters, max_price: "" });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const parsed = parseIndianNotation(customMaxPrice);
+                          if (parsed) {
+                            setFilters({ ...filters, max_price: parsed });
+                            setCustomMaxPrice("");
+                          }
+                        }
+                      }}
+                    />
+                    {filters.max_price && (
+                      <button
+                        className="price-clear-btn"
+                        onClick={() => {
+                          setFilters({ ...filters, max_price: "" });
+                          setCustomMaxPrice("");
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="price-input-hint">
+                    Use K, L, Cr (e.g., 50L, 1Cr)
+                  </span>
+                </div>
+              </div>
+
+              {/* Clear Price Filters */}
+              {(filters.min_price || filters.max_price) && (
+                <button
+                  className="clear-price-btn"
+                  onClick={() => {
+                    setFilters({ ...filters, min_price: "", max_price: "" });
+                    setCustomMinPrice("");
+                    setCustomMaxPrice("");
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                  Clear Price Filters
+                </button>
+              )}
             </div>
 
             <div className="filters-actions">

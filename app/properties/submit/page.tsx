@@ -14,6 +14,7 @@ import {
   Home,
   Sparkles,
   Loader2,
+  IndianRupee,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -81,6 +82,68 @@ const initialFormData: PropertyFormData = {
   owner_email: "",
 };
 
+// Price presets with Indian notation (K = Thousand, L = Lakh, Cr = Crore)
+const pricePresets = [
+  { value: "10000", label: "10K", fullLabel: "₹10,000" },
+  { value: "50000", label: "50K", fullLabel: "₹50,000" },
+  { value: "100000", label: "1L", fullLabel: "₹1 Lakh" },
+  { value: "500000", label: "5L", fullLabel: "₹5 Lakh" },
+  { value: "1000000", label: "10L", fullLabel: "₹10 Lakh" },
+  { value: "2500000", label: "25L", fullLabel: "₹25 Lakh" },
+  { value: "5000000", label: "50L", fullLabel: "₹50 Lakh" },
+  { value: "7500000", label: "75L", fullLabel: "₹75 Lakh" },
+  { value: "10000000", label: "1Cr", fullLabel: "₹1 Crore" },
+  { value: "15000000", label: "1.5Cr", fullLabel: "₹1.5 Crore" },
+  { value: "20000000", label: "2Cr", fullLabel: "₹2 Crore" },
+  { value: "30000000", label: "3Cr", fullLabel: "₹3 Crore" },
+  { value: "50000000", label: "5Cr", fullLabel: "₹5 Crore" },
+  { value: "100000000", label: "10Cr", fullLabel: "₹10 Crore" },
+];
+
+// Format price to Indian notation
+const formatPriceIndian = (value: string): string => {
+  if (!value) return "";
+  const num = parseInt(value);
+  if (isNaN(num)) return "";
+  if (num >= 10000000) {
+    return `₹${(num / 10000000).toFixed(num % 10000000 === 0 ? 0 : 1)} Cr`;
+  } else if (num >= 100000) {
+    return `₹${(num / 100000).toFixed(num % 100000 === 0 ? 0 : 1)} L`;
+  } else if (num >= 1000) {
+    return `₹${(num / 1000).toFixed(0)}K`;
+  }
+  return `₹${num.toLocaleString("en-IN")}`;
+};
+
+// Parse Indian notation to number
+const parseIndianNotation = (input: string): string => {
+  const cleaned = input.replace(/[₹,\s]/g, "").toUpperCase();
+
+  // Match patterns like 10K, 50L, 1CR, 1.5CR, etc.
+  const croreMatch = cleaned.match(/^(\d+\.?\d*)\s*CR$/);
+  if (croreMatch) {
+    return String(Math.round(parseFloat(croreMatch[1]) * 10000000));
+  }
+
+  const lakhMatch = cleaned.match(/^(\d+\.?\d*)\s*L$/);
+  if (lakhMatch) {
+    return String(Math.round(parseFloat(lakhMatch[1]) * 100000));
+  }
+
+  const thousandMatch = cleaned.match(/^(\d+\.?\d*)\s*K$/);
+  if (thousandMatch) {
+    return String(Math.round(parseFloat(thousandMatch[1]) * 1000));
+  }
+
+  // If just a number, return it
+  const numMatch = cleaned.match(/^(\d+)$/);
+  if (numMatch) {
+    return numMatch[1];
+  }
+
+  return "";
+};
+
 export default function SubmitPropertyPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
@@ -97,6 +160,7 @@ export default function SubmitPropertyPage() {
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brochureInputRef = useRef<HTMLInputElement>(null);
+  const [customPriceInput, setCustomPriceInput] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -694,23 +758,121 @@ export default function SubmitPropertyPage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
+              <div className="md:col-span-2 space-y-4">
                 <label
                   htmlFor="price"
                   className="block text-sm font-semibold text-[var(--foreground)]"
                 >
                   Price (₹) *
                 </label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  placeholder="e.g., 5000000"
-                  required
-                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
-                />
+
+                {/* Price Display */}
+                {formData.price && (
+                  <div className="flex items-center gap-2 text-[var(--primary)] font-semibold text-lg">
+                    <IndianRupee className="w-5 h-5" />
+                    <span>{formatPriceIndian(formData.price)}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, price: "" }));
+                        setCustomPriceInput("");
+                      }}
+                      className="ml-2 p-1 rounded-full bg-[var(--gray-100)] hover:bg-red-100 text-[var(--gray-500)] hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Select Buttons */}
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+                    Quick Select:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {pricePresets.map((preset) => (
+                      <button
+                        key={preset.value}
+                        type="button"
+                        className={`price-preset-btn ${
+                          formData.price === preset.value ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            price: preset.value,
+                          }));
+                          setCustomPriceInput("");
+                        }}
+                        title={preset.fullLabel}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Price Input */}
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+                    Or Enter Custom Price:
+                  </span>
+                  <div className="price-input-wrapper">
+                    <span className="price-input-prefix">₹</span>
+                    <input
+                      type="text"
+                      id="price"
+                      className="price-input"
+                      placeholder="e.g., 50L or 1.5Cr or 5000000"
+                      value={
+                        customPriceInput ||
+                        (formData.price
+                          ? formatPriceIndian(formData.price)
+                              .replace("₹", "")
+                              .trim()
+                          : "")
+                      }
+                      onChange={(e) => {
+                        setCustomPriceInput(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        const parsed = parseIndianNotation(e.target.value);
+                        if (parsed) {
+                          setFormData((prev) => ({ ...prev, price: parsed }));
+                          setCustomPriceInput("");
+                        } else if (!e.target.value) {
+                          setFormData((prev) => ({ ...prev, price: "" }));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const parsed = parseIndianNotation(customPriceInput);
+                          if (parsed) {
+                            setFormData((prev) => ({ ...prev, price: parsed }));
+                            setCustomPriceInput("");
+                          }
+                        }
+                      }}
+                    />
+                    {formData.price && (
+                      <button
+                        type="button"
+                        className="price-clear-btn"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, price: "" }));
+                          setCustomPriceInput("");
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-xs italic text-[var(--text-muted)]">
+                    Use K (Thousand), L (Lakh), Cr (Crore) — e.g., 50L, 1.5Cr,
+                    25L
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>
