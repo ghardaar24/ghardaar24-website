@@ -286,7 +286,7 @@ export default function LoginModal({
                     <input
                       id="modal-signup-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="8+ chars with uppercase, lowercase, and number"
+                      placeholder="Min 8 chars: A-Z, a-z, 0-9"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="login-modal-input"
