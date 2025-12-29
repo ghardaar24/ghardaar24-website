@@ -10964,9 +10964,9 @@ button:focus-visible {
 .login-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10977,13 +10977,22 @@ button:focus-visible {
 .login-modal {
   position: relative;
   background: white;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  max-width: 420px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-width: 440px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
+}
+
+@media (max-width: 480px) {
+  .login-modal {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+    max-width: 100%;
+  }
 }
 
 .login-modal-close {
@@ -10992,67 +11001,71 @@ button:focus-visible {
   right: 1rem;
   background: var(--surface-soft);
   border: none;
-  border-radius: var(--radius-full);
-  width: 2.5rem;
-  height: 2.5rem;
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   transition: all 0.2s ease;
 }
 
 .login-modal-close:hover {
-  background: var(--border);
+  background: var(--gray-200);
   color: var(--foreground);
+  transform: rotate(90deg);
 }
 
 .login-modal-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .login-modal-logo {
   display: inline-block;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .login-modal-logo-img {
   height: auto;
   width: auto;
-  max-width: 140px;
+  max-width: 120px;
 }
 
 .login-modal-title {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.375rem;
+  letter-spacing: -0.02em;
 }
 
 .login-modal-subtitle {
-  font-size: 0.938rem;
-  color: var(--text-secondary);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   margin: 0;
+  line-height: 1.5;
 }
 
 .login-modal-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.125rem;
 }
 
 .login-modal-input-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .login-modal-input-group label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--foreground);
+  letter-spacing: 0.01em;
 }
 
 .login-modal-input-wrapper {
@@ -11063,65 +11076,78 @@ button:focus-visible {
 
 .login-modal-input-icon {
   position: absolute;
-  left: 1rem;
-  width: 1.25rem;
-  height: 1.25rem;
+  left: 0.875rem;
+  width: 1.125rem;
+  height: 1.125rem;
   color: var(--text-muted);
   pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.login-modal-input-wrapper:focus-within .login-modal-input-icon {
+  color: var(--primary);
 }
 
 .login-modal-input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 1rem;
+  padding: 0.75rem 0.875rem 0.75rem 2.625rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 0.9375rem;
   color: var(--foreground);
-  background: white;
+  background: var(--gray-50);
   transition: all 0.2s ease;
+}
+
+.login-modal-input:hover {
+  border-color: var(--gray-300);
 }
 
 .login-modal-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(243, 106, 42, 0.1);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(243, 106, 42, 0.08);
 }
 
 .login-modal-input::placeholder {
   color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 .login-modal-password-toggle {
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.375rem;
   display: flex;
-  transition: color 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .login-modal-password-toggle:hover {
   color: var(--foreground);
+  background: var(--gray-100);
 }
 
 .login-modal-input-hint {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  display: none;
 }
 
 .login-modal-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--error-light);
-  color: var(--error);
-  border-radius: var(--radius);
-  font-size: 0.875rem;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-radius: 10px;
+  font-size: 0.8125rem;
   font-weight: 500;
+  border-left: 3px solid #dc2626;
 }
 
 .login-modal-submit-btn {
@@ -11129,26 +11155,32 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 1rem 1.5rem;
-  background: var(--gradient-accent);
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #f36a2a 0%, #e85f1f 100%);
   color: white;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(243, 106, 42, 0.25);
 }
 
 .login-modal-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(243, 106, 42, 0.35);
+  box-shadow: 0 6px 20px rgba(243, 106, 42, 0.35);
+}
+
+.login-modal-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .login-modal-submit-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.65;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .login-modal-loading {
@@ -11159,16 +11191,16 @@ button:focus-visible {
 
 .login-modal-footer-text {
   text-align: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0;
 }
 
 .login-modal-link {
   color: var(--primary);
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
   background: none;
   border: none;
   padding: 0;
@@ -11185,32 +11217,32 @@ button:focus-visible {
 .login-modal-toggle {
   display: flex;
   background: var(--gray-100);
-  border-radius: var(--radius-full);
-  padding: 0.25rem;
-  margin-bottom: 1.5rem;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 1.25rem;
 }
 
 .login-modal-toggle-btn {
   flex: 1;
   padding: 0.625rem 1rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--gray-600);
+  color: var(--text-muted);
   background: transparent;
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .login-modal-toggle-btn.active {
   background: white;
-  color: var(--charcoal);
-  box-shadow: var(--shadow-sm);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .login-modal-toggle-btn:hover:not(.active) {
-  color: var(--charcoal);
+  color: var(--foreground);
 }
 
 /* Login Modal Success */
@@ -11233,19 +11265,21 @@ button:focus-visible {
   color: white;
   border-radius: 50%;
   margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 
 .login-modal-success h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--charcoal);
+  color: var(--foreground);
   margin: 0 0 0.5rem;
 }
 
 .login-modal-success p {
   font-size: 0.875rem;
-  color: var(--gray-600);
+  color: var(--text-muted);
   margin: 0;
+  line-height: 1.6;
 }
 
 /* ============================================
@@ -18250,15 +18284,16 @@ body {
 /* Forgot Password Links - Login Modal */
 .login-modal-forgot-link {
   display: inline-block;
-  margin-top: 0.5rem;
-  font-size: 0.813rem;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--primary);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .login-modal-forgot-link:hover {
-  color: var(--primary-hover);
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 

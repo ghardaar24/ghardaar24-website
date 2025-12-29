@@ -243,15 +243,6 @@ export default function AdminResetPasswordPage() {
             </motion.button>
           </form>
         )}
-
-        <motion.p
-          className="login-footer"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Link href="/admin/login">← Back to login</Link>
-        </motion.p>
       </motion.div>
     </div>
   );

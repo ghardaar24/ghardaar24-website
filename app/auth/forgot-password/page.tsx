@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth";
-import { Mail, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ForgotPasswordPage() {
@@ -52,13 +52,6 @@ export default function ForgotPasswordPage() {
       >
         <div className="auth-card">
           <div className="auth-header">
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Login
-            </Link>
             <Link href="/" className="auth-logo">
               <Image
                 src="/logo2.png"
@@ -91,10 +84,6 @@ export default function ForgotPasswordPage() {
                 <strong>{email}</strong>. Please check your inbox and click the
                 link to reset your password.
               </p>
-              <Link href="/auth/login" className="auth-submit-btn mt-6">
-                Back to Login
-                <ArrowRight className="w-5 h-5" />
-              </Link>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="auth-form">

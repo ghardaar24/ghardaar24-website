@@ -98,9 +98,6 @@ export default function AdminForgotPasswordPage() {
               We&apos;ve sent a password reset link to <strong>{email}</strong>.
               Please check your inbox and click the link to reset your password.
             </p>
-            <Link href="/admin/login" className="login-submit mt-6">
-              Back to Login
-            </Link>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="login-form">
@@ -147,15 +144,6 @@ export default function AdminForgotPasswordPage() {
             </motion.button>
           </form>
         )}
-
-        <motion.p
-          className="login-footer"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Link href="/admin/login">← Back to login</Link>
-        </motion.p>
       </motion.div>
     </div>
   );
