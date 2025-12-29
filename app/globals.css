@@ -18212,3 +18212,132 @@ body {
   background: var(--primary);
   color: white;
 }
+
+/* ============================================
+   FORGOT PASSWORD & AUTH LINKS
+   ============================================ */
+
+/* Forgot Password Links - User Auth Pages */
+.auth-forgot-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Forgot Password Links - Admin Login Page */
+.login-forgot-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-forgot-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Forgot Password Links - Login Modal */
+.login-modal-forgot-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.813rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-modal-forgot-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Auth Success States */
+.auth-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.auth-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(22, 163, 74, 0.1);
+  border-radius: 50%;
+  color: var(--success);
+}
+
+.auth-success h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.auth-success p {
+  font-size: 0.938rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.auth-success strong {
+  color: var(--foreground);
+}
+
+/* Admin Login Success States */
+.login-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.login-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(22, 163, 74, 0.1);
+  border-radius: 50%;
+  color: var(--success);
+}
+
+.login-success h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.login-success p {
+  font-size: 0.938rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.login-success strong {
+  color: var(--foreground);
+}

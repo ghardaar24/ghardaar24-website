@@ -395,6 +395,13 @@ export default function LoginModal({
                       )}
                     </button>
                   </div>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="login-modal-forgot-link"
+                    onClick={onClose}
+                  >
+                    Forgot Password?
+                  </Link>
                 </div>
 
                 {error && (

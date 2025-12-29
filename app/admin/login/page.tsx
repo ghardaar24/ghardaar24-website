@@ -161,6 +161,9 @@ export default function AdminLoginPage() {
                 )}
               </motion.button>
             </div>
+            <Link href="/admin/forgot-password" className="login-forgot-link">
+              Forgot Password?
+            </Link>
           </motion.div>
 
           <motion.button

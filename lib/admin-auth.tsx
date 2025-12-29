@@ -25,6 +25,7 @@ interface AdminAuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ error: Error | null }>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
@@ -180,6 +181,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     router.push("/admin/login");
   };
 
+  // Request password reset email
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+        redirectTo:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/admin/reset-password`
+            : undefined,
+      });
+      return { error: error as Error | null };
+    } catch (error) {
+      console.error("Admin password reset error:", error);
+      return { error: error as Error };
+    }
+  };
+
   return (
     <AdminAuthContext.Provider
       value={{
@@ -189,6 +206,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         loading,
         signIn,
         signOut,
+        requestPasswordReset,
       }}
     >
       {children}

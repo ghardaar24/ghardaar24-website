@@ -103,6 +103,9 @@ function LoginForm() {
             )}
           </button>
         </div>
+        <Link href="/auth/forgot-password" className="auth-forgot-link">
+          Forgot Password?
+        </Link>
       </div>
 
       {error && (
