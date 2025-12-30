@@ -38,9 +38,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <meta name="theme-color" content="#10b981" />
+        <meta name="theme-color" content="#f36a2a" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="geo.region" content="IN-MH" />
         <meta name="geo.placename" content="Pune" />
