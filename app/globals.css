@@ -13113,12 +13113,6 @@ button:focus-visible {
   }
 }
 
-@media (min-width: 1280px) {
-  .properties-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
 /* Property Card Responsive Improvements */
 .property-card-new {
   border-radius: var(--radius-lg);

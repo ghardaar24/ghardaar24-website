@@ -46,11 +46,11 @@ export default function Footer() {
                 transition={{ duration: 0.2 }}
               >
                 <Image
-                  src="/logo3.png"
+                  src="/logo2.png"
                   alt="Ghardaar24"
-                  width={140}
-                  height={56}
-                  className="h-14 w-auto"
+                  width={120}
+                  height={40}
+                  style={{ height: "40px", width: "auto" }}
                 />
               </motion.div>
             </Link>

@@ -43,8 +43,8 @@ async function getFeaturedProperties(): Promise<Property[]> {
     return [];
   }
 
-  // Mark fallback properties as featured for display purposes
-  return latest?.map((prop) => ({ ...prop, featured: true })) || [];
+  // Return fallback properties without marking them as featured
+  return latest || [];
 }
 
 export default async function HomePage() {
