@@ -46,7 +46,7 @@ export default function Footer() {
                 transition={{ duration: 0.2 }}
               >
                 <Image
-                  src="/logo2.png"
+                  src="/logo3.png"
                   alt="Ghardaar24"
                   width={120}
                   height={40}
