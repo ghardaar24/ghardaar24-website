@@ -11,7 +11,7 @@ import { Search, ArrowRight } from "lucide-react";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 
 async function getFeaturedProperties(): Promise<Property[]> {
-  // First try to get explicitly featured properties (only approved ones)
+  // Get only explicitly featured properties (approved ones)
   const { data: featured, error: featuredError } = await supabase
     .from("properties")
     .select("*")
@@ -25,26 +25,7 @@ async function getFeaturedProperties(): Promise<Property[]> {
     return [];
   }
 
-  // If we have featured properties, return them
-  if (featured && featured.length > 0) {
-    return featured;
-  }
-
-  // Fallback: Get latest approved properties if no featured ones exist
-  const { data: latest, error: latestError } = await supabase
-    .from("properties")
-    .select("*")
-    .or("approval_status.eq.approved,approval_status.is.null")
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  if (latestError) {
-    console.error("Error fetching latest properties:", latestError);
-    return [];
-  }
-
-  // Return fallback properties without marking them as featured
-  return latest || [];
+  return featured || [];
 }
 
 export default async function HomePage() {
