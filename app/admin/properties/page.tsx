@@ -190,7 +190,7 @@ export default function AdminPropertiesPage() {
                           property.featured ? "active" : ""
                         }`}
                         onClick={() =>
-                          toggleFeatured(property.id, property.featured)
+                          toggleFeatured(property.id, !!property.featured)
                         }
                         title={
                           property.featured
@@ -301,7 +301,7 @@ export default function AdminPropertiesPage() {
                       property.featured ? "active" : ""
                     }`}
                     onClick={() =>
-                      toggleFeatured(property.id, property.featured)
+                      toggleFeatured(property.id, !!property.featured)
                     }
                     whileTap={{ scale: 0.95 }}
                   >

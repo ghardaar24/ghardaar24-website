@@ -88,6 +88,7 @@ function HomePropertyCard({
         delay: index * 0.1,
         ease: [0.22, 1, 0.36, 1],
       }}
+      style={{ height: "100%" }}
     >
       <div
         className="property-card-new group"
