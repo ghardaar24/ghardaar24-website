@@ -47,8 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch user profile from user_profiles table
   const fetchUserProfile = async (userId: string) => {
@@ -321,6 +327,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Show nothing during initial mount to prevent flickering
+  const isLoading = !mounted || loading;
+
   return (
     <AuthContext.Provider
       value={{
@@ -328,7 +337,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         userProfile,
         isAdmin,
-        loading,
+        loading: isLoading,
         signIn,
         signUp,
         signOut,

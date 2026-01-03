@@ -38,13 +38,19 @@ function HeaderContent() {
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user, userProfile, loading, signOut } = useAuth();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -194,7 +200,7 @@ function HeaderContent() {
 
           {/* Mobile Menu Button */}
           <div className="nav-actions">
-            {!loading && (
+            {mounted && !loading && (
               <>
                 {user ? (
                   <div className="header-user-menu relative">

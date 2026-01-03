@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseAdmin as supabase, Property } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 import {
   Building,
   MessageSquare,
   Plus,
   Eye,
   ArrowRight,
-  Home,
-  MapPin,
   Star,
   Clock,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 
 interface Stats {
@@ -63,41 +60,30 @@ export default function AdminDashboard() {
     featuredProperties: 0,
     totalInquiries: 0,
   });
-  const [recentProperties, setRecentProperties] = useState<Property[]>([]);
   const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [
-          propertiesRes,
-          featuredRes,
-          inquiriesRes,
-          recentRes,
-          inquiriesListRes,
-        ] = await Promise.all([
-          supabase
-            .from("properties")
-            .select("id", { count: "exact", head: true }),
-          supabase
-            .from("properties")
-            .select("id", { count: "exact", head: true })
-            .eq("featured", true),
-          supabase
-            .from("inquiries")
-            .select("id", { count: "exact", head: true }),
-          supabase
-            .from("properties")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(4),
-          supabase
-            .from("inquiries")
-            .select("id, name, created_at, property_id")
-            .order("created_at", { ascending: false })
-            .limit(5),
-        ]);
+        const [propertiesRes, featuredRes, inquiriesRes, inquiriesListRes] =
+          await Promise.all([
+            supabase
+              .from("properties")
+              .select("id", { count: "exact", head: true }),
+            supabase
+              .from("properties")
+              .select("id", { count: "exact", head: true })
+              .eq("featured", true),
+            supabase
+              .from("inquiries")
+              .select("id", { count: "exact", head: true }),
+            supabase
+              .from("inquiries")
+              .select("id, name, created_at, property_id")
+              .order("created_at", { ascending: false })
+              .limit(5),
+          ]);
 
         setStats({
           totalProperties: propertiesRes.count || 0,
@@ -105,7 +91,6 @@ export default function AdminDashboard() {
           totalInquiries: inquiriesRes.count || 0,
         });
 
-        setRecentProperties(recentRes.data || []);
         setRecentInquiries(inquiriesListRes.data || []);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -215,89 +200,6 @@ export default function AdminDashboard() {
 
       {/* Main Content Grid */}
       <div className="dashboard-content-grid">
-        {/* Recent Properties */}
-        <motion.div
-          className="dashboard-section dashboard-properties-section"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Recent Properties</h2>
-            <Link href="/admin/properties" className="dashboard-view-all">
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {recentProperties.length > 0 ? (
-            <div className="dashboard-properties-grid">
-              {recentProperties.map((property, index) => (
-                <motion.div
-                  key={property.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45 + index * 0.05 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <Link
-                    href={`/admin/properties/${property.id}`}
-                    className="dashboard-property-card"
-                  >
-                    <div className="dashboard-property-image">
-                      {property.images && property.images[0] ? (
-                        <Image
-                          src={property.images[0]}
-                          alt={property.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 300px"
-                          style={{ objectFit: "cover" }}
-                        />
-                      ) : (
-                        <div className="dashboard-property-placeholder">
-                          <Home className="w-8 h-8" />
-                        </div>
-                      )}
-                      {property.featured && (
-                        <span className="dashboard-property-featured">
-                          <Star className="w-3 h-3" /> Featured
-                        </span>
-                      )}
-                    </div>
-                    <div className="dashboard-property-info">
-                      <h3 className="dashboard-property-title">
-                        {property.title}
-                      </h3>
-                      <div className="dashboard-property-meta">
-                        <span className="dashboard-property-location">
-                          <MapPin className="w-3 h-3" />
-                          {property.area}
-                        </span>
-                        <span className="dashboard-property-type">
-                          {property.property_type}
-                        </span>
-                      </div>
-                      <div className="dashboard-property-price">
-                        ₹{property.price.toLocaleString("en-IN")}
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="dashboard-empty-state">
-              <Home className="w-12 h-12" />
-              <p>No properties yet</p>
-              <Link
-                href="/admin/properties/new"
-                className="dashboard-empty-cta"
-              >
-                Add your first property
-              </Link>
-            </div>
-          )}
-        </motion.div>
-
         {/* Recent Inquiries */}
         <motion.div
           className="dashboard-section dashboard-inquiries-section"

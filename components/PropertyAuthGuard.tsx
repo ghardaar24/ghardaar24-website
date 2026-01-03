@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock, LogIn, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 interface PropertyAuthGuardProps {
   children: React.ReactNode;
@@ -17,9 +18,15 @@ export default function PropertyAuthGuard({
 }: PropertyAuthGuardProps) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  // Show loading state
-  if (loading) {
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading state during hydration and auth loading
+  if (!mounted || loading) {
     return (
       <div className="property-auth-loading">
         <div className="auth-loading-spinner" />

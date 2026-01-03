@@ -6,6 +6,7 @@ import { Bed, Bath, Maximize, MapPin } from "lucide-react";
 import { Property } from "@/lib/supabase";
 import { formatPrice, formatPriceRange } from "@/lib/utils";
 import { motion } from "@/lib/motion";
+import { useState } from "react";
 
 interface PropertyCardProps {
   property: Property;
@@ -17,6 +18,7 @@ export default function PropertyCard({
   index = 0,
 }: PropertyCardProps) {
   const mainImage = property.images?.[0] || "/placeholder-property.jpg";
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <motion.div
@@ -24,8 +26,8 @@ export default function PropertyCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.5,
-        delay: index * 0.1,
+        duration: 0.4,
+        delay: Math.min(index * 0.08, 0.4),
         ease: [0.22, 1, 0.36, 1],
       }}
       style={{ height: "100%" }}
@@ -34,25 +36,28 @@ export default function PropertyCard({
         href={`/properties/${property.id}`}
         className="property-card-new group"
       >
-        <motion.div
-          className="property-card-image-new"
-          whileHover={{ scale: 1 }}
-        >
-          <motion.div
-            className="w-full h-full relative"
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
+        <div className="property-card-image-new">
+          <div className="w-full h-full relative">
+            {!imageLoaded && (
+              <div
+                className="absolute inset-0 skeleton"
+                style={{ background: "var(--gray-100)" }}
+              />
+            )}
             <Image
               src={mainImage}
               alt={property.title}
               fill
-              className="object-cover"
+              className={`object-cover transition-opacity duration-300 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              onLoad={() => setImageLoaded(true)}
+              loading={index < 3 ? "eager" : "lazy"}
             />
-          </motion.div>
+          </div>
           <div className="property-card-badges">
-            <motion.span
+            <span
               className={`property-badge-new ${
                 property.listing_type === "sale"
                   ? "sale"
@@ -60,28 +65,18 @@ export default function PropertyCard({
                   ? "resale"
                   : "rent"
               }`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
             >
               {property.listing_type === "sale"
                 ? "For Sale"
                 : property.listing_type === "resale"
                 ? "Resale"
                 : "For Rent"}
-            </motion.span>
+            </span>
             {property.featured && (
-              <motion.span
-                className="property-badge-new featured"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                Featured
-              </motion.span>
+              <span className="property-badge-new featured">Featured</span>
             )}
           </div>
-        </motion.div>
+        </div>
 
         <div className="property-card-body">
           <div className="property-card-location">

@@ -68,6 +68,7 @@ function HomePropertyCard({
 }) {
   const router = useRouter();
   const mainImage = property.images?.[0] || "/placeholder-property.jpg";
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
@@ -84,8 +85,8 @@ function HomePropertyCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.5,
-        delay: index * 0.1,
+        duration: 0.4,
+        delay: Math.min(index * 0.08, 0.4),
         ease: [0.22, 1, 0.36, 1],
       }}
       style={{ height: "100%" }}
@@ -95,25 +96,28 @@ function HomePropertyCard({
         onClick={handleClick}
         style={{ cursor: "pointer" }}
       >
-        <motion.div
-          className="property-card-image-new"
-          whileHover={{ scale: 1 }}
-        >
-          <motion.div
-            className="w-full h-full relative"
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
+        <div className="property-card-image-new">
+          <div className="w-full h-full relative">
+            {!imageLoaded && (
+              <div
+                className="absolute inset-0 skeleton"
+                style={{ background: "var(--gray-100)" }}
+              />
+            )}
             <Image
               src={mainImage}
               alt={property.title}
               fill
-              className="object-cover"
+              className={`object-cover transition-opacity duration-300 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              onLoad={() => setImageLoaded(true)}
+              loading={index < 3 ? "eager" : "lazy"}
             />
-          </motion.div>
+          </div>
           <div className="property-card-badges">
-            <motion.span
+            <span
               className={`property-badge-new ${
                 property.listing_type === "sale"
                   ? "sale"
@@ -121,28 +125,18 @@ function HomePropertyCard({
                   ? "resale"
                   : "rent"
               }`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
             >
               {property.listing_type === "sale"
                 ? "For Sale"
                 : property.listing_type === "resale"
                 ? "Resale"
                 : "For Rent"}
-            </motion.span>
+            </span>
             {property.featured && (
-              <motion.span
-                className="property-badge-new featured"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                Featured
-              </motion.span>
+              <span className="property-badge-new featured">Featured</span>
             )}
           </div>
-        </motion.div>
+        </div>
 
         <div className="property-card-body">
           <div className="property-card-location">
@@ -185,7 +179,14 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingRedirect, setPendingRedirect] = useState<string>("/properties");
-  const isReady = !loading;
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isReady = mounted && !loading;
 
   const handleLoginRequired = (redirectUrl: string) => {
     setPendingRedirect(redirectUrl);
@@ -200,6 +201,86 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
       handleLoginRequired(url);
     }
   };
+
+  // Show skeleton state while not mounted/loading
+  if (!mounted) {
+    return (
+      <>
+        {/* Featured Properties Skeleton */}
+        {featuredProperties.length > 0 && (
+          <section className="section featured-section-new">
+            <div className="container">
+              <div className="section-header">
+                <div
+                  className="skeleton-title"
+                  style={{
+                    width: "200px",
+                    height: "32px",
+                    background: "var(--gray-200)",
+                    borderRadius: "var(--radius)",
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+              </div>
+              <div className="properties-grid">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="property-card-skeleton"
+                    style={{
+                      background: "white",
+                      borderRadius: "var(--radius-xl)",
+                      overflow: "hidden",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "220px",
+                        background: "var(--gray-100)",
+                        animation: "pulse 2s infinite",
+                      }}
+                    />
+                    <div style={{ padding: "1.5rem" }}>
+                      <div
+                        style={{
+                          width: "60%",
+                          height: "14px",
+                          background: "var(--gray-200)",
+                          borderRadius: "var(--radius)",
+                          marginBottom: "0.75rem",
+                          animation: "pulse 2s infinite",
+                        }}
+                      />
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "20px",
+                          background: "var(--gray-200)",
+                          borderRadius: "var(--radius)",
+                          marginBottom: "1rem",
+                          animation: "pulse 2s infinite",
+                        }}
+                      />
+                      <div
+                        style={{
+                          width: "80%",
+                          height: "16px",
+                          background: "var(--gray-200)",
+                          borderRadius: "var(--radius)",
+                          animation: "pulse 2s infinite",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </>
+    );
+  }
 
   // Show loading state while auth is initializing
   if (!isReady) {
@@ -344,6 +425,12 @@ export function HeroSearchBar() {
     []
   );
   const [selectedCity, setSelectedCity] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchLocations() {
@@ -365,7 +452,7 @@ export function HeroSearchBar() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (loading) return;
+    if (!mounted || loading) return;
 
     const params = new URLSearchParams();
     if (selectedCity) params.set("city", selectedCity);

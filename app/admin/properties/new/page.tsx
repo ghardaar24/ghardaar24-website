@@ -371,7 +371,7 @@ export default function NewPropertyPage() {
         amenities: amenities,
         brochure_urls: uploadedBrochureUrls,
         // Project Details
-        land_parcel: parseInt(formData.land_parcel) || 0,
+        land_parcel: parseFloat(formData.land_parcel) || 0,
         towers: parseInt(formData.towers) || 0,
         floors: formData.floors,
         config: formData.config,
@@ -680,8 +680,9 @@ export default function NewPropertyPage() {
                 name="land_parcel"
                 value={formData.land_parcel}
                 onChange={handleChange}
-                placeholder="e.g., 8"
+                placeholder="e.g., 8.5"
                 min="0"
+                step="any"
               />
             </div>
 

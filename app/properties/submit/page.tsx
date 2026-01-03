@@ -460,7 +460,7 @@ export default function SubmitPropertyPage() {
         amenities: amenities,
         brochure_urls: uploadedBrochureUrls,
         // Project Details
-        land_parcel: parseInt(formData.land_parcel) || 0,
+        land_parcel: parseFloat(formData.land_parcel) || 0,
         towers: parseInt(formData.towers) || 0,
         floors: formData.floors,
         config: formData.config,

@@ -55,10 +55,10 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
         className="gallery-container"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
         <div className="gallery-main">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={currentIndex}
               custom={direction}
@@ -67,17 +67,20 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
+                x: { type: "spring", stiffness: 400, damping: 35 },
+                opacity: { duration: 0.15 },
               }}
               className="absolute inset-0"
+              style={{ willChange: "transform, opacity" }}
             >
               <Image
                 src={displayImages[currentIndex]}
                 alt={`${title} - Image ${currentIndex + 1}`}
                 fill
                 className="object-cover"
-                priority
+                priority={currentIndex === 0}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAMH/8QAHxAAAgEEAgMAAAAAAAAAAAAAAQIDAAQRIQUSBjFB/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBEQCEAPwC9k5S6tGuLi7eW3RDIBK8jBd/ckgZJGutVZ+amuJUee8u3dRpWYyMSB8B9UUVB//Z"
               />
             </motion.div>
           </AnimatePresence>
