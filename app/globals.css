@@ -436,6 +436,33 @@ body {
   color: var(--primary);
 }
 
+.nav-dropdown-menu-wide {
+  min-width: 220px;
+}
+
+.nav-dropdown-header {
+  font-weight: 600;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.nav-dropdown-subitem {
+  font-size: 0.875rem;
+  padding-left: 1.5rem;
+  color: var(--text-muted);
+}
+
+.nav-dropdown-subitem:hover {
+  color: var(--primary);
+}
+
+.mobile-nav-nested {
+  padding-left: 2.5rem;
+  font-size: 0.875rem;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;

@@ -28,7 +28,10 @@ const propertyDropdownLinks = [
 ];
 
 const resourcesDropdownLinks = [
-  { href: "/calculators", label: "Calculators" },
+  { href: "/calculators", label: "All Calculators", isHeader: true },
+  { href: "/calculators#emi", label: "EMI Calculator", isSubItem: true },
+  { href: "/calculators#roi", label: "ROI Calculator", isSubItem: true },
+  { href: "/calculators#mortgage", label: "Mortgage Affordability", isSubItem: true },
   { href: "/real-estate-guide", label: "Real Estate Guide" },
 ];
 
@@ -183,17 +186,19 @@ function HeaderContent() {
               <AnimatePresence>
                 {isResourcesOpen && (
                   <motion.div
-                    className="nav-dropdown-menu"
+                    className="nav-dropdown-menu nav-dropdown-menu-wide"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {resourcesDropdownLinks.map((link) => (
+                    {resourcesDropdownLinks.map((link, index) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="nav-dropdown-item"
+                        className={`nav-dropdown-item ${
+                          link.isHeader ? "nav-dropdown-header" : ""
+                        } ${link.isSubItem ? "nav-dropdown-subitem" : ""}`}
                         onClick={() => setIsResourcesOpen(false)}
                       >
                         {link.label}
@@ -413,11 +418,13 @@ function HeaderContent() {
                   key={link.href}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.75 + index * 0.1 }}
+                  transition={{ delay: 0.75 + index * 0.05 }}
                 >
                   <Link
                     href={link.href}
-                    className="mobile-nav-link mobile-nav-sublink"
+                    className={`mobile-nav-link mobile-nav-sublink ${
+                      link.isSubItem ? "mobile-nav-nested" : ""
+                    }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
