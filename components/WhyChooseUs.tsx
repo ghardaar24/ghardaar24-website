@@ -6,7 +6,7 @@ import {
   BadgePercent,
   Palette,
   Landmark,
-  Headphones,
+  Compass,
   Clock,
 } from "lucide-react";
 
@@ -39,9 +39,9 @@ const features = [
     color: "#f59e0b",
   },
   {
-    icon: Headphones,
-    title: "24/7 Support",
-    description: "Our dedicated team is always available to help you",
+    icon: Compass,
+    title: "Vastu Consultation",
+    description: "Expert Vastu guidance for harmonious and prosperous living spaces",
     color: "#ec4899",
   },
   {
