@@ -73,9 +73,6 @@ function SignupForm() {
     }
 
     setSuccess(true);
-    setTimeout(() => {
-      router.push("/auth/login");
-    }, 2000);
   };
 
   if (success) {
@@ -91,6 +88,10 @@ function SignupForm() {
         </div>
         <h2>Account Created!</h2>
         <p>Please check your email to verify your account, then login.</p>
+        <Link href="/auth/login" className="auth-submit-btn" style={{ marginTop: '1.5rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          Continue to Login
+          <ArrowRight className="w-5 h-5" />
+        </Link>
       </motion.div>
     );
   }

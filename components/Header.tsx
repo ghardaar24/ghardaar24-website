@@ -144,28 +144,28 @@ function HeaderContent() {
               </AnimatePresence>
             </div>
 
-            {/* Services Section */}
-            <div id="intro-services" className="flex items-center gap-1">
-            {/* Home Loans Link */}
-            <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
-              <Link href="/services/home-loans" className="nav-link">
-                Home Loans
-              </Link>
-            </motion.div>
+            {/* Services - wrapped for intro.js */}
+            <div id="intro-services" className="flex items-center gap-6">
+              {/* Home Loans Link */}
+              <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
+                <Link href="/services/home-loans" className="nav-link">
+                  Home Loans
+                </Link>
+              </motion.div>
 
-            {/* Interior Design Link */}
-            <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
-              <Link href="/services/interior-design" className="nav-link">
-                Interior Design
-              </Link>
-            </motion.div>
+              {/* Interior Design Link */}
+              <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
+                <Link href="/services/interior-design" className="nav-link">
+                  Interior Design
+                </Link>
+              </motion.div>
 
-            {/* Vastu Consultation Link */}
-            <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
-              <Link href="/services/vastu-consultation" className="nav-link">
-                Vastu Consultation
-              </Link>
-            </motion.div>
+              {/* Vastu Consultation Link */}
+              <motion.div variants={fadeInDown} whileHover={{ y: -2 }}>
+                <Link href="/services/vastu-consultation" className="nav-link">
+                  Vastu Consultation
+                </Link>
+              </motion.div>
             </div>
 
             {/* Resources Dropdown */}

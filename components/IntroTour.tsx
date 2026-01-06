@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import introJs from "intro.js";
-import "intro.js/introjs.css";
 import { useAuth } from "@/lib/auth";
 
 const INTRO_STORAGE_KEY = "ghardaar24_intro_completed";
@@ -30,108 +28,77 @@ export default function IntroTour() {
     return () => clearTimeout(timeoutId);
   }, [mounted, loading, user]);
 
-  const startIntro = () => {
+  const startIntro = async () => {
+    // Dynamically import intro.js only on client-side
+    const introJs = (await import("intro.js")).default;
+    // @ts-expect-error - CSS import doesn't have types
+    await import("intro.js/introjs.css");
+    
     const intro = introJs();
 
-    // Base steps for all visitors
-    const baseSteps = [
+    // Minimal, professional tour steps
+    const steps = [
       {
         element: "#intro-logo",
-        intro:
-          "<strong>Welcome to Ghardaar24! 🏠</strong><br/>Your trusted partner for finding the perfect home. Let us give you a quick tour!",
-        position: "bottom",
+        intro: "Welcome to <strong>Ghardaar24</strong> — your trusted real estate partner.",
+        position: "bottom" as const,
       },
       {
         element: "#intro-properties",
-        intro:
-          "<strong>Browse Properties</strong><br/>Explore our listings - Buy, Rent, or find Resale properties that match your needs.",
-        position: "bottom",
+        intro: "Browse properties for <strong>Buy, Rent, or Resale</strong>.",
+        position: "bottom" as const,
       },
       {
         element: "#intro-services",
-        intro:
-          "<strong>Our Services</strong><br/>We offer Home Loans assistance, Interior Design consultations, and Vastu guidance to make your home perfect.",
-        position: "bottom",
+        intro: "Explore our services — <strong>Home Loans, Interior Design & Vastu</strong>.",
+        position: "bottom" as const,
       },
-    ];
-
-    // Steps for non-logged-in users
-    const authSteps = !user
-      ? [
-          {
-            element: "#intro-auth",
-            intro:
-              "<strong>Sign Up or Login</strong><br/>Create an account to save properties, submit listings, and access personalized features.",
-            position: "bottom",
-          },
-        ]
-      : [
-          {
-            element: "#intro-user-menu",
-            intro:
-              "<strong>Your Profile</strong><br/>Access your dashboard, manage saved properties, and view your listings.",
-            position: "bottom",
-          },
-        ];
-
-    // Common closing steps
-    const closingSteps = [
+      ...(user
+        ? [
+            {
+              element: "#intro-user-menu",
+              intro: "Access your <strong>Dashboard</strong> to manage listings & saved properties.",
+              position: "bottom" as const,
+            },
+          ]
+        : [
+            {
+              element: "#intro-auth",
+              intro: "<strong>Sign up</strong> to save properties and list your own.",
+              position: "bottom" as const,
+            },
+          ]),
       {
         element: "#intro-search",
-        intro:
-          "<strong>Find Your Dream Home</strong><br/>Use our powerful search to filter properties by location, price, and type.",
-        position: "top",
-      },
-      {
-        element: "#intro-featured",
-        intro:
-          "<strong>Featured Properties</strong><br/>Discover our handpicked premium listings and popular properties.",
-        position: "top",
+        intro: "Search by <strong>location, type, and budget</strong> to find your perfect home.",
+        position: "top" as const,
       },
       {
         element: "#intro-contact",
-        intro:
-          "<strong>Get Expert Help</strong><br/>Connect with our experienced agents for personalized assistance. We're here to help!",
-        position: "top",
+        intro: "Connect with our <strong>experienced agents</strong> for personalized help.",
+        position: "top" as const,
+      },
+      {
+        intro: user 
+          ? "Go to your dashboard and click <strong>'Submit Property'</strong> to list your property."
+          : "<strong>Sign up</strong> to list your property and reach thousands of buyers.",
       },
     ];
 
-    // Steps specifically about property submission (for logged-in users)
-    const propertySubmitSteps = user
-      ? [
-          {
-            intro:
-              "<strong>List Your Property</strong><br/>Ready to sell or rent? Go to your dashboard and click 'Submit Property' to list your property with us. It's quick and easy!",
-          },
-        ]
-      : [
-          {
-            intro:
-              "<strong>Want to List Your Property?</strong><br/>Sign up for a free account and you can easily list your property for sale or rent. Reach thousands of potential buyers!",
-          },
-        ];
-
-    const allSteps = [
-      ...baseSteps,
-      ...authSteps,
-      ...closingSteps,
-      ...propertySubmitSteps,
-    ];
-
     intro.setOptions({
-      steps: allSteps,
+      steps,
       showProgress: true,
-      showBullets: true,
-      exitOnOverlayClick: false,
+      showBullets: false,
+      exitOnOverlayClick: true,
       showStepNumbers: false,
-      nextLabel: "Next →",
-      prevLabel: "← Back",
-      doneLabel: "Get Started!",
-      skipLabel: "Skip Tour",
+      nextLabel: "Next",
+      prevLabel: "Back",
+      doneLabel: "Done",
+      skipLabel: "✕",
       hidePrev: true,
       scrollToElement: true,
-      scrollPadding: 100,
-      overlayOpacity: 0.7,
+      scrollPadding: 80,
+      overlayOpacity: 0.6,
     });
 
     intro.oncomplete(() => {
