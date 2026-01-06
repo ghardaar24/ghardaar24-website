@@ -38,6 +38,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-QEHYN9XRC7"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-QEHYN9XRC7');
+            `,
+          }}
+        />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
