@@ -484,6 +484,11 @@ export default function CRMPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Set sheet name to filename (without extension)
+    const fileName = file.name.replace(/\.[^/.]+$/, "");
+    setImportSheetName(fileName);
+    setImportToExistingSheet(null);
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
