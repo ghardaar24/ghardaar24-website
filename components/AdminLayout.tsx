@@ -15,6 +15,7 @@ import {
   Plus,
   Settings,
   User,
+  Users,
   CheckCircle,
   MapPin,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/admin/locations", icon: MapPin, label: "Locations" },
   { href: "/admin/inquiries", icon: MessageSquare, label: "Inquiries" },
   { href: "/admin/leads", icon: User, label: "Leads" },
+  { href: "/admin/crm", icon: Users, label: "CRM" },
 ];
 
 export default function AdminLayout({
