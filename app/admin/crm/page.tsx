@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sheet,
+  BarChart3,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
@@ -353,10 +354,10 @@ export default function CRMPage() {
   // Stats
   const stats = {
     total: clients.length,
-    hot: clients.filter((c) => c.lead_type === "hot").length,
-    warm: clients.filter((c) => c.lead_type === "warm").length,
-    cold: clients.filter((c) => c.lead_type === "cold").length,
-    locked: clients.filter((c) => c.deal_status === "locked").length,
+    hot: clients.filter((c) => c.lead_type?.toLowerCase() === "hot").length,
+    warm: clients.filter((c) => c.lead_type?.toLowerCase() === "warm").length,
+    cold: clients.filter((c) => c.lead_type?.toLowerCase() === "cold").length,
+    locked: clients.filter((c) => c.deal_status?.toLowerCase() === "locked").length,
   };
 
   // Reset form
@@ -911,18 +912,28 @@ export default function CRMPage() {
           >
             <span>Add Client</span>
           </motion.button>
-          <motion.button
+          <button
             onClick={() => setShowDeleteAllModal(true)}
-            className="btn-admin-danger"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Delete All</span>
-          </motion.button>
-          <Link href="/admin/crm/staff" className="btn-admin-secondary">
+            Delete All
+          </button>
+          
+          <Link
+            href="/admin/crm/analytics"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </Link>
+
+          <Link
+            href="/admin/crm/staff"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <UserCog className="w-4 h-4" />
-            <span>Staff Access</span>
+            Staff Access
           </Link>
         </div>
       </motion.div>
