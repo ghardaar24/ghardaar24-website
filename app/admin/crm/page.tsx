@@ -663,7 +663,17 @@ export default function CRMPage() {
           .filter(Boolean)
       );
 
-      const uniqueClientsToImport = clientsToImport.filter(c => {
+      // distinct within the file
+      const phoneSeenInFile = new Set<string>();
+      const distinctClientsInFile = clientsToImport.filter(c => {
+         if (!c.customer_number) return true;
+         const normalizedPhone = c.customer_number.trim().replace(/\s+/g, "");
+         if (phoneSeenInFile.has(normalizedPhone)) return false;
+         phoneSeenInFile.add(normalizedPhone);
+         return true;
+      });
+
+      const uniqueClientsToImport = distinctClientsInFile.filter(c => {
         if (!c.customer_number) return true;
         const normalizedPhone = c.customer_number.trim().replace(/\s+/g, "");
         return !existingPhoneNumbers.has(normalizedPhone);
