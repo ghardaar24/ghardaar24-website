@@ -60,13 +60,33 @@ export default function AnalyticsPage() {
   useEffect(() => {
     async function fetchClients() {
       try {
-        const { data, error } = await supabase
-          .from("crm_clients")
-          .select("id, client_name, lead_stage, lead_type, location_category, deal_status, created_at")
-          .range(0, 9999); // Fetch up to 10k records
+        const BATCH_SIZE = 1000;
+        let allData: CRMClient[] = [];
+        let from = 0;
+        let to = BATCH_SIZE - 1;
+        let fetchMore = true;
 
-        if (error) throw error;
-        setClients(data || []);
+        while (fetchMore) {
+          const { data, error } = await supabase
+            .from("crm_clients")
+            .select("id, client_name, lead_stage, lead_type, location_category, deal_status, created_at")
+            .range(from, to);
+
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            if (data.length < BATCH_SIZE) {
+              fetchMore = false;
+            } else {
+              from += BATCH_SIZE;
+              to += BATCH_SIZE;
+            }
+          } else {
+            fetchMore = false;
+          }
+        }
+        setClients(allData);
       } catch (error) {
         console.error("Error fetching clients for analytics:", error);
       } finally {

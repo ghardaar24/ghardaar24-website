@@ -286,6 +286,33 @@ export default function CRMPage() {
 
   // Fetch clients (filtered by selected sheet if any)
   useEffect(() => {
+
+    async function fetchAllClients(query: any) {
+      const BATCH_SIZE = 1000;
+      let allData: CRMClient[] = [];
+      let from = 0;
+      let to = BATCH_SIZE - 1;
+      let fetchMore = true;
+
+      while (fetchMore) {
+        const { data, error } = await query.range(from, to);
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          if (data.length < BATCH_SIZE) {
+            fetchMore = false;
+          } else {
+            from += BATCH_SIZE;
+            to += BATCH_SIZE;
+          }
+        } else {
+          fetchMore = false;
+        }
+      }
+      return allData;
+    }
+
     async function fetchClients() {
       try {
         let query = supabase
@@ -298,11 +325,8 @@ export default function CRMPage() {
           query = query.eq("sheet_id", selectedSheetId);
         }
 
-        // Increase limit to 10,000 records to fix the 1000 limit issue
-        const { data, error } = await query.range(0, 9999);
-
-        if (error) throw error;
-        setClients(data || []);
+        const data = await fetchAllClients(query);
+        setClients(data);
       } catch (error: any) {
         console.error("Error fetching CRM clients:", error);
         if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
