@@ -147,9 +147,10 @@ export default function AdminLayout({
           <Image
             src="/logo2.png"
             alt="Ghardaar24"
-            width={140}
-            height={56}
-            className="h-14 w-auto"
+            width={120}
+            height={40}
+            className="h-10 w-auto"
+            style={{ height: "40px", width: "auto" }}
           />
         </span>
       </motion.header>
@@ -159,15 +160,15 @@ export default function AdminLayout({
         <div className="sidebar-header">
           <Link href="/admin" className="sidebar-logo">
             <motion.div
-              whileHover={{ scale: 1.1, rotate: -2 }}
-              transition={{ duration: 0.2 }}
+              whileHover={{ scale: 1.05, rotate: -2 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Image
                 src="/logo2.png"
                 alt="Ghardaar24"
-                width={140}
-                height={56}
-                className="h-14 w-auto"
+                width={120}
+                height={40}
+                style={{ height: "40px", width: "auto" }}
               />
             </motion.div>
           </Link>

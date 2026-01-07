@@ -322,6 +322,7 @@ const { data, error } = await query;
 | Calculators           | `app/calculators/page.tsx`              | Financial calculators (EMI, Mortgage, ROI) |
 | Home Loans            | `app/services/home-loans/page.tsx`      | Home loans service information             |
 | Interior Design       | `app/services/interior-design/page.tsx` | Interior design service information        |
+| Vastu Consultation    | `app/services/vastu-consultation/page.tsx`| Vastu consultation service information     |
 | Admin Dashboard       | `app/admin/page.tsx`                    | Admin overview and statistics              |
 | Admin Login           | `app/admin/login/page.tsx`              | Admin authentication page                  |
 | Admin Forgot Password | `app/admin/forgot-password/page.tsx`    | Admin password reset request               |
@@ -331,6 +332,7 @@ const { data, error } = await query;
 | Manage Locations      | `app/admin/locations/page.tsx`          | State and city management                  |
 | Manage Inquiries      | `app/admin/inquiries/page.tsx`          | Inquiry management                         |
 | Manage Leads          | `app/admin/leads/page.tsx`              | User leads management                      |
+| CRM                   | `app/admin/crm/page.tsx`                | Client Relationship Management             |
 | User Login            | `app/auth/login/page.tsx`               | User authentication page                   |
 | User Signup           | `app/auth/signup/page.tsx`              | User registration page                     |
 | User Forgot Password  | `app/auth/forgot-password/page.tsx`     | User password reset request                |
@@ -342,6 +344,15 @@ const { data, error } = await query;
 | -------------------- | --------------------------------------- | ---------------------------------- |
 | Generate Description | `app/api/generate-description/route.ts` | AI property description via Gemini |
 | Log To Sheets        | `app/api/log-to-sheets/route.ts`        | Optional logging to Google Sheets  |
+
+### CRM Capabilities
+
+The CRM system (`app/admin/crm`) provides:
+- **Client Management**: Add, edit, delete client capabilities
+- **Lead Tracking**: Track lead stage, type, and source
+- **Communication**: Log comments and expected visit dates
+- **Import/Export**: Bulk import via CSV and export functionality
+
 
 ---
 
@@ -497,6 +508,15 @@ For additional support:
 - Enhanced responsive design across all pages
 - Premium UI polish with improved animations and effects
 - Lucide icons throughout the application
+
+### v1.3.0 (January 2026)
+
+- CRM System for managing clients and leads
+- Vastu Consultation service page
+- Interactive Onboarding Tour (Intro.js)
+- Google Analytics integration
+- Enhanced Security (Admins only display page access)
+- Additional UI/UX refinements
 
 ### v1.0.0 (December 2024)
 

@@ -31,7 +31,9 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **EMI Calculator** - Built-in mortgage calculator for quick affordability checks
 - **Mortgage Calculator** - Detailed loan amortization with monthly payment breakdown
 - **ROI Calculator** - Investment return analysis for rental properties
-- **Services Pages** - Home Loans and Interior Design service information
+- [x] Home Loans and Interior Design service information
+- **Vastu Consultation** - Specialized Vastu Shastra consultation service
+- **Onboarding Tour** - Interactive guided tour for new users (Intro.js)
 - **Agent Profile** - Showcase agent details, expertise, and integrated contact form
 - **Popular Localities** - Explore properties in top trending areas
 - **Trust Indicators** - Badges highlighting reliability and security
@@ -55,10 +57,12 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Inquiry Management** - Track and respond to customer inquiries
 - **Leads Management** - View and manage user profiles and leads
 - **Statistics Dashboard** - Overview of listings, inquiries, and pending approvals
+- **CRM System** - Comprehensive client management with lead tracking, status updates, and CSV import/export
 
 ### 🛠️ Technical Features
 
 - **SEO Optimized** - Dynamic meta tags, sitemap generation, and structured data
+- **Google Analytics** - Integrated tracking for user behavior analysis
 - **Modern Animations** - Smooth transitions powered by Framer Motion
 - **Type Safety** - Full TypeScript implementation
 - **Row Level Security** - Secure database access with Supabase RLS policies
@@ -77,6 +81,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 | **Authentication** | Supabase Auth           |
 | **Storage**        | Supabase Storage        |
 | **Animations**     | Framer Motion           |
+| **Onboarding**     | Intro.js                |
 | **Icons**          | Lucide React            |
 | **Deployment**     | Vercel                  |
 
@@ -107,6 +112,7 @@ ghardaar24-web/
 │   ├── services/
 │   │   ├── home-loans/           # Home loans service page
 │   │   └── interior-design/      # Interior design service page
+│   ├── vastu-consultation/   # Vastu consultation service page
 │   ├── auth/
 │   │   ├── login/page.tsx        # User login
 │   │   ├── signup/page.tsx       # User signup
@@ -122,7 +128,8 @@ ghardaar24-web/
 │       ├── approvals/page.tsx    # User property approvals
 │       ├── locations/page.tsx    # State/City management
 │       ├── inquiries/            # Inquiry management
-│       └── leads/                # User leads management
+│       ├── leads/                # User leads management
+│       └── crm/                  # CRM Client Management
 ├── components/                   # Reusable React components
 │   ├── Header.tsx                # Navigation header
 │   ├── Footer.tsx                # Site footer
