@@ -26,7 +26,11 @@ import {
   FileSpreadsheet,
   MoreVertical,
   UserCog,
+  ChevronLeft,
+  ChevronRight,
+  Sheet,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import Link from "next/link";
 
 // Types
@@ -80,6 +84,8 @@ const DEAL_STATUS_OPTIONS = [
   { value: "lost", label: "Lost", color: "#6b7280" },
 ];
 
+const ITEMS_PER_PAGE = 100;
+
 export default function CRMPage() {
   const { user, loading } = useAdminAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
@@ -108,6 +114,15 @@ export default function CRMPage() {
   const [importToExistingSheet, setImportToExistingSheet] = useState<string | null>(null);
   const [showSheetMenu, setShowSheetMenu] = useState<string | null>(null);
   const [deleteSheetConfirm, setDeleteSheetConfirm] = useState<string | null>(null);
+
+  // Excel Import State
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [availableExcelSheets, setAvailableExcelSheets] = useState<string[]>([]);
+  const [selectedExcelSheet, setSelectedExcelSheet] = useState<string>("");
+  const workbookRef = useRef<XLSX.WorkBook | null>(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Handle delete all
   const handleDeleteAll = async () => {
@@ -282,7 +297,8 @@ export default function CRMPage() {
           query = query.eq("sheet_id", selectedSheetId);
         }
 
-        const { data, error } = await query;
+        // Increase limit to 10,000 records to fix the 1000 limit issue
+        const { data, error } = await query.range(0, 9999);
 
         if (error) throw error;
         setClients(data || []);
@@ -321,6 +337,18 @@ export default function CRMPage() {
 
   // Get unique locations for filter
   const uniqueLocations = [...new Set(clients.map((c) => c.location_category).filter(Boolean))];
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+  const paginatedClients = filteredClients.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page depends on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, selectedSheetId]);
 
   // Stats
   const stats = {
@@ -483,20 +511,24 @@ export default function CRMPage() {
     return rows;
   };
 
-  // Handle CSV file upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  
+  const handleExcelSheetChange = (sheetName: string, wb: XLSX.WorkBook | null = workbookRef.current) => {
+    if (!wb) return;
+    setSelectedExcelSheet(sheetName);
+    const worksheet = wb.Sheets[sheetName];
+    // Use raw: false to get formatted strings (dates as text)
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false }) as string[][];
+    
+    // Ensure all cells are strings for compatibility
+    const stringData = jsonData.map(row => row.map(cell => {
+         if (cell === null || cell === undefined) return "";
+         return String(cell);
+    }));
+    
+    handleDataLoaded(stringData);
+  };
 
-    // Set sheet name to filename (without extension)
-    const fileName = file.name.replace(/\.[^/.]+$/, "");
-    setImportSheetName(fileName);
-    setImportToExistingSheet(null);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const rows = parseCSV(text);
+  const handleDataLoaded = (rows: string[][]) => {
       setImportData(rows);
 
       // Auto-map columns only if headers exist and first row looks like headers
@@ -525,8 +557,50 @@ export default function CRMPage() {
       } else {
         setColumnMapping({});
       }
-    };
-    reader.readAsText(file);
+  };
+
+  // Handle CSV/Excel file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setExcelFile(file);
+    const fileName = file.name.replace(/\.[^/.]+$/, "");
+    setImportSheetName(fileName);
+    setImportToExistingSheet(null);
+    setAvailableExcelSheets([]);
+    setSelectedExcelSheet("");
+    workbookRef.current = null;
+
+    if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+       const reader = new FileReader();
+       reader.onload = (event) => {
+         const data = event.target?.result;
+         try {
+           const workbook = XLSX.read(data, { type: "binary" });
+           workbookRef.current = workbook;
+           const sheetNames = workbook.SheetNames;
+           setAvailableExcelSheets(sheetNames);
+           
+           if (sheetNames.length > 0) {
+             handleExcelSheetChange(sheetNames[0], workbook);
+           }
+         } catch (error) {
+           console.error("Error reading Excel file:", error);
+           alert("Failed to read Excel file. Please try saving as CSV.");
+         }
+       };
+       reader.readAsBinaryString(file);
+    } else {
+       // CSV
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const text = event.target?.result as string;
+          const rows = parseCSV(text);
+          handleDataLoaded(rows);
+        };
+        reader.readAsText(file);
+    }
   };
 
   // Date parser utility
@@ -1075,114 +1149,177 @@ export default function CRMPage() {
                 <th className="w-[10%]">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {filteredClients.length > 0 ? (
-                filteredClients.map((client, index) => (
-                  <motion.tr
-                    key={client.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + index * 0.02 }}
-                  >
-                    <td className="table-property-title max-w-0">
-                      <div 
-                        className="crm-client-name cursor-pointer hover:text-indigo-600 transition-colors truncate block w-full"
-                        onClick={() => {
-                          setSelectedClient(client);
-                          setShowDetailsModal(true);
-                        }}
-                      >
-                        <span className="truncate">{client.client_name}</span>
-
-                      </div>
+            <tbody className="divide-y divide-gray-200">
+              <AnimatePresence mode="popLayout">
+                {paginatedClients.length > 0 ? (
+                  paginatedClients.map((client) => (
+                    <motion.tr
+                      key={client.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => {
+                        setSelectedClient(client);
+                        setShowDetailsModal(true);
+                      }}
+                      className="hover:bg-gray-50 cursor-pointer"
+                    >
+                      <td className="table-property-title max-w-0">
+                        <div className="crm-client-name cursor-pointer hover:text-indigo-600 transition-colors truncate block w-full">
+                          <span className="truncate">{client.client_name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {client.customer_number && (
+                          <a href={`tel:${client.customer_number}`} className="crm-phone-link" onClick={(e) => e.stopPropagation()}>
+                            {client.customer_number}
+                          </a>
+                        )}
+                      </td>
+                      <td>
+                        <span className="crm-badge" style={getLeadStageBadge(client.lead_stage)}>
+                          {LEAD_STAGE_OPTIONS.find((o) => o.value === client.lead_stage)?.label}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="crm-badge" style={getLeadTypeBadge(client.lead_type)}>
+                          {LEAD_TYPE_OPTIONS.find((o) => o.value === client.lead_type)?.label}
+                        </span>
+                      </td>
+                      <td>{client.location_category || "-"}</td>
+                      <td>
+                        {client.expected_visit_date
+                          ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                            })
+                          : "-"}
+                      </td>
+                      <td>
+                        <span className="crm-badge" style={getDealStatusBadge(client.deal_status)}>
+                          {DEAL_STATUS_OPTIONS.find((o) => o.value === client.deal_status)?.label}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="crm-actions">
+                          <button
+                            className="crm-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDealStatus(client);
+                            }}
+                            title={client.deal_status === "locked" ? "Unlock Deal" : "Lock Deal"}
+                          >
+                            {client.deal_status === "locked" ? (
+                              <Unlock className="w-4 h-4" />
+                            ) : (
+                              <Lock className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            className="crm-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingClient(client);
+                              setFormData({
+                                client_name: client.client_name,
+                                customer_number: client.customer_number || "",
+                                lead_stage: client.lead_stage,
+                                lead_type: client.lead_type,
+                                location_category: client.location_category || "",
+                                calling_comment: client.calling_comment || "",
+                                expected_visit_date: client.expected_visit_date || "",
+                                deal_status: client.deal_status,
+                                admin_notes: client.admin_notes || "",
+                                sheet_id: client.sheet_id || "",
+                              });
+                              setShowAddModal(true);
+                            }}
+                            title="Edit"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="crm-action-btn danger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirm(client.id);
+                            }}
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="empty-state-small">
+                      No clients found matching your search.
                     </td>
-                    <td>
-                      {client.customer_number && (
-                        <a href={`tel:${client.customer_number}`} className="crm-phone-link">
-                          {client.customer_number}
-                        </a>
-                      )}
-                    </td>
-                    <td>
-                      <span className="crm-badge" style={getLeadStageBadge(client.lead_stage)}>
-                        {LEAD_STAGE_OPTIONS.find((o) => o.value === client.lead_stage)?.label}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="crm-badge" style={getLeadTypeBadge(client.lead_type)}>
-                        {LEAD_TYPE_OPTIONS.find((o) => o.value === client.lead_type)?.label}
-                      </span>
-                    </td>
-                    <td>{client.location_category || "-"}</td>
-                    <td>
-                      {client.expected_visit_date
-                        ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                          })
-                        : "-"}
-                    </td>
-                    <td>
-                      <span className="crm-badge" style={getDealStatusBadge(client.deal_status)}>
-                        {DEAL_STATUS_OPTIONS.find((o) => o.value === client.deal_status)?.label}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="crm-actions">
-                        <button
-                          className="crm-action-btn"
-                          onClick={() => toggleDealStatus(client)}
-                          title={client.deal_status === "locked" ? "Unlock Deal" : "Lock Deal"}
-                        >
-                          {client.deal_status === "locked" ? (
-                            <Unlock className="w-4 h-4" />
-                          ) : (
-                            <Lock className="w-4 h-4" />
-                          )}
-                        </button>
-                        <button
-                          className="crm-action-btn"
-                          onClick={() => {
-                            setEditingClient(client);
-                            setFormData({
-                              client_name: client.client_name,
-                              customer_number: client.customer_number || "",
-                              lead_stage: client.lead_stage,
-                              lead_type: client.lead_type,
-                              location_category: client.location_category || "",
-                              calling_comment: client.calling_comment || "",
-                              expected_visit_date: client.expected_visit_date || "",
-                              deal_status: client.deal_status,
-                              admin_notes: client.admin_notes || "",
-                              sheet_id: client.sheet_id || "",
-                            });
-                            setShowAddModal(true);
-                          }}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="crm-action-btn danger"
-                          onClick={() => setDeleteConfirm(client.id)}
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="empty-state-small">
-                    No clients found matching your search.
-                  </td>
-                </tr>
-              )}
+                  </tr>
+                )}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredClients.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+                  <span className="font-medium">
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredClients.length)}
+                  </span>{" "}
+                  of <span className="font-medium">{filteredClients.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Next</span>
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Cards */}
         <div className="crm-cards-mobile">
@@ -1494,32 +1631,79 @@ export default function CRMPage() {
                   className="import-upload-area"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <div className="import-upload-icon">
-                    <FileSpreadsheet className="w-8 h-8" />
+                  <div className="import-dropzone">
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="text-xs text-gray-400 mt-1">
+                      CSV, XLSX, XLS
+                    </span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv, .xlsx, .xls"
+                      onChange={handleFileUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
                   </div>
-                  <h3>Upload CSV File</h3>
-                  <p>Drag and drop or click to select a CSV file to import client data</p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <button 
-                    className="import-upload-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                  >
-                    <Upload className="w-5 h-5" />
-                    Choose File
-                  </button>
                 </div>
               ) : (
-                /* Configure Step */
                 <>
+                  <div className="import-file-info">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {excelFile?.name || "Imported File"}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {importData.length} rows • {Object.keys(columnMapping).length} columns mapped
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setImportData([]);
+                        setColumnMapping({});
+                        setExcelFile(null);
+                        setAvailableExcelSheets([]);
+                        setSelectedExcelSheet("");
+                        workbookRef.current = null;
+                      }}
+                      className="p-1 hover:bg-gray-100 rounded-full"
+                    >
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+
+                  {/* Excel Sheet Selection */}
+                  {availableExcelSheets.length > 1 && (
+                    <div className="excel-sheet-selector mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Sheet
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableExcelSheets.map(sheet => (
+                          <button
+                            key={sheet}
+                            onClick={() => handleExcelSheetChange(sheet)}
+                            className={`px-3 py-1.5 text-sm rounded-md border flex items-center gap-2 ${
+                              selectedExcelSheet === sheet
+                                ? "bg-primary text-white border-primary"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Sheet className="w-4 h-4" />
+                            {sheet}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Sheet Selection */}
                   <div className="import-sheet-section">
                     <div className="import-section-header">
@@ -1724,7 +1908,7 @@ export default function CRMPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {(hasHeaders ? importData.slice(1, 4) : importData.slice(0, 3)).map((row, i) => (
+                          {(hasHeaders ? importData.slice(1, 6) : importData.slice(0, 5)).map((row, i) => (
                             <tr key={i}>
                               {row.map((cell, j) => (
                                 <td key={j} title={cell}>{cell}</td>
@@ -1733,9 +1917,9 @@ export default function CRMPage() {
                           ))}
                         </tbody>
                       </table>
-                      {importData.length > 4 && (
+                      {importData.length > 5 && (
                         <div className="import-preview-more">
-                          ... and {importData.length - 4} more rows
+                          ... and {importData.length - (hasHeaders ? 6 : 5)} more rows
                         </div>
                       )}
                     </div>
