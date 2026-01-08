@@ -228,6 +228,8 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
     message TEXT,
     state TEXT,
     city TEXT,
+    inquiry_type TEXT DEFAULT 'property' CHECK (inquiry_type IN ('property', 'home_loan', 'interior_design')),
+    service_details JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

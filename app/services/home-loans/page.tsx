@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import {
   Landmark,
@@ -17,6 +18,8 @@ import {
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ConsultationFormModal from "@/components/ConsultationFormModal";
+
 
 const benefits = [
   {
@@ -113,6 +116,8 @@ const processSteps = [
 ];
 
 export default function HomeLoansPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <Header />
@@ -138,10 +143,13 @@ export default function HomeLoansPage() {
                 perfect home.
               </p>
               <div className="service-hero-cta">
-                <Link href="#contact" className="btn-primary">
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className="btn-primary"
+                >
                   Get Free Consultation
                   <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
                 <Link href="/properties" className="btn-secondary">
                   Browse Properties
                 </Link>
@@ -303,17 +311,15 @@ export default function HomeLoansPage() {
                 </p>
               </div>
               <div className="service-contact-cta">
-                <a href="tel:+919673655631" className="btn-primary">
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className="btn-primary"
+                >
+                  Get Free Consultation
+                </button>
+                <a href="tel:+919673655631" className="btn-secondary">
                   <Phone className="w-5 h-5" />
                   Call Now
-                </a>
-                <a
-                  href="https://wa.me/919673655631?text=Hi, I'm interested in home loan assistance from Ghardaar24"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary"
-                >
-                  WhatsApp Us
                 </a>
               </div>
             </motion.div>
@@ -321,6 +327,14 @@ export default function HomeLoansPage() {
         </section>
       </main>
       <Footer />
+
+      {/* Consultation Form Modal */}
+      <ConsultationFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        serviceType="home_loan"
+      />
     </>
   );
 }
+

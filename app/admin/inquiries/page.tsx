@@ -23,6 +23,19 @@ interface Inquiry {
   phone: string;
   message: string;
   created_at: string;
+  inquiry_type?: 'property' | 'home_loan' | 'interior_design';
+  service_details?: {
+    employment_type?: string;
+    monthly_income?: string;
+    loan_amount?: string;
+    property_type?: string;
+    preferred_banks?: string;
+    property_size?: string;
+    rooms_to_design?: string[];
+    design_style?: string;
+    budget_range?: string;
+    timeline?: string;
+  };
   property?: {
     title: string;
     area: string;
@@ -36,6 +49,7 @@ export default function AdminInquiriesPage() {
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<'all' | 'property' | 'home_loan' | 'interior_design'>('all');
 
   useEffect(() => {
     fetchInquiries();
@@ -75,13 +89,26 @@ export default function AdminInquiriesPage() {
     }
   }
 
-  const filteredInquiries = inquiries.filter(
-    (i) =>
+  const getInquiryTypeLabel = (type?: string) => {
+    switch (type) {
+      case 'home_loan': return 'Home Loan';
+      case 'interior_design': return 'Interior Design';
+      default: return 'Property';
+    }
+  };
+
+  const filteredInquiries = inquiries.filter((i) => {
+    const matchesSearch = 
       i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      i.property?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ""
-  );
+      i.property?.title?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesType = 
+      typeFilter === 'all' || 
+      (i.inquiry_type || 'property') === typeFilter;
+    
+    return matchesSearch && matchesType;
+  });
 
   if (loading) {
     return (
@@ -136,6 +163,31 @@ export default function AdminInquiriesPage() {
         </motion.span>
       </motion.div>
 
+      {/* Filter Tabs */}
+      <motion.div
+        className="admin-filter-tabs"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        {(['all', 'property', 'home_loan', 'interior_design'] as const).map((filter) => (
+          <motion.button
+            key={filter}
+            className={`admin-filter-tab ${typeFilter === filter ? 'active' : ''}`}
+            onClick={() => setTypeFilter(filter)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {filter === 'all' ? 'All' : getInquiryTypeLabel(filter)}
+            <span style={{ marginLeft: '0.375rem', opacity: 0.7, fontSize: '0.75rem' }}>
+              ({filter === 'all' 
+                ? inquiries.length 
+                : inquiries.filter(i => (i.inquiry_type || 'property') === filter).length})
+            </span>
+          </motion.button>
+        ))}
+      </motion.div>
+
       <motion.div
         className="inquiries-layout"
         initial={{ opacity: 0, y: 20 }}
@@ -164,17 +216,18 @@ export default function AdminInquiriesPage() {
                   </span>
                 </div>
                 <p className="inquiry-preview">
-                  {inquiry.message.substring(0, 80)}...
+                  {inquiry.message?.substring(0, 80) || 'No message'}...
                 </p>
-                {inquiry.property ? (
-                  <span className="inquiry-property">
-                    {inquiry.property.title}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span className={`inquiry-type-badge ${inquiry.inquiry_type || 'property'}`}>
+                    {getInquiryTypeLabel(inquiry.inquiry_type)}
                   </span>
-                ) : (
-                  <span className="inquiry-property inquiry-general">
-                    General Consultation
-                  </span>
-                )}
+                  {inquiry.property && (
+                    <span className="inquiry-property">
+                      {inquiry.property.title}
+                    </span>
+                  )}
+                </div>
               </motion.div>
             ))
           ) : (
@@ -262,6 +315,99 @@ export default function AdminInquiriesPage() {
                   </motion.div>
                 )}
 
+                {/* Service Details for Home Loan / Interior Design */}
+                {selectedInquiry.service_details && Object.keys(selectedInquiry.service_details).length > 0 && (
+                  <motion.div
+                    className="inquiry-service-details"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 }}
+                  >
+                    <h4>
+                      {selectedInquiry.inquiry_type === 'home_loan' ? 'Home Loan Details' : 'Interior Design Details'}
+                    </h4>
+                    <div className="inquiry-service-details-grid">
+                      {selectedInquiry.inquiry_type === 'home_loan' ? (
+                        <>
+                          {selectedInquiry.service_details.employment_type && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Employment Type</label>
+                              <span>{selectedInquiry.service_details.employment_type}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.monthly_income && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Monthly Income</label>
+                              <span>{selectedInquiry.service_details.monthly_income}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.loan_amount && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Loan Amount</label>
+                              <span>{selectedInquiry.service_details.loan_amount}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.property_type && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Property Type</label>
+                              <span>{selectedInquiry.service_details.property_type}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.preferred_banks && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Preferred Bank</label>
+                              <span>{selectedInquiry.service_details.preferred_banks}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {selectedInquiry.service_details.property_type && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Property Type</label>
+                              <span>{selectedInquiry.service_details.property_type}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.property_size && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Property Size</label>
+                              <span>{selectedInquiry.service_details.property_size} sq.ft.</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.design_style && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Design Style</label>
+                              <span>{selectedInquiry.service_details.design_style}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.budget_range && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Budget Range</label>
+                              <span>{selectedInquiry.service_details.budget_range}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.timeline && (
+                            <div className="inquiry-service-detail-item">
+                              <label>Timeline</label>
+                              <span>{selectedInquiry.service_details.timeline}</span>
+                            </div>
+                          )}
+                          {selectedInquiry.service_details.rooms_to_design && selectedInquiry.service_details.rooms_to_design.length > 0 && (
+                            <div className="inquiry-service-detail-item" style={{ gridColumn: '1 / -1' }}>
+                              <label>Rooms to Design</label>
+                              <div className="inquiry-rooms-list">
+                                {selectedInquiry.service_details.rooms_to_design.map((room) => (
+                                  <span key={room} className="inquiry-room-tag">{room}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
                 <motion.div
                   className="inquiry-message"
                   initial={{ opacity: 0 }}
@@ -270,7 +416,7 @@ export default function AdminInquiriesPage() {
                 >
                   <h3>Message</h3>
                   <div className="message-content">
-                    {selectedInquiry.message.split("\n").map((line, index) => (
+                    {(selectedInquiry.message || 'No message provided').split("\n").map((line, index) => (
                       <p key={index}>{line}</p>
                     ))}
                   </div>

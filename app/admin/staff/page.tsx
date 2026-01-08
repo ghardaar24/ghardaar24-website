@@ -20,6 +20,10 @@ import {
   ToggleLeft,
   ToggleRight,
   Shield,
+  MessageSquare,
+  Landmark,
+  Palette,
+  Building,
 } from "lucide-react";
 
 interface Staff {
@@ -41,14 +45,22 @@ interface SheetAccess {
   sheet_id: string;
 }
 
+interface InquiryAccess {
+  id: string;
+  staff_id: string;
+  inquiry_type: 'property' | 'home_loan' | 'interior_design';
+}
+
 export default function StaffManagementPage() {
   const { user, session, loading: authLoading } = useAdminAuth();
   const [staff, setStaff] = useState<Staff[]>([]);
   const [sheets, setSheets] = useState<Sheet[]>([]);
   const [sheetAccess, setSheetAccess] = useState<SheetAccess[]>([]);
+  const [inquiryAccess, setInquiryAccess] = useState<InquiryAccess[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessTab, setAccessTab] = useState<'sheets' | 'inquiries'>('sheets');
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -65,19 +77,22 @@ export default function StaffManagementPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [staffRes, sheetsRes, accessRes] = await Promise.all([
+        const [staffRes, sheetsRes, accessRes, inquiryAccessRes] = await Promise.all([
           supabase.from("crm_staff").select("*").order("created_at", { ascending: false }),
           supabase.from("crm_sheets").select("*").order("name"),
           supabase.from("crm_sheet_access").select("*"),
+          supabase.from("crm_inquiry_access").select("*"),
         ]);
 
         if (staffRes.error) console.error("Error fetching staff:", staffRes.error);
         if (sheetsRes.error) console.error("Error fetching sheets:", sheetsRes.error);
         if (accessRes.error) console.error("Error fetching access:", accessRes.error);
+        if (inquiryAccessRes.error) console.error("Error fetching inquiry access:", inquiryAccessRes.error);
 
         setStaff(staffRes.data || []);
         setSheets(sheetsRes.data || []);
         setSheetAccess(accessRes.data || []);
+        setInquiryAccess(inquiryAccessRes.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -260,6 +275,58 @@ export default function StaffManagementPage() {
     return sheets.filter(s => accessIds.includes(s.id));
   };
 
+  // Get accessible inquiry types for a staff member
+  const getStaffInquiryTypes = (staffId: string) => {
+    return inquiryAccess.filter(a => a.staff_id === staffId).map(a => a.inquiry_type);
+  };
+
+  // Toggle inquiry type access
+  const toggleInquiryAccess = async (staffId: string, inquiryType: 'property' | 'home_loan' | 'interior_design') => {
+    const existing = inquiryAccess.find(a => a.staff_id === staffId && a.inquiry_type === inquiryType);
+
+    try {
+      if (existing) {
+        // Remove access
+        const { error } = await supabase.from("crm_inquiry_access").delete().eq("id", existing.id);
+        if (error) throw error;
+
+        setInquiryAccess(prev => prev.filter(a => a.id !== existing.id));
+      } else {
+        // Grant access
+        const { data, error } = await supabase
+          .from("crm_inquiry_access")
+          .insert([{ staff_id: staffId, inquiry_type: inquiryType, granted_by: user?.id }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setInquiryAccess(prev => [...prev, data]);
+      }
+    } catch (error) {
+      console.error("Error toggling inquiry access:", error);
+      alert("Failed to update inquiry access.");
+    }
+  };
+
+  // Get inquiry type label
+  const getInquiryTypeLabel = (type: string) => {
+    switch (type) {
+      case 'home_loan': return 'Home Loan';
+      case 'interior_design': return 'Interior Design';
+      default: return 'Property';
+    }
+  };
+
+  // Get inquiry type icon
+  const getInquiryTypeIcon = (type: string) => {
+    switch (type) {
+      case 'home_loan': return Landmark;
+      case 'interior_design': return Palette;
+      default: return Building;
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="admin-page">
@@ -377,7 +444,10 @@ export default function StaffManagementPage() {
                   Email
                 </th>
                 <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
-                  Sheet Access
+                  CRM Sheets
+                </th>
+                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                  Inquiries
                 </th>
                 <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
                   Status
@@ -390,6 +460,7 @@ export default function StaffManagementPage() {
             <tbody>
               {staff.map((s, index) => {
                 const accessibleSheets = getStaffSheets(s.id);
+                const accessibleInquiryTypes = getStaffInquiryTypes(s.id);
                 return (
                   <tr key={s.id} style={{ borderBottom: index < staff.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
                     <td style={{ padding: '1rem', fontWeight: 500, color: '#111827' }}>{s.name}</td>
@@ -397,7 +468,7 @@ export default function StaffManagementPage() {
                     <td style={{ padding: '1rem' }}>
                       {accessibleSheets.length > 0 ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                          {accessibleSheets.slice(0, 3).map(sheet => (
+                          {accessibleSheets.slice(0, 2).map(sheet => (
                             <span
                               key={sheet.id}
                               style={{
@@ -416,14 +487,34 @@ export default function StaffManagementPage() {
                               {sheet.name}
                             </span>
                           ))}
-                          {accessibleSheets.length > 3 && (
+                          {accessibleSheets.length > 2 && (
                             <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                              +{accessibleSheets.length - 3} more
+                              +{accessibleSheets.length - 2}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>No access</span>
+                        <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>None</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      {accessibleInquiryTypes.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                          {accessibleInquiryTypes.map(type => {
+                            const Icon = getInquiryTypeIcon(type);
+                            return (
+                              <span
+                                key={type}
+                                className={`inquiry-type-badge ${type}`}
+                              >
+                                <Icon className="w-3 h-3" />
+                                {getInquiryTypeLabel(type)}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>None</span>
                       )}
                     </td>
                     <td style={{ padding: '1rem' }}>
@@ -704,7 +795,7 @@ export default function StaffManagementPage() {
         )}
       </AnimatePresence>
 
-      {/* Sheet Access Modal */}
+      {/* Access Modal - Sheets & Inquiries */}
       <AnimatePresence>
         {showAccessModal && selectedStaff && (
           <motion.div
@@ -715,6 +806,7 @@ export default function StaffManagementPage() {
             onClick={() => {
               setShowAccessModal(false);
               setSelectedStaff(null);
+              setAccessTab('sheets');
             }}
           >
             <motion.div
@@ -723,15 +815,16 @@ export default function StaffManagementPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '28rem' }}
+              style={{ maxWidth: '32rem' }}
             >
               <div className="modal-header">
-                <h2>Sheet Access for {selectedStaff.name}</h2>
+                <h2>Access for {selectedStaff.name}</h2>
                 <button
                   className="modal-close"
                   onClick={() => {
                     setShowAccessModal(false);
                     setSelectedStaff(null);
+                    setAccessTab('sheets');
                   }}
                 >
                   <X className="w-5 h-5" />
@@ -739,73 +832,189 @@ export default function StaffManagementPage() {
               </div>
 
               <div style={{ padding: '1.5rem' }}>
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
-                  Select which CRM sheets this staff member can view.
-                </p>
+                {/* Tabs */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                  <button
+                    onClick={() => setAccessTab('sheets')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: accessTab === 'sheets' ? '2px solid #6366f1' : '1px solid #e5e7eb',
+                      background: accessTab === 'sheets' ? '#eef2ff' : 'white',
+                      color: accessTab === 'sheets' ? '#4338ca' : '#6b7280',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    CRM Sheets
+                  </button>
+                  <button
+                    onClick={() => setAccessTab('inquiries')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: accessTab === 'inquiries' ? '2px solid var(--primary)' : '1px solid #e5e7eb',
+                      background: accessTab === 'inquiries' ? 'rgba(243, 106, 42, 0.1)' : 'white',
+                      color: accessTab === 'inquiries' ? 'var(--primary)' : '#6b7280',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Inquiries
+                  </button>
+                </div>
 
-                {sheets.length === 0 ? (
-                  <div style={{
-                    padding: '2rem',
-                    textAlign: 'center',
-                    background: '#f9fafb',
-                    borderRadius: '0.75rem',
-                  }}>
-                    <FileSpreadsheet className="w-8 h-8 mx-auto mb-2" style={{ color: '#9ca3af' }} />
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                      No sheets available. Import data to create sheets first.
+                {/* Sheets Tab Content */}
+                {accessTab === 'sheets' && (
+                  <>
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                      Select which CRM sheets this staff member can view.
                     </p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {sheets.map(sheet => {
-                      const hasAccess = sheetAccess.some(
-                        a => a.staff_id === selectedStaff.id && a.sheet_id === sheet.id
-                      );
-                      return (
-                        <button
-                          key={sheet.id}
-                          onClick={() => toggleSheetAccess(selectedStaff.id, sheet.id)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '0.875rem 1rem',
-                            background: hasAccess ? '#eef2ff' : '#f9fafb',
-                            border: hasAccess ? '2px solid #6366f1' : '1px solid #e5e7eb',
-                            borderRadius: '0.5rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <FileSpreadsheet className="w-5 h-5" style={{ color: hasAccess ? '#4338ca' : '#6b7280' }} />
-                            <span style={{ fontWeight: 500, color: hasAccess ? '#4338ca' : '#374151' }}>
-                              {sheet.name}
-                            </span>
-                          </div>
-                          {hasAccess && (
-                            <div style={{
+
+                    {sheets.length === 0 ? (
+                      <div style={{
+                        padding: '2rem',
+                        textAlign: 'center',
+                        background: '#f9fafb',
+                        borderRadius: '0.75rem',
+                      }}>
+                        <FileSpreadsheet className="w-8 h-8 mx-auto mb-2" style={{ color: '#9ca3af' }} />
+                        <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                          No sheets available. Import data to create sheets first.
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {sheets.map(sheet => {
+                          const hasAccess = sheetAccess.some(
+                            a => a.staff_id === selectedStaff.id && a.sheet_id === sheet.id
+                          );
+                          return (
+                            <button
+                              key={sheet.id}
+                              onClick={() => toggleSheetAccess(selectedStaff.id, sheet.id)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '0.875rem 1rem',
+                                background: hasAccess ? '#eef2ff' : '#f9fafb',
+                                border: hasAccess ? '2px solid #6366f1' : '1px solid #e5e7eb',
+                                borderRadius: '0.5rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <FileSpreadsheet className="w-5 h-5" style={{ color: hasAccess ? '#4338ca' : '#6b7280' }} />
+                                <span style={{ fontWeight: 500, color: hasAccess ? '#4338ca' : '#374151' }}>
+                                  {sheet.name}
+                                </span>
+                              </div>
+                              {hasAccess && (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '1.25rem',
+                                  height: '1.25rem',
+                                  background: '#6366f1',
+                                  borderRadius: '9999px',
+                                }}>
+                                  <Check className="w-3 h-3" style={{ color: 'white' }} />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Inquiries Tab Content */}
+                {accessTab === 'inquiries' && (
+                  <>
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                      Select which inquiry types this staff member can view.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {(['property', 'home_loan', 'interior_design'] as const).map(type => {
+                        const hasAccess = inquiryAccess.some(
+                          a => a.staff_id === selectedStaff.id && a.inquiry_type === type
+                        );
+                        const Icon = getInquiryTypeIcon(type);
+                        const colorMap = {
+                          property: { bg: '#dbeafe', border: '#3b82f6', text: '#1d4ed8' },
+                          home_loan: { bg: '#dcfce7', border: '#22c55e', text: '#16a34a' },
+                          interior_design: { bg: '#f3e8ff', border: '#a855f7', text: '#9333ea' },
+                        };
+                        const colors = colorMap[type];
+
+                        return (
+                          <button
+                            key={type}
+                            onClick={() => toggleInquiryAccess(selectedStaff.id, type)}
+                            style={{
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              width: '1.25rem',
-                              height: '1.25rem',
-                              background: '#6366f1',
-                              borderRadius: '9999px',
-                            }}>
-                              <Check className="w-3 h-3" style={{ color: 'white' }} />
+                              justifyContent: 'space-between',
+                              padding: '0.875rem 1rem',
+                              background: hasAccess ? colors.bg : '#f9fafb',
+                              border: hasAccess ? `2px solid ${colors.border}` : '1px solid #e5e7eb',
+                              borderRadius: '0.5rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <Icon className="w-5 h-5" style={{ color: hasAccess ? colors.text : '#6b7280' }} />
+                              <span style={{ fontWeight: 500, color: hasAccess ? colors.text : '#374151' }}>
+                                {getInquiryTypeLabel(type)} Inquiries
+                              </span>
                             </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                            {hasAccess && (
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '1.25rem',
+                                height: '1.25rem',
+                                background: colors.border,
+                                borderRadius: '9999px',
+                              }}>
+                                <Check className="w-3 h-3" style={{ color: 'white' }} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
 
                 <button
                   onClick={() => {
                     setShowAccessModal(false);
                     setSelectedStaff(null);
+                    setAccessTab('sheets');
                   }}
                   className="btn-admin-secondary"
                   style={{ width: '100%', marginTop: '1.5rem' }}

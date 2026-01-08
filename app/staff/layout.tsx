@@ -4,10 +4,10 @@ import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { StaffAuthProvider, useStaffAuth } from "@/lib/staff-auth";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare } from "lucide-react";
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
-  const { staffProfile, loading, signOut } = useStaffAuth();
+  const { staffProfile, accessibleInquiryTypes, loading, signOut } = useStaffAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -38,6 +38,8 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
   if (!staffProfile) {
     return null;
   }
+
+  const hasInquiryAccess = accessibleInquiryTypes && accessibleInquiryTypes.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,6 +88,19 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
               <LayoutDashboard className="w-4 h-4" />
               CRM Dashboard
             </Link>
+            {hasInquiryAccess && (
+              <Link
+                href="/staff/inquiries"
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  pathname === "/staff/inquiries"
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Inquiries
+              </Link>
+            )}
           </div>
         </div>
       </nav>

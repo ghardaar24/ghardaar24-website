@@ -37,11 +37,17 @@ export interface SheetAccess {
   sheet_name: string;
 }
 
+export interface InquiryAccess {
+  id: string;
+  inquiry_type: 'property' | 'home_loan' | 'interior_design';
+}
+
 interface StaffAuthContextType {
   user: User | null;
   session: Session | null;
   staffProfile: StaffProfile | null;
   accessibleSheets: SheetAccess[];
+  accessibleInquiryTypes: InquiryAccess[];
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -56,6 +62,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [accessibleSheets, setAccessibleSheets] = useState<SheetAccess[]>([]);
+  const [accessibleInquiryTypes, setAccessibleInquiryTypes] = useState<InquiryAccess[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
@@ -94,6 +101,27 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Fetch accessible inquiry types
+  const fetchAccessibleInquiryTypes = async (staffId: string) => {
+    try {
+      const { data, error } = await supabaseStaff
+        .from("crm_inquiry_access")
+        .select("id, inquiry_type")
+        .eq("staff_id", staffId);
+
+      if (error) {
+        console.error("Error fetching accessible inquiry types:", error);
+        setAccessibleInquiryTypes([]);
+        return;
+      }
+
+      setAccessibleInquiryTypes(data || []);
+    } catch (err) {
+      console.error("Error fetching accessible inquiry types:", err);
+      setAccessibleInquiryTypes([]);
+    }
+  };
+
   // Fetch staff profile from crm_staff table
   const fetchStaffProfile = async (userId: string) => {
     if (isFetching) {
@@ -120,18 +148,23 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
 
       if (data) {
         setStaffProfile(data);
-        // Fetch accessible sheets
-        await fetchAccessibleSheets(userId);
+        // Fetch accessible sheets and inquiry types
+        await Promise.all([
+          fetchAccessibleSheets(userId),
+          fetchAccessibleInquiryTypes(userId)
+        ]);
         return true;
       } else {
         setStaffProfile(null);
         setAccessibleSheets([]);
+        setAccessibleInquiryTypes([]);
         return false;
       }
     } catch (err) {
       console.error("Staff profile fetch exception:", err);
       setStaffProfile(null);
       setAccessibleSheets([]);
+      setAccessibleInquiryTypes([]);
       return false;
     } finally {
       setIsFetching(false);
@@ -183,6 +216,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
       } else {
         setStaffProfile(null);
         setAccessibleSheets([]);
+        setAccessibleInquiryTypes([]);
       }
 
       setLoading(false);
@@ -229,6 +263,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     await supabaseStaff.auth.signOut();
     setStaffProfile(null);
     setAccessibleSheets([]);
+    setAccessibleInquiryTypes([]);
     router.push("/staff/login");
   };
 
@@ -239,6 +274,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
         session,
         staffProfile,
         accessibleSheets,
+        accessibleInquiryTypes,
         loading,
         signIn,
         signOut,

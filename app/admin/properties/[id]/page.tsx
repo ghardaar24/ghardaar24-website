@@ -54,6 +54,8 @@ export default function EditPropertyPage({
     possession_status: "",
     target_possession: "",
     litigation: false,
+    // Builder/Developer
+    builder_name: "",
   });
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingAreas, setExistingAreas] = useState<string[]>([]);
@@ -112,6 +114,8 @@ export default function EditPropertyPage({
           possession_status: data.possession_status || "",
           target_possession: data.target_possession || "",
           litigation: data.litigation || false,
+          // Builder/Developer
+          builder_name: data.builder_name || "",
         });
         setExistingImages(data.images || []);
         setAmenities(data.amenities || []);
@@ -440,6 +444,8 @@ export default function EditPropertyPage({
           possession_status: formData.possession_status,
           target_possession: formData.target_possession,
           litigation: formData.litigation,
+          // Builder/Developer
+          builder_name: formData.builder_name || null,
         })
         .eq("id", id);
 
@@ -534,6 +540,18 @@ export default function EditPropertyPage({
                 value={formData.title}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div className="form-group full">
+              <label htmlFor="builder_name">Builder / Developer Name</label>
+              <input
+                type="text"
+                id="builder_name"
+                name="builder_name"
+                value={formData.builder_name}
+                onChange={handleChange}
+                placeholder="e.g., Lodha Group, Godrej Properties, etc."
               />
             </div>
 

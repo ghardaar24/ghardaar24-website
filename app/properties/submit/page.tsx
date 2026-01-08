@@ -55,6 +55,8 @@ interface PropertyFormData {
   owner_name: string;
   owner_phone: string;
   owner_email: string;
+  // Builder/Developer
+  builder_name: string;
 }
 
 const initialFormData: PropertyFormData = {
@@ -85,6 +87,8 @@ const initialFormData: PropertyFormData = {
   owner_name: "",
   owner_phone: "",
   owner_email: "",
+  // Builder/Developer
+  builder_name: "",
 };
 
 // Price presets with Indian notation (K = Thousand, L = Lakh, Cr = Crore)
@@ -549,6 +553,8 @@ export default function SubmitPropertyPage() {
         owner_name: formData.owner_name,
         owner_phone: formData.owner_phone,
         owner_email: formData.owner_email,
+        // Builder/Developer
+        builder_name: formData.builder_name || null,
       });
 
       if (insertError) throw insertError;
@@ -758,6 +764,24 @@ export default function SubmitPropertyPage() {
                   onChange={handleChange}
                   placeholder="e.g., Modern 3BHK Apartment in Andheri West"
                   required
+                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label
+                  htmlFor="builder_name"
+                  className="block text-sm font-semibold text-[var(--foreground)]"
+                >
+                  Builder / Developer Name
+                </label>
+                <input
+                  type="text"
+                  id="builder_name"
+                  name="builder_name"
+                  value={formData.builder_name}
+                  onChange={handleChange}
+                  placeholder="e.g., Lodha Group, Godrej Properties, etc."
                   className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
                 />
               </div>

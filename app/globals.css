@@ -2743,6 +2743,115 @@ button:focus-visible {
   z-index: 20;
 }
 
+/* Property Search Bar */
+.property-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .property-search-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.property-search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.property-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.property-search-input {
+  width: 100%;
+  padding: 0.875rem 2.75rem 0.875rem 2.5rem !important;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full) !important;
+  background: white;
+  color: var(--foreground);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.property-search-input:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow);
+}
+
+.property-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(243, 106, 42, 0.1);
+}
+
+.property-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.property-search-clear {
+  position: absolute;
+  right: 0.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-soft);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.property-search-clear:hover {
+  background: var(--border);
+  color: var(--foreground);
+}
+
+.property-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--gradient-accent);
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  white-space: nowrap;
+}
+
+.property-search-btn:hover {
+  background: var(--gradient-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 25px rgba(243, 106, 42, 0.3);
+}
+
+.property-search-btn:active {
+  transform: translateY(0);
+}
+
 /* New Filter Bar */
 .filter-bar {
   display: flex;
@@ -23390,4 +23499,417 @@ body {
   font-weight: 800;
   color: var(--foreground);
   letter-spacing: -0.02em;
+}
+
+/* ============================================================================
+   CONSULTATION FORM MODAL STYLES
+   ============================================================================ */
+
+.consultation-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.consultation-modal {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 720px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.consultation-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+}
+
+.consultation-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.consultation-modal-title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.consultation-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.consultation-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.consultation-modal-body {
+  padding: 2rem;
+  max-height: calc(90vh - 80px);
+  overflow-y: auto;
+}
+
+/* Success State */
+.consultation-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  gap: 1rem;
+}
+
+.consultation-success svg {
+  color: #22c55e;
+}
+
+.consultation-success h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.consultation-success p {
+  color: var(--muted);
+  max-width: 320px;
+}
+
+/* Error State */
+.consultation-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+/* Form Sections */
+.consultation-section {
+  margin-bottom: 1.5rem;
+}
+
+.consultation-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.consultation-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .consultation-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.consultation-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.consultation-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.consultation-form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.consultation-form-group label svg {
+  color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.consultation-form-group input,
+.consultation-form-group select,
+.consultation-form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  background: #fafafa;
+  transition: all 0.2s;
+  color: var(--foreground);
+}
+
+.consultation-form-group input:focus,
+.consultation-form-group select:focus,
+.consultation-form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(243, 106, 42, 0.1);
+}
+
+.consultation-form-group input.error,
+.consultation-form-group select.error {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.consultation-form-group .error-text {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+}
+
+.consultation-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Chips for Multi-Select */
+.consultation-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.consultation-chip {
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: var(--radius-full);
+  background: white;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.consultation-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.consultation-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Submit Button */
+.consultation-submit {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 1.5rem;
+}
+
+.consultation-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(243, 106, 42, 0.3);
+}
+
+.consultation-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .consultation-modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .consultation-modal-title h2 {
+    font-size: 1.1rem;
+  }
+
+  .consultation-modal-body {
+    padding: 1.5rem;
+  }
+
+  .consultation-chips {
+    gap: 0.375rem;
+  }
+
+  .consultation-chip {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   ADMIN INQUIRY TYPE BADGES
+   ============================================================================ */
+
+.inquiry-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.inquiry-type-badge.property {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.inquiry-type-badge.home_loan {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.inquiry-type-badge.interior_design {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+/* Admin Filter Tabs for Inquiries */
+.admin-filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-filter-tab {
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: var(--radius-full);
+  background: white;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-filter-tab:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.admin-filter-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Service Details Preview in Admin */
+.inquiry-service-details {
+  background: #f9fafb;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.inquiry-service-details h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.inquiry-service-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .inquiry-service-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inquiry-service-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.inquiry-service-detail-item label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.inquiry-service-detail-item span {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.inquiry-rooms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.inquiry-room-tag {
+  padding: 0.25rem 0.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--foreground);
 }

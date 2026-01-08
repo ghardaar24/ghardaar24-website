@@ -57,6 +57,8 @@ export interface Property {
   owner_name?: string;
   owner_phone?: string;
   owner_email?: string;
+  // Builder/Developer
+  builder_name?: string;
   // Approval workflow
   approval_status?: "pending" | "approved" | "rejected";
   submitted_by?: string;

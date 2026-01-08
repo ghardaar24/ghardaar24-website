@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import {
   Palette,
@@ -20,6 +21,7 @@ import {
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ConsultationFormModal from "@/components/ConsultationFormModal";
 
 const services = [
   {
@@ -138,6 +140,8 @@ const features = [
 ];
 
 export default function InteriorDesignPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <Header />
@@ -163,10 +167,13 @@ export default function InteriorDesignPage() {
                 life.
               </p>
               <div className="service-hero-cta">
-                <Link href="#contact" className="btn-primary">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="btn-primary"
+                >
                   Get Free Quote
                   <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
                 <Link href="/properties" className="btn-secondary">
                   Find Your Home First
                 </Link>
@@ -338,17 +345,15 @@ export default function InteriorDesignPage() {
                 </p>
               </div>
               <div className="service-contact-cta">
-                <a href="tel:+919673655631" className="btn-primary">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="btn-primary"
+                >
+                  Get Free Consultation
+                </button>
+                <a href="tel:+919673655631" className="btn-secondary">
                   <Phone className="w-5 h-5" />
                   Call Now
-                </a>
-                <a
-                  href="https://wa.me/919673655631?text=Hi, I'm interested in interior design services from Ghardaar24"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary"
-                >
-                  WhatsApp Us
                 </a>
               </div>
             </motion.div>
@@ -356,6 +361,14 @@ export default function InteriorDesignPage() {
         </section>
       </main>
       <Footer />
+
+      {/* Consultation Form Modal */}
+      <ConsultationFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        serviceType="interior_design"
+      />
     </>
   );
 }
+

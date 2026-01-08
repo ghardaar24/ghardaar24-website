@@ -20,6 +20,7 @@ interface SearchParams {
   bedrooms?: string;
   possession?: string;
   featured?: string;
+  search?: string;
 }
 
 export async function generateMetadata({
@@ -86,6 +87,12 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
 
   if (searchParams.featured === "true") {
     query = query.eq("featured", true);
+  }
+
+  // Search filter - search across title, area, and city
+  if (searchParams.search) {
+    const searchTerm = `%${searchParams.search}%`;
+    query = query.or(`title.ilike.${searchTerm},area.ilike.${searchTerm},city.ilike.${searchTerm}`);
   }
 
   const { data, error } = await query.limit(50);

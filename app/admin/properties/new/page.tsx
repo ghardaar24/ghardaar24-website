@@ -47,6 +47,8 @@ interface PropertyFormData {
   possession_status: string;
   target_possession: string;
   litigation: boolean;
+  // Builder/Developer
+  builder_name: string;
 }
 
 const initialFormData: PropertyFormData = {
@@ -74,6 +76,8 @@ const initialFormData: PropertyFormData = {
   possession_status: "",
   target_possession: "",
   litigation: false,
+  // Builder/Developer
+  builder_name: "",
 };
 
 export default function NewPropertyPage() {
@@ -381,6 +385,8 @@ export default function NewPropertyPage() {
         possession_status: formData.possession_status,
         target_possession: formData.target_possession,
         litigation: formData.litigation,
+        // Builder/Developer
+        builder_name: formData.builder_name || null,
       });
 
       if (insertError) throw insertError;
@@ -461,6 +467,18 @@ export default function NewPropertyPage() {
                 onChange={handleChange}
                 placeholder="e.g., Modern 3BHK Apartment in Andheri West"
                 required
+              />
+            </div>
+
+            <div className="form-group full">
+              <label htmlFor="builder_name">Builder / Developer Name</label>
+              <input
+                type="text"
+                id="builder_name"
+                name="builder_name"
+                value={formData.builder_name}
+                onChange={handleChange}
+                placeholder="e.g., Lodha Group, Godrej Properties, etc."
               />
             </div>
 

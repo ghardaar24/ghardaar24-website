@@ -16,6 +16,7 @@ interface FilterState {
   max_price: string;
   bedrooms: string;
   possession: string;
+  search: string;
 }
 
 const propertyTypes = ["apartment", "house", "villa", "plot", "commercial"];
@@ -165,6 +166,7 @@ export default function PropertyFilters() {
       max_price: searchParams.get("max_price") || "",
       bedrooms: searchParams.get("bedrooms") || "",
       possession: searchParams.get("possession") || "",
+      search: searchParams.get("search") || "",
     }),
     [searchParams]
   );
@@ -187,6 +189,7 @@ export default function PropertyFilters() {
       max_price: searchParams.get("max_price") || "",
       bedrooms: searchParams.get("bedrooms") || "",
       possession: searchParams.get("possession") || "",
+      search: searchParams.get("search") || "",
     };
     if (JSON.stringify(filters) !== JSON.stringify(urlFilters)) {
       setFilters(urlFilters);
@@ -222,6 +225,7 @@ export default function PropertyFilters() {
       max_price: "",
       bedrooms: "",
       possession: "",
+      search: "",
     };
     setFilters(newFilters);
     router.push("/properties");
@@ -247,6 +251,47 @@ export default function PropertyFilters() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Search Bar */}
+      <div className="property-search-bar">
+        <div className="property-search-input-wrapper">
+          <Search className="property-search-icon" />
+          <input
+            type="text"
+            className="property-search-input"
+            placeholder="Search by property name, area, or city..."
+            value={filters.search}
+            onChange={(e) => {
+              const newFilters = { ...filters, search: e.target.value };
+              setFilters(newFilters);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateFilters(filters);
+              }
+            }}
+          />
+          {filters.search && (
+            <button
+              className="property-search-clear"
+              onClick={() => {
+                const newFilters = { ...filters, search: "" };
+                setFilters(newFilters);
+                updateFilters(newFilters);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <button
+          className="property-search-btn"
+          onClick={() => updateFilters(filters)}
+        >
+          <Search className="w-4 h-4" />
+          Search
+        </button>
+      </div>
+
       <div className="filter-bar">
         <div className="filter-left-section">
           <div className="filter-type-toggles">
