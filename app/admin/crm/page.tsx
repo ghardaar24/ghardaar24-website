@@ -1444,7 +1444,7 @@ export default function CRMPage() {
         Showing {filteredClients.length} of {clients.length} clients
       </motion.div>
 
-      {/* Table/Cards Section */}
+      {/* Table Section */}
       <motion.div
         className="admin-section-card crm-table-section"
         style={{ padding: 0 }}
@@ -1452,9 +1452,8 @@ export default function CRMPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        {/* Desktop Table */}
-        <div className="admin-table-container crm-table-desktop">
-          <table className="admin-table table-fixed w-full">
+        <div className="admin-table-container overflow-x-auto">
+          <table className="admin-table table-fixed w-full min-w-[1000px]">
             <thead>
               <tr>
                 <th className="w-[25%]">Client Name</th>
@@ -1738,96 +1737,6 @@ export default function CRMPage() {
             </div>
           </div>
         )}
-
-        {/* Mobile Cards */}
-        <div className="crm-cards-mobile">
-          {filteredClients.length > 0 ? (
-            filteredClients.map((client, index) => (
-              <motion.div
-                key={client.id}
-                className="crm-card"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div className="crm-card-header">
-                  <div className="crm-card-name">{client.client_name}</div>
-                  <div className="crm-card-badges">
-                    <span className="crm-badge" style={getLeadTypeBadge(client.lead_type)}>
-                      {LEAD_TYPE_OPTIONS.find((o) => o.value === client.lead_type)?.label}
-                    </span>
-                    <span className="crm-badge" style={getDealStatusBadge(client.deal_status)}>
-                      {client.deal_status === "locked" ? "🔒" : client.deal_status}
-                    </span>
-                  </div>
-                </div>
-                <div className="crm-card-details">
-                  {client.customer_number && (
-                    <a href={`tel:${client.customer_number}`} className="crm-card-detail">
-                      <span>{client.customer_number}</span>
-                    </a>
-                  )}
-                  {client.location_category && (
-                    <div className="crm-card-detail">
-                      <MapPin className="w-4 h-4" />
-                      <span>{client.location_category}</span>
-                    </div>
-                  )}
-                  {client.expected_visit_date && (
-                    <div className="crm-card-detail">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(client.expected_visit_date).toLocaleDateString("en-IN")}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="crm-card-stage">
-                  <span className="crm-badge" style={getLeadStageBadge(client.lead_stage)}>
-                    {LEAD_STAGE_OPTIONS.find((o) => o.value === client.lead_stage)?.label}
-                  </span>
-                </div>
-                {client.calling_comment && (
-                  <div className="crm-card-comment">
-                    <span>{client.calling_comment}</span>
-                  </div>
-                )}
-                <div className="crm-card-actions">
-                  <button className="crm-action-btn" onClick={() => toggleDealStatus(client)}>
-                    {client.deal_status === "locked" ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                  </button>
-                  <button
-                    className="crm-action-btn"
-                    onClick={() => {
-                      setEditingClient(client);
-                      setFormData({
-                        client_name: client.client_name,
-                        customer_number: client.customer_number || "",
-                        lead_stage: client.lead_stage,
-                        lead_type: client.lead_type,
-                        location_category: client.location_category || "",
-                        new_calling_comment: "",
-                        expected_visit_date: client.expected_visit_date || "",
-                        deal_status: client.deal_status,
-                        admin_notes: client.admin_notes || "",
-                        sheet_id: client.sheet_id || "",
-                      });
-                      setShowAddModal(true);
-                    }}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button className="crm-action-btn danger" onClick={() => setDeleteConfirm(client.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="empty-state-admin">
-              <Users className="w-12 h-12" />
-              <p>No clients found matching your search.</p>
-            </div>
-          )}
-        </div>
       </motion.div>
 
       {/* Add/Edit Modal */}

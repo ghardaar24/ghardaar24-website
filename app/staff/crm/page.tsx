@@ -17,6 +17,8 @@ import {
   X,
   FileSpreadsheet,
   Lock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // Types
@@ -78,6 +80,8 @@ const DEAL_STATUS_OPTIONS = [
   { value: "lost", label: "Lost", color: "#6b7280" },
 ];
 
+const ITEMS_PER_PAGE = 100;
+
 export default function StaffCRMPage() {
   const { staffProfile, accessibleSheets, loading: authLoading } = useStaffAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
@@ -94,6 +98,9 @@ export default function StaffCRMPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Inline editing state
   const [editingCell, setEditingCell] = useState<{ clientId: string; field: string } | null>(null);
@@ -239,6 +246,18 @@ export default function StaffCRMPage() {
 
     return matchesSearch && matchesStage && matchesType && matchesStatus && matchesLocation;
   });
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+  const paginatedClients = filteredClients.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, selectedSheetId]);
 
   // Get unique locations for filter
   const uniqueLocations = [...new Set(clients.map((c) => c.location_category).filter(Boolean))];
@@ -672,7 +691,7 @@ export default function StaffCRMPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[1000px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -699,7 +718,7 @@ export default function StaffCRMPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredClients.map((client) => (
+                {paginatedClients.map((client) => (
                   <tr
                     key={client.id}
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
@@ -850,6 +869,62 @@ export default function StaffCRMPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* Pagination Controls */}
+        {filteredClients.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+                  <span className="font-medium">
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredClients.length)}
+                  </span>{" "}
+                  of <span className="font-medium">{filteredClients.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Next</span>
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </nav>
+              </div>
+            </div>
           </div>
         )}
       </div>
