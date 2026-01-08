@@ -11,8 +11,10 @@ import {
   Plus,
   LayoutDashboard,
   ChevronDown,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useStaffAuth } from "@/lib/staff-auth";
 import {
   motion,
   AnimatePresence,
@@ -42,7 +44,8 @@ function HeaderContent() {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, userProfile, loading, signOut } = useAuth();
+  const { user, userProfile, isAdmin, loading, signOut } = useAuth();
+  const { staffProfile } = useStaffAuth();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -219,7 +222,7 @@ function HeaderContent() {
             {mounted && !loading && (
               <>
                 {user ? (
-                  <div className="header-user-menu relative" id="intro-user-menu">
+                    <div className="header-user-menu relative" id="intro-user-menu">
                     <motion.button
                       className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white hover:shadow-md transition-all"
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -237,7 +240,7 @@ function HeaderContent() {
                     <AnimatePresence>
                       {isProfileOpen && (
                         <motion.div
-                          className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50"
+                          className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50"
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -251,6 +254,31 @@ function HeaderContent() {
                             <LayoutDashboard className="w-4 h-4" />
                             Dashboard
                           </Link>
+                          
+                          {/* Admin Panel Link */}
+                          {isAdmin && (
+                            <Link
+                              href="/admin"
+                              className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                              onClick={() => setIsProfileOpen(false)}
+                            >
+                              <Shield className="w-4 h-4" />
+                              Admin Panel
+                            </Link>
+                          )}
+
+                          {/* Staff Panel Link */}
+                          {staffProfile && (
+                            <Link
+                              href="/staff/crm"
+                              className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                              onClick={() => setIsProfileOpen(false)}
+                            >
+                              <Shield className="w-4 h-4" />
+                              Staff Panel
+                            </Link>
+                          )}
+
                           <Link
                             href="/properties/submit"
                             className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"

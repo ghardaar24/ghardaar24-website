@@ -67,3 +67,16 @@ export interface Property {
   rejection_reason?: string;
   created_at: string;
 }
+
+export interface Brochure {
+  id: string;
+  title: string;
+  description?: string;
+  file_url: string;
+  file_name: string;
+  file_size?: number;
+  is_active: boolean;
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+}

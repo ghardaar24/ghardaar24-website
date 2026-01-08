@@ -115,8 +115,6 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
 
 export default function StaffLayout({ children }: { children: ReactNode }) {
   return (
-    <StaffAuthProvider>
-      <StaffLayoutContent>{children}</StaffLayoutContent>
-    </StaffAuthProvider>
+    <StaffLayoutContent>{children}</StaffLayoutContent>
   );
 }

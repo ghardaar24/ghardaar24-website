@@ -12,6 +12,7 @@ const quickLinks = [
   { href: "/properties?listing_type=rent", label: "Rent Property" },
   { href: "/calculators", label: "Calculators" },
   { href: "/real-estate-guide", label: "Real Estate Guide" },
+  { href: "/downloads", label: "Downloads" },
 ];
 
 const propertyTypes = [
@@ -22,6 +23,9 @@ const propertyTypes = [
 ];
 
 export default function Footer() {
+
+
+
   return (
     <motion.footer
       className="footer"

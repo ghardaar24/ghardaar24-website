@@ -8,6 +8,7 @@ import {
 } from "@/lib/seo";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { AuthProvider } from "@/lib/auth";
+import { StaffAuthProvider } from "@/lib/staff-auth";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -98,8 +99,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${poppins.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
-        <FloatingWhatsApp />
+        <AuthProvider>
+          <StaffAuthProvider>
+            {children}
+            <FloatingWhatsApp />
+          </StaffAuthProvider>
+        </AuthProvider>
       </body>
     </html>
   );
