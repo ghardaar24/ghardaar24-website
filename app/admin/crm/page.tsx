@@ -144,14 +144,23 @@ export default function CRMPage() {
   // Handle delete all
   const handleDeleteAll = async () => {
     try {
-      // Delete all records where id is not null (effectively all)
+      // Delete all clients
       const { error } = await supabase.from("crm_clients").delete().neq("id", "00000000-0000-0000-0000-000000000000");
       
       if (error) throw error;
       
+      // Delete all sheets since they're now empty
+      const { error: sheetsError } = await supabase.from("crm_sheets").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      
+      if (sheetsError) {
+        console.error("Error deleting sheets:", sheetsError);
+      }
+      
       setClients([]);
+      setSheets([]);
+      setSelectedSheetId(null);
       setShowDeleteAllModal(false);
-      alert("All clients have been permanently deleted.");
+      alert("All clients and sheets have been permanently deleted.");
     } catch (error) {
       console.error("Error deleting all clients:", error);
       alert("Failed to delete clients. Please try again.");
@@ -690,10 +699,42 @@ export default function CRMPage() {
   // Handle delete
   const handleDelete = async (id: string) => {
     try {
+      // Find the client to get its sheet_id before deleting
+      const clientToDelete = clients.find((c) => c.id === id);
+      const sheetId = clientToDelete?.sheet_id;
+
       const { error } = await supabase.from("crm_clients").delete().eq("id", id);
       if (error) throw error;
-      setClients((prev) => prev.filter((c) => c.id !== id));
+      
+      // Update local clients state
+      const updatedClients = clients.filter((c) => c.id !== id);
+      setClients(updatedClients);
       setDeleteConfirm(null);
+
+      // Check if the sheet is now empty and delete it if so
+      if (sheetId) {
+        const remainingClientsInSheet = updatedClients.filter((c) => c.sheet_id === sheetId);
+        
+        if (remainingClientsInSheet.length === 0) {
+          // Delete the empty sheet from database
+          const { error: sheetError } = await supabase
+            .from("crm_sheets")
+            .delete()
+            .eq("id", sheetId);
+
+          if (sheetError) {
+            console.error("Error deleting empty sheet:", sheetError);
+          } else {
+            // Update local sheets state
+            setSheets((prev) => prev.filter((s) => s.id !== sheetId));
+            
+            // If this was the selected sheet, go back to all clients
+            if (selectedSheetId === sheetId) {
+              setSelectedSheetId(null);
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error("Error deleting client:", error);
       alert("Failed to delete client. Please try again.");
