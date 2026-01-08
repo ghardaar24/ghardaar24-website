@@ -228,7 +228,7 @@ Budget: ${formData.budget}`;
                         type="text"
                         id="name"
                         name="name"
-                        className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
+                        className="block w-full pl-14 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
                         placeholder="Enter your name"
                         value={formData.name}
                         onChange={handleChange}
@@ -252,7 +252,7 @@ Budget: ${formData.budget}`;
                         type="tel"
                         id="phone"
                         name="phone"
-                        className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
+                        className="block w-full pl-14 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
                         placeholder="Enter your phone number"
                         value={formData.phone}
                         onChange={handleChange}
@@ -276,7 +276,7 @@ Budget: ${formData.budget}`;
                         type="email"
                         id="email"
                         name="email"
-                        className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
+                        className="block w-full pl-14 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all"
                         placeholder="Enter your email"
                         value={formData.email}
                         onChange={handleChange}
@@ -300,7 +300,7 @@ Budget: ${formData.budget}`;
                         <select
                           id="state"
                           name="state"
-                          className="block w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
+                          className="block w-full pl-14 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
                           value={formData.state}
                           onChange={handleChange}
                           required
@@ -344,7 +344,7 @@ Budget: ${formData.budget}`;
                         <select
                           id="city"
                           name="city"
-                          className="block w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
+                          className="block w-full pl-14 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
                           value={formData.city}
                           onChange={handleChange}
                           required
@@ -391,7 +391,7 @@ Budget: ${formData.budget}`;
                         <select
                           id="propertyType"
                           name="propertyType"
-                          className="block w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
+                          className="block w-full pl-14 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f36a2a]/20 focus:border-[#f36a2a] transition-all appearance-none cursor-pointer"
                           value={formData.propertyType}
                           onChange={handleChange}
                           required
