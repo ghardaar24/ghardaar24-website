@@ -508,16 +508,12 @@ export default function StaffCRMPage() {
       </div>
 
       {/* Sheet Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200 p-1 flex flex-wrap gap-1">
+      <div className="staff-tabs-container">
         {sheets.map((sheet) => (
           <button
             key={sheet.id}
             onClick={() => setSelectedSheetId(sheet.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedSheetId === sheet.id
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            className={`staff-tab ${selectedSheetId === sheet.id ? "active" : ""}`}
           >
             <FileSpreadsheet className="w-4 h-4" />
             {sheet.name}
@@ -526,85 +522,79 @@ export default function StaffCRMPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
-              <Users className="w-5 h-5 text-indigo-600" />
+      <div className="staff-stats-row">
+        <div className="staff-stat-card">
+          <div className="staff-stat-content">
+            <div className="staff-stat-icon primary">
+              <Users className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-red-500" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Hot</p>
-              <p className="text-xl font-bold text-gray-900">{stats.hot}</p>
+            <div className="staff-stat-info">
+              <span className="staff-stat-label">Total</span>
+              <span className="staff-stat-value">{stats.total}</span>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-amber-500" />
+        <div className="staff-stat-card">
+          <div className="staff-stat-content">
+            <div className="staff-stat-icon danger">
+              <AlertCircle className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Warm</p>
-              <p className="text-xl font-bold text-gray-900">{stats.warm}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Cold</p>
-              <p className="text-xl font-bold text-gray-900">{stats.cold}</p>
+            <div className="staff-stat-info">
+              <span className="staff-stat-label">Hot</span>
+              <span className="staff-stat-value">{stats.hot}</span>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 col-span-2 sm:col-span-1">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-500" />
+        <div className="staff-stat-card">
+          <div className="staff-stat-content">
+            <div className="staff-stat-icon warning">
+              <Clock className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Locked</p>
-              <p className="text-xl font-bold text-gray-900">{stats.locked}</p>
+            <div className="staff-stat-info">
+              <span className="staff-stat-label">Warm</span>
+              <span className="staff-stat-value">{stats.warm}</span>
+            </div>
+          </div>
+        </div>
+        <div className="staff-stat-card">
+          <div className="staff-stat-content">
+            <div className="staff-stat-icon info">
+              <Users className="w-5 h-5" />
+            </div>
+            <div className="staff-stat-info">
+              <span className="staff-stat-label">Cold</span>
+              <span className="staff-stat-value">{stats.cold}</span>
+            </div>
+          </div>
+        </div>
+        <div className="staff-stat-card">
+          <div className="staff-stat-content">
+            <div className="staff-stat-icon success">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div className="staff-stat-info">
+              <span className="staff-stat-label">Locked</span>
+              <span className="staff-stat-value">{stats.locked}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10 pointer-events-none" />
+      <div className="staff-filters-card">
+        <div className="staff-search-row">
+          <div className="staff-search-input">
+            <Search className="w-5 h-5" />
             <input
               type="text"
               placeholder="Search by name, phone, or notes..."
               value={filters.search}
               onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-              className="w-full pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              style={{ paddingLeft: '2.75rem' }}
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border font-medium transition-all ${
-              showFilters
-                ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+            className={`staff-filter-btn ${showFilters ? "active" : ""}`}
           >
             <Filter className="w-4 h-4" />
             Filters
@@ -617,12 +607,12 @@ export default function StaffCRMPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 mt-4 border-t border-gray-100"
+              className="staff-filters-grid"
             >
               <select
                 value={filters.leadStage}
                 onChange={(e) => setFilters((prev) => ({ ...prev, leadStage: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="staff-filter-select"
               >
                 <option value="">All Stages</option>
                 {LEAD_STAGE_OPTIONS.map((opt) => (
@@ -634,7 +624,7 @@ export default function StaffCRMPage() {
               <select
                 value={filters.leadType}
                 onChange={(e) => setFilters((prev) => ({ ...prev, leadType: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="staff-filter-select"
               >
                 <option value="">All Types</option>
                 {LEAD_TYPE_OPTIONS.map((opt) => (
@@ -646,7 +636,7 @@ export default function StaffCRMPage() {
               <select
                 value={filters.dealStatus}
                 onChange={(e) => setFilters((prev) => ({ ...prev, dealStatus: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="staff-filter-select"
               >
                 <option value="">All Status</option>
                 {DEAL_STATUS_OPTIONS.map((opt) => (
@@ -658,7 +648,7 @@ export default function StaffCRMPage() {
               <select
                 value={filters.locationCategory}
                 onChange={(e) => setFilters((prev) => ({ ...prev, locationCategory: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="staff-filter-select"
               >
                 <option value="">All Locations</option>
                 {uniqueLocations.map((loc) => (
@@ -678,19 +668,19 @@ export default function StaffCRMPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="staff-table-container">
         {isLoading ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-3 text-gray-500">Loading clients...</p>
+          <div className="staff-loading">
+            <div className="staff-loading-spinner"></div>
+            <p>Loading clients...</p>
           </div>
         ) : filteredClients.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No clients found matching your search.</p>
+          <div className="staff-empty-state">
+            <Users className="w-12 h-12" />
+            <p>No clients found matching your search.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="staff-table-wrapper">
             <table className="w-full min-w-[1000px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
