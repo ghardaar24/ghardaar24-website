@@ -14,6 +14,7 @@ import {
   Palette,
   ChevronRight,
   ExternalLink,
+  Compass,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,7 +26,7 @@ interface Inquiry {
   phone: string;
   message: string;
   created_at: string;
-  inquiry_type?: 'property' | 'home_loan' | 'interior_design';
+  inquiry_type?: 'property' | 'home_loan' | 'interior_design' | 'vastu_consultation';
   service_details?: {
     employment_type?: string;
     monthly_income?: string;
@@ -37,6 +38,10 @@ interface Inquiry {
     design_style?: string;
     budget_range?: string;
     timeline?: string;
+    consultation_type?: string;
+    preferred_date?: string;
+    property_address?: string;
+    issues?: string[];
   };
   property?: {
     title: string;
@@ -51,7 +56,7 @@ export default function StaffInquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<'all' | 'property' | 'home_loan' | 'interior_design'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'property' | 'home_loan' | 'interior_design' | 'vastu_consultation'>('all');
 
   useEffect(() => {
     if (!authLoading && staffProfile && accessibleInquiryTypes.length > 0) {
@@ -88,6 +93,7 @@ export default function StaffInquiriesPage() {
     switch (type) {
       case 'home_loan': return 'Home Loan';
       case 'interior_design': return 'Interior Design';
+      case 'vastu_consultation': return 'Vastu Consultation';
       default: return 'Property';
     }
   };
@@ -96,6 +102,7 @@ export default function StaffInquiriesPage() {
     switch (type) {
       case 'home_loan': return Landmark;
       case 'interior_design': return Palette;
+      case 'vastu_consultation': return Compass;
       default: return Building;
     }
   };
@@ -250,6 +257,16 @@ export default function StaffInquiriesPage() {
             Interior Design ({inquiries.filter(i => i.inquiry_type === 'interior_design').length})
           </motion.button>
         )}
+        {accessibleTypeNames.includes('vastu_consultation') && (
+          <motion.button
+            className={`admin-filter-tab ${typeFilter === 'vastu_consultation' ? 'active' : ''}`}
+            onClick={() => setTypeFilter('vastu_consultation')}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Vastu Consultation ({inquiries.filter(i => i.inquiry_type === 'vastu_consultation').length})
+          </motion.button>
+        )}
       </motion.div>
 
       {/* Inquiries Layout */}
@@ -387,7 +404,11 @@ export default function StaffInquiriesPage() {
                   transition={{ delay: 0.12 }}
                 >
                   <h4>
-                    {selectedInquiry.inquiry_type === 'home_loan' ? 'Home Loan Details' : 'Interior Design Details'}
+                    {selectedInquiry.inquiry_type === 'home_loan'
+                      ? 'Home Loan Details'
+                      : selectedInquiry.inquiry_type === 'interior_design'
+                      ? 'Interior Design Details'
+                      : 'Vastu Consultation Details'}
                   </h4>
                   <div className="inquiry-service-details-grid">
                     {selectedInquiry.inquiry_type === 'home_loan' ? (
@@ -423,7 +444,7 @@ export default function StaffInquiriesPage() {
                           </div>
                         )}
                       </>
-                    ) : (
+                    ) : selectedInquiry.inquiry_type === 'interior_design' ? (
                       <>
                         {selectedInquiry.service_details.property_type && (
                           <div className="inquiry-service-detail-item">
@@ -461,6 +482,43 @@ export default function StaffInquiriesPage() {
                             <div className="inquiry-rooms-list">
                               {selectedInquiry.service_details.rooms_to_design.map((room) => (
                                 <span key={room} className="inquiry-room-tag">{room}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {selectedInquiry.service_details.property_type && (
+                          <div className="inquiry-service-detail-item">
+                            <label>Property Type</label>
+                            <span>{selectedInquiry.service_details.property_type}</span>
+                          </div>
+                        )}
+                        {selectedInquiry.service_details.consultation_type && (
+                          <div className="inquiry-service-detail-item">
+                            <label>Consultation Type</label>
+                            <span>{selectedInquiry.service_details.consultation_type}</span>
+                          </div>
+                        )}
+                        {selectedInquiry.service_details.preferred_date && (
+                          <div className="inquiry-service-detail-item">
+                            <label>Preferred Date</label>
+                            <span>{selectedInquiry.service_details.preferred_date}</span>
+                          </div>
+                        )}
+                        {selectedInquiry.service_details.property_address && (
+                          <div className="inquiry-service-detail-item" style={{ gridColumn: '1 / -1' }}>
+                            <label>Property Address</label>
+                            <span>{selectedInquiry.service_details.property_address}</span>
+                          </div>
+                        )}
+                         {selectedInquiry.service_details.issues && selectedInquiry.service_details.issues.length > 0 && (
+                          <div className="inquiry-service-detail-item" style={{ gridColumn: '1 / -1' }}>
+                            <label>Areas of Concern</label>
+                            <div className="inquiry-rooms-list">
+                              {selectedInquiry.service_details.issues.map((issue) => (
+                                <span key={issue} className="inquiry-room-tag">{issue}</span>
                               ))}
                             </div>
                           </div>

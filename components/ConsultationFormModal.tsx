@@ -18,10 +18,11 @@ import {
   CheckCircle,
   AlertCircle,
   Landmark,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
-type ServiceType = "home_loan" | "interior_design";
+type ServiceType = "home_loan" | "interior_design" | "vastu_consultation";
 
 interface ConsultationFormModalProps {
   isOpen: boolean;
@@ -51,6 +52,18 @@ interface InteriorDesignFormData {
   designStyle: string;
   budgetRange: string;
   timeline: string;
+  message: string;
+}
+
+interface VastuConsultationFormData {
+  name: string;
+  email: string;
+  phone: string;
+  propertyType: string;
+  consultationType: string;
+  preferredDate: string;
+  propertyAddress: string;
+  issues: string[];
   message: string;
 }
 
@@ -111,6 +124,18 @@ const roomOptions = [
   "Full Home",
 ];
 
+const vastuPropertyTypes = ["Residential", "Commercial", "Industrial", "Plot/Land", "Under Construction"];
+const vastuConsultationTypes = ["On-site Visit", "Online Consultation", "Map/Plan Analysis"];
+const vastuIssues = [
+  "New Property Selection",
+  "Existing Property Correction",
+  "Renovation Planning",
+  "Health Issues",
+  "Financial Growth",
+  "Relationship Harmony",
+  "Career/Business Growth",
+];
+
 export default function ConsultationFormModal({
   isOpen,
   onClose,
@@ -141,13 +166,30 @@ export default function ConsultationFormModal({
     message: "",
   });
 
+  const [vastuData, setVastuData] = useState<VastuConsultationFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    propertyType: "",
+    consultationType: "",
+    preferredDate: "",
+    propertyAddress: "",
+    issues: [],
+    message: "",
+  });
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    const data = serviceType === "home_loan" ? homeLoanData : interiorData;
+    const data =
+      serviceType === "home_loan"
+        ? homeLoanData
+        : serviceType === "interior_design"
+        ? interiorData
+        : vastuData;
 
     if (!data.name.trim()) {
       newErrors.name = "Name is required";
@@ -174,12 +216,19 @@ export default function ConsultationFormModal({
       if (!homeLoanData.loanAmount) {
         newErrors.loanAmount = "Please select loan amount required";
       }
-    } else {
+    } else if (serviceType === "interior_design") {
       if (!interiorData.propertyType) {
         newErrors.propertyType = "Please select property type";
       }
       if (!interiorData.budgetRange) {
         newErrors.budgetRange = "Please select budget range";
+      }
+    } else {
+      if (!vastuData.propertyType) {
+        newErrors.propertyType = "Please select property type";
+      }
+      if (!vastuData.consultationType) {
+        newErrors.consultationType = "Please select consultation type";
       }
     }
 
@@ -196,7 +245,12 @@ export default function ConsultationFormModal({
     setSubmitStatus("idle");
 
     try {
-      const data = serviceType === "home_loan" ? homeLoanData : interiorData;
+      const data =
+        serviceType === "home_loan"
+          ? homeLoanData
+          : serviceType === "interior_design"
+          ? interiorData
+          : vastuData;
       const serviceDetails =
         serviceType === "home_loan"
           ? {
@@ -206,20 +260,36 @@ export default function ConsultationFormModal({
               property_type: homeLoanData.propertyType,
               preferred_banks: homeLoanData.preferredBanks,
             }
-          : {
+          : serviceType === "interior_design"
+          ? {
               property_type: interiorData.propertyType,
               property_size: interiorData.propertySize,
               rooms_to_design: interiorData.roomsToDesign,
               design_style: interiorData.designStyle,
               budget_range: interiorData.budgetRange,
               timeline: interiorData.timeline,
+            }
+          : {
+              property_type: vastuData.propertyType,
+              consultation_type: vastuData.consultationType,
+              preferred_date: vastuData.preferredDate,
+              property_address: vastuData.propertyAddress,
+              issues: vastuData.issues,
             };
 
       const { error } = await supabase.from("inquiries").insert({
         name: data.name.trim(),
         email: data.email.trim(),
         phone: data.phone.trim(),
-        message: data.message.trim() || `${serviceType === "home_loan" ? "Home Loan" : "Interior Design"} consultation request`,
+        message:
+          data.message.trim() ||
+          `${
+            serviceType === "home_loan"
+              ? "Home Loan"
+              : serviceType === "interior_design"
+              ? "Interior Design"
+              : "Vastu"
+          } consultation request`,
         inquiry_type: serviceType,
         service_details: serviceDetails,
         created_at: new Date().toISOString(),
@@ -243,7 +313,7 @@ export default function ConsultationFormModal({
             preferredBanks: "",
             message: "",
           });
-        } else {
+        } else if (serviceType === "interior_design") {
           setInteriorData({
             name: "",
             email: "",
@@ -254,6 +324,18 @@ export default function ConsultationFormModal({
             designStyle: "",
             budgetRange: "",
             timeline: "",
+            message: "",
+          });
+        } else {
+          setVastuData({
+            name: "",
+            email: "",
+            phone: "",
+            propertyType: "",
+            consultationType: "",
+            preferredDate: "",
+            propertyAddress: "",
+            issues: [],
             message: "",
           });
         }
@@ -294,6 +376,25 @@ export default function ConsultationFormModal({
     }));
   };
 
+  const handleVastuChange = (
+    field: keyof VastuConsultationFormData,
+    value: string | string[]
+  ) => {
+    setVastuData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const toggleVastuIssue = (issue: string) => {
+    setVastuData((prev) => ({
+      ...prev,
+      issues: prev.issues.includes(issue)
+        ? prev.issues.filter((i) => i !== issue)
+        : [...prev.issues, issue],
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -320,10 +421,15 @@ export default function ConsultationFormModal({
                   <Landmark className="w-6 h-6" />
                   <h2>Home Loan Consultation</h2>
                 </>
-              ) : (
+              ) : serviceType === "interior_design" ? (
                 <>
                   <Palette className="w-6 h-6" />
                   <h2>Interior Design Consultation</h2>
+                </>
+              ) : (
+                <>
+                  <Compass className="w-6 h-6" />
+                  <h2>Vastu Consultation</h2>
                 </>
               )}
             </div>
@@ -383,11 +489,19 @@ export default function ConsultationFormModal({
                         </label>
                         <input
                           type="text"
-                          value={serviceType === "home_loan" ? homeLoanData.name : interiorData.name}
+                          value={
+                            serviceType === "home_loan"
+                              ? homeLoanData.name
+                              : serviceType === "interior_design"
+                              ? interiorData.name
+                              : vastuData.name
+                          }
                           onChange={(e) =>
                             serviceType === "home_loan"
                               ? handleHomeLoanChange("name", e.target.value)
-                              : handleInteriorChange("name", e.target.value)
+                              : serviceType === "interior_design"
+                              ? handleInteriorChange("name", e.target.value)
+                              : handleVastuChange("name", e.target.value)
                           }
                           placeholder="Enter your full name"
                           className={errors.name ? "error" : ""}
@@ -402,11 +516,19 @@ export default function ConsultationFormModal({
                         </label>
                         <input
                           type="email"
-                          value={serviceType === "home_loan" ? homeLoanData.email : interiorData.email}
+                          value={
+                            serviceType === "home_loan"
+                              ? homeLoanData.email
+                              : serviceType === "interior_design"
+                              ? interiorData.email
+                              : vastuData.email
+                          }
                           onChange={(e) =>
                             serviceType === "home_loan"
                               ? handleHomeLoanChange("email", e.target.value)
-                              : handleInteriorChange("email", e.target.value)
+                              : serviceType === "interior_design"
+                              ? handleInteriorChange("email", e.target.value)
+                              : handleVastuChange("email", e.target.value)
                           }
                           placeholder="Enter your email"
                           className={errors.email ? "error" : ""}
@@ -421,11 +543,19 @@ export default function ConsultationFormModal({
                         </label>
                         <input
                           type="tel"
-                          value={serviceType === "home_loan" ? homeLoanData.phone : interiorData.phone}
+                          value={
+                            serviceType === "home_loan"
+                              ? homeLoanData.phone
+                              : serviceType === "interior_design"
+                              ? interiorData.phone
+                              : vastuData.phone
+                          }
                           onChange={(e) =>
                             serviceType === "home_loan"
                               ? handleHomeLoanChange("phone", e.target.value)
-                              : handleInteriorChange("phone", e.target.value)
+                              : serviceType === "interior_design"
+                              ? handleInteriorChange("phone", e.target.value)
+                              : handleVastuChange("phone", e.target.value)
                           }
                           placeholder="Enter your phone number"
                           className={errors.phone ? "error" : ""}
@@ -548,7 +678,7 @@ export default function ConsultationFormModal({
                         </div>
                       </div>
                     </>
-                  ) : (
+                  ) : serviceType === "interior_design" ? (
                     <>
                       <div className="consultation-section">
                         <h3 className="consultation-section-title">Property Details</h3>
@@ -683,6 +813,110 @@ export default function ConsultationFormModal({
                         </div>
                       </div>
                     </>
+                  ) : (
+                    <>
+                      <div className="consultation-section">
+                        <h3 className="consultation-section-title">Vastu Details</h3>
+                        <div className="consultation-form-grid">
+                          <div className="consultation-form-group">
+                            <label>
+                              <Home className="w-4 h-4" />
+                              Property Type *
+                            </label>
+                            <select
+                              value={vastuData.propertyType}
+                              onChange={(e) =>
+                                handleVastuChange("propertyType", e.target.value)
+                              }
+                              className={errors.propertyType ? "error" : ""}
+                            >
+                              <option value="">Select property type</option>
+                              {vastuPropertyTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                            {errors.propertyType && (
+                              <span className="error-text">{errors.propertyType}</span>
+                            )}
+                          </div>
+
+                          <div className="consultation-form-group">
+                            <label>
+                              <Compass className="w-4 h-4" />
+                              Consultation Type *
+                            </label>
+                            <select
+                              value={vastuData.consultationType}
+                              onChange={(e) =>
+                                handleVastuChange("consultationType", e.target.value)
+                              }
+                              className={errors.consultationType ? "error" : ""}
+                            >
+                              <option value="">Select type</option>
+                              {vastuConsultationTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                            {errors.consultationType && (
+                              <span className="error-text">{errors.consultationType}</span>
+                            )}
+                          </div>
+
+                          <div className="consultation-form-group">
+                            <label>
+                              <Calendar className="w-4 h-4" />
+                              Preferred Date
+                            </label>
+                            <input
+                              type="date"
+                              value={vastuData.preferredDate}
+                              onChange={(e) =>
+                                handleVastuChange("preferredDate", e.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div className="consultation-form-group full-width">
+                            <label>
+                              <Landmark className="w-4 h-4" />
+                              Property Address/Location
+                            </label>
+                            <input
+                              type="text"
+                              value={vastuData.propertyAddress}
+                              onChange={(e) =>
+                                handleVastuChange("propertyAddress", e.target.value)
+                              }
+                              placeholder="e.g. Area, City"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="consultation-form-group full-width">
+                          <label>Areas of Concern/Interest</label>
+                          <div className="consultation-chips">
+                            {vastuIssues.map((issue) => (
+                              <motion.button
+                                key={issue}
+                                type="button"
+                                className={`consultation-chip ${
+                                  vastuData.issues.includes(issue) ? "active" : ""
+                                }`}
+                                onClick={() => toggleVastuIssue(issue)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                {issue}
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {/* Additional Message */}
@@ -696,12 +930,16 @@ export default function ConsultationFormModal({
                         value={
                           serviceType === "home_loan"
                             ? homeLoanData.message
-                            : interiorData.message
+                            : serviceType === "interior_design"
+                            ? interiorData.message
+                            : vastuData.message
                         }
                         onChange={(e) =>
                           serviceType === "home_loan"
                             ? handleHomeLoanChange("message", e.target.value)
-                            : handleInteriorChange("message", e.target.value)
+                            : serviceType === "interior_design"
+                            ? handleInteriorChange("message", e.target.value)
+                            : handleVastuChange("message", e.target.value)
                         }
                         placeholder="Tell us more about your requirements..."
                         rows={3}

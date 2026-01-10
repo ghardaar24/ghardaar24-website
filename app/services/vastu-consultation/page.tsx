@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useState } from "react";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import {
   Compass,
@@ -22,6 +24,7 @@ import {
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ConsultationFormModal from "@/components/ConsultationFormModal";
 
 const services = [
   {
@@ -174,6 +177,8 @@ const features = [
 ];
 
 export default function VastuConsultationPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <Header />
@@ -198,10 +203,13 @@ export default function VastuConsultationPage() {
                 natural energies and cosmic forces.
               </p>
               <div className="service-hero-cta">
-                <Link href="#contact" className="btn-primary">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="btn-primary"
+                >
                   Book Consultation
                   <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
                 <Link href="/properties" className="btn-secondary">
                   Browse Vastu-Compliant Homes
                 </Link>
@@ -416,7 +424,13 @@ export default function VastuConsultationPage() {
                 </p>
               </div>
               <div className="service-contact-cta">
-                <a href="tel:+919673655631" className="btn-primary">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="btn-primary"
+                >
+                  Book Consultation
+                </button>
+                <a href="tel:+919673655631" className="btn-secondary">
                   <Phone className="w-5 h-5" />
                   Call Now
                 </a>
@@ -434,6 +448,11 @@ export default function VastuConsultationPage() {
         </section>
       </main>
       <Footer />
+      <ConsultationFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        serviceType="vastu_consultation"
+      />
     </>
   );
 }

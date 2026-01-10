@@ -39,7 +39,7 @@ export interface SheetAccess {
 
 export interface InquiryAccess {
   id: string;
-  inquiry_type: 'property' | 'home_loan' | 'interior_design';
+  inquiry_type: 'property' | 'home_loan' | 'interior_design' | 'vastu_consultation';
 }
 
 interface StaffAuthContextType {

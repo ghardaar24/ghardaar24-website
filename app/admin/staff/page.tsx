@@ -26,6 +26,7 @@ import {
   Building,
   Loader2,
   CheckCircle,
+  Compass,
 } from "lucide-react";
 
 interface Staff {
@@ -50,7 +51,7 @@ interface SheetAccess {
 interface InquiryAccess {
   id: string;
   staff_id: string;
-  inquiry_type: 'property' | 'home_loan' | 'interior_design';
+  inquiry_type: 'property' | 'home_loan' | 'interior_design' | 'vastu_consultation';
 }
 
 export default function StaffManagementPage() {
@@ -337,7 +338,7 @@ export default function StaffManagementPage() {
   };
 
   // Toggle inquiry type access
-  const toggleInquiryAccess = async (staffId: string, inquiryType: 'property' | 'home_loan' | 'interior_design') => {
+  const toggleInquiryAccess = async (staffId: string, inquiryType: 'property' | 'home_loan' | 'interior_design' | 'vastu_consultation') => {
     const existing = inquiryAccess.find(a => a.staff_id === staffId && a.inquiry_type === inquiryType);
 
     try {
@@ -370,6 +371,7 @@ export default function StaffManagementPage() {
     switch (type) {
       case 'home_loan': return 'Home Loan';
       case 'interior_design': return 'Interior Design';
+      case 'vastu_consultation': return 'Vastu Consultation';
       default: return 'Property';
     }
   };
@@ -379,6 +381,7 @@ export default function StaffManagementPage() {
     switch (type) {
       case 'home_loan': return Landmark;
       case 'interior_design': return Palette;
+      case 'vastu_consultation': return Compass;
       default: return Building;
     }
   };
@@ -1041,7 +1044,7 @@ export default function StaffManagementPage() {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {(['property', 'home_loan', 'interior_design'] as const).map(type => {
+                      {(['property', 'home_loan', 'interior_design', 'vastu_consultation'] as const).map(type => {
                         const hasAccess = inquiryAccess.some(
                           a => a.staff_id === selectedStaff.id && a.inquiry_type === type
                         );
@@ -1050,6 +1053,7 @@ export default function StaffManagementPage() {
                           property: { bg: '#dbeafe', border: '#3b82f6', text: '#1d4ed8' },
                           home_loan: { bg: '#dcfce7', border: '#22c55e', text: '#16a34a' },
                           interior_design: { bg: '#f3e8ff', border: '#a855f7', text: '#9333ea' },
+                          vastu_consultation: { bg: '#ffedd5', border: '#f97316', text: '#c2410c' },
                         };
                         const colors = colorMap[type];
 
