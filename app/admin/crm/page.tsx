@@ -32,6 +32,8 @@ import {
   Sheet,
   BarChart3,
   Activity,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
@@ -97,7 +99,7 @@ const DEAL_STATUS_OPTIONS = [
   { value: "lost", label: "Lost", color: "#6b7280" },
 ];
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 50;
 
 export default function CRMPage() {
   const { user, loading } = useAdminAuth();
@@ -1179,6 +1181,9 @@ export default function CRMPage() {
     return { backgroundColor: `${option?.color}20`, color: option?.color };
   };
 
+  // State for stats visibility
+  const [showStats, setShowStats] = useState(true);
+
   if (loading || isLoading) {
     return (
       <div className="admin-page">
@@ -1203,6 +1208,15 @@ export default function CRMPage() {
           <p>Manage your clients and leads</p>
         </div>
         <div className="crm-header-actions">
+          <motion.button
+            onClick={() => setShowStats(!showStats)}
+            className="btn-admin-secondary"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {showStats ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span>{showStats ? "Hide Stats" : "Show Stats"}</span>
+          </motion.button>
           <motion.button
             onClick={() => setShowImportModal(true)}
             className="btn-admin-secondary"
@@ -1257,114 +1271,120 @@ export default function CRMPage() {
         </div>
       </motion.div>
 
-      {/* Sheet Selector Dropdown */}
-      {sheets.length > 0 && (
-        <motion.div
-          className="crm-sheet-selector"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
-          <div className="crm-sheet-selector-wrapper">
-            <FileSpreadsheet className="crm-sheet-selector-icon" />
-            <select
-              value={selectedSheetId || ""}
-              onChange={(e) => setSelectedSheetId(e.target.value || null)}
-              className="crm-sheet-select"
-            >
-              <option value="">All Clients</option>
-              {sheets.map((sheet) => (
-                <option key={sheet.id} value={sheet.id}>
-                  {sheet.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {selectedSheetId && (
-            <button
-              className="crm-sheet-delete-btn-dropdown"
-              onClick={() => setDeleteSheetConfirm(selectedSheetId)}
-              title="Delete selected sheet"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-        </motion.div>
-      )}
-
       {/* Stats Row */}
-      <motion.div
-        className="crm-stats-row"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className="crm-stat-card">
-          <div className="crm-stat-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366f1" }}>
-            <Users className="w-6 h-6" />
-          </div>
-          <div className="crm-stat-info">
-            <span className="crm-stat-label">Total Clients</span>
-            <span className="crm-stat-value">{stats.total}</span>
-          </div>
-        </div>
-        <div className="crm-stat-card">
-          <div className="crm-stat-icon" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" }}>
-            <AlertCircle className="w-6 h-6" />
-          </div>
-          <div className="crm-stat-info">
-            <span className="crm-stat-label">Hot Leads</span>
-            <span className="crm-stat-value">{stats.hot}</span>
-          </div>
-        </div>
-        <div className="crm-stat-card">
-          <div className="crm-stat-icon" style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" }}>
-            <Clock className="w-6 h-6" />
-          </div>
-          <div className="crm-stat-info">
-            <span className="crm-stat-label">Warm Leads</span>
-            <span className="crm-stat-value">{stats.warm}</span>
-          </div>
-        </div>
-        <div className="crm-stat-card">
-          <div className="crm-stat-icon" style={{ background: "rgba(34, 197, 94, 0.1)", color: "#22c55e" }}>
-            <CheckCircle className="w-6 h-6" />
-          </div>
-          <div className="crm-stat-info">
-            <span className="crm-stat-label">Deals Locked</span>
-            <span className="crm-stat-value">{stats.locked}</span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Search and Filters */}
-      <motion.div
-        className="crm-filters-section"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="crm-search-row">
-          <div className="admin-search crm-search">
-            <Search className="w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by name, phone, or notes..."
-              value={filters.search}
-              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-            />
-          </div>
-          <motion.button
-            className={`btn-admin-filter ${showFilters ? "active" : ""}`}
-            onClick={() => setShowFilters(!showFilters)}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+      <AnimatePresence>
+        {showStats && (
+          <motion.div
+            className="crm-stats-row"
+            initial={{ opacity: 0, height: 0, overflow: "hidden" }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <Filter className="w-4 h-4" />
-            <span>Filters</span>
-          </motion.button>
+            <div className="crm-stat-card">
+              <div className="crm-stat-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366f1" }}>
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="crm-stat-info">
+                <span className="crm-stat-label">Total Clients</span>
+                <span className="crm-stat-value">{stats.total}</span>
+              </div>
+            </div>
+            <div className="crm-stat-card">
+              <div className="crm-stat-icon" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" }}>
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="crm-stat-info">
+                <span className="crm-stat-label">Hot Leads</span>
+                <span className="crm-stat-value">{stats.hot}</span>
+              </div>
+            </div>
+            <div className="crm-stat-card">
+              <div className="crm-stat-icon" style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" }}>
+                <Clock className="w-6 h-6" />
+              </div>
+              <div className="crm-stat-info">
+                <span className="crm-stat-label">Warm Leads</span>
+                <span className="crm-stat-value">{stats.warm}</span>
+              </div>
+            </div>
+            <div className="crm-stat-card">
+              <div className="crm-stat-icon" style={{ background: "rgba(34, 197, 94, 0.1)", color: "#22c55e" }}>
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div className="crm-stat-info">
+                <span className="crm-stat-label">Deals Locked</span>
+                <span className="crm-stat-value">{stats.locked}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Control Bar (Sheet Selector + Search + Filters) */}
+      <div className="crm-control-bar flex flex-col gap-2 mb-6">
+        <div className="flex flex-wrap items-center gap-4 justify-between">
+          {/* Sheet Selector Dropdown */}
+          {sheets.length > 0 && (
+            <motion.div
+              className="crm-sheet-selector mb-0"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <div className="crm-sheet-selector-wrapper">
+                <FileSpreadsheet className="crm-sheet-selector-icon" />
+                <select
+                  value={selectedSheetId || ""}
+                  onChange={(e) => setSelectedSheetId(e.target.value || null)}
+                  className="crm-sheet-select"
+                >
+                  <option value="">All Clients</option>
+                  {sheets.map((sheet) => (
+                    <option key={sheet.id} value={sheet.id}>
+                      {sheet.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedSheetId && (
+                <button
+                  className="crm-sheet-delete-btn-dropdown"
+                  onClick={() => setDeleteSheetConfirm(selectedSheetId)}
+                  title="Delete selected sheet"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* Search and Filter Button */}
+          <div className="flex-1 min-w-[300px]">
+            <div className="crm-search-row mb-0">
+              <div className="admin-search crm-search">
+                <Search className="w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by name, phone, or notes..."
+                  value={filters.search}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                />
+              </div>
+              <motion.button
+                className={`btn-admin-filter ${showFilters ? "active" : ""}`}
+                onClick={() => setShowFilters(!showFilters)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Filter className="w-4 h-4" />
+                <span>Filters</span>
+              </motion.button>
+            </div>
+          </div>
         </div>
 
+        {/* Expanded Filters */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -1440,7 +1460,7 @@ export default function CRMPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Results count */}
       <motion.div

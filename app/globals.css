@@ -187,8 +187,6 @@ html {
 .staff-card,
 .staff-btn,
 .staff-modal,
-.admin-sidebar,
-.admin-layout,
 .admin-section-card,
 .stat-card,
 .btn-core,
@@ -12807,6 +12805,35 @@ button:focus-visible {
 @media (min-width: 768px) {
   .leads-table-desktop {
     display: block;
+    height: calc(100vh - 280px); /* Use height instead of max-height to force space */
+    overflow-y: auto;
+    /* Custom Scrollbar for visibility */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-muted) var(--surface-soft);
+  }
+
+  .leads-table-desktop::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .leads-table-desktop::-webkit-scrollbar-track {
+    background: var(--surface-soft);
+  }
+  
+  .leads-table-desktop::-webkit-scrollbar-thumb {
+    background-color: var(--text-muted);
+    border-radius: 4px;
+    border: 2px solid var(--surface-soft);
+  }
+
+  /* Make headers sticky */
+  .leads-table-desktop .admin-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 0 var(--gray-200); 
+    background-color: var(--surface); /* Ensure background is opaque */
   }
 }
 
