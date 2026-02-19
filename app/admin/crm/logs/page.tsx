@@ -73,8 +73,8 @@ export default function CRMLogsPage() {
 
         if (error) throw error;
         setSheets(data || []);
-      } catch (error: any) {
-        console.error("Error fetching sheets:", error.message || error);
+      } catch (error) {
+        console.error("Error fetching sheets:", error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -99,8 +99,8 @@ export default function CRMLogsPage() {
           new Map((data || []).map((s) => [s.staff_id, s])).values()
         );
         setStaffList(uniqueStaff.map((s) => ({ id: s.staff_id, name: s.staff_name })));
-      } catch (error: any) {
-        console.error("Error fetching staff list:", error.message || error);
+      } catch (error) {
+        console.error("Error fetching staff list:", error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -133,8 +133,8 @@ export default function CRMLogsPage() {
 
       if (error) throw error;
       setLogs(data || []);
-    } catch (error: any) {
-      console.error("Error fetching logs:", error.message || error);
+    } catch (error) {
+      console.error("Error fetching logs:", error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

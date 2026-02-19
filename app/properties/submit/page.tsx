@@ -23,7 +23,8 @@ import PriceRangeInput from "@/components/PriceRangeInput";
 import Image from "next/image";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
-  defaultAmenitiesWithIcons,
+  getExternalAmenitiesList,
+  getInternalAmenitiesList,
   defaultAmenityNames,
 } from "@/lib/amenityIcons";
 
@@ -199,9 +200,9 @@ export default function SubmitPropertyPage() {
 
       if (error) throw error;
       setLocations(data || []);
-    } catch (err: any) {
+    } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching locations:", err.message);
+        console.error("Error fetching locations:", err instanceof Error ? err.message : String(err));
       }
     }
   }
@@ -229,10 +230,14 @@ export default function SubmitPropertyPage() {
     >
   ) => {
     const { name, value, type } = e.target;
+    const isCheckbox =
+      type === "checkbox" ||
+      (e.target instanceof HTMLInputElement &&
+        e.target.getAttribute("type") === "checkbox");
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -462,9 +467,9 @@ export default function SubmitPropertyPage() {
       }
 
       setFormData((prev) => ({ ...prev, description: data.description }));
-    } catch (err: any) {
+    } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error generating description:", err.message);
+        console.error("Error generating description:", err instanceof Error ? err.message : String(err));
       }
       setError("Failed to generate description. Please try again.");
     } finally {
@@ -522,9 +527,9 @@ export default function SubmitPropertyPage() {
       const { error: insertError } = await supabase.from("properties").insert({
         title: formData.title,
         description: formData.description,
-        min_price: parseInt(formData.min_price),
-        max_price: parseInt(formData.max_price),
-        price: parseInt(formData.min_price), // approximate for backward compatibility
+        min_price: parseFloat(formData.min_price),
+        max_price: parseFloat(formData.max_price),
+        price: parseFloat(formData.min_price), // approximate for backward compatibility
         state: formData.state,
         city: formData.city,
         address: formData.address,
@@ -540,7 +545,7 @@ export default function SubmitPropertyPage() {
         brochure_urls: uploadedBrochureUrls,
         // Project Details
         land_parcel: parseFloat(formData.land_parcel) || 0,
-        towers: parseInt(formData.towers) || 0,
+        towers: parseFloat(formData.towers) || 0,
         floors: formData.floors,
         config: formData.config,
         carpet_area: formData.carpet_area,
@@ -596,8 +601,8 @@ export default function SubmitPropertyPage() {
       }
 
       setSuccess(true);
-    } catch (err: any) {
-      console.error("Error submitting property:", err.message);
+    } catch (err) {
+      console.error("Error submitting property:", err instanceof Error ? err.message : String(err));
       setError(
         err instanceof Error ? err.message : "Failed to submit property"
       );
@@ -1017,6 +1022,7 @@ export default function SubmitPropertyPage() {
                   onChange={handleChange}
                   placeholder="0"
                   min="0"
+                  step="any"
                   className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
                 />
               </div>
@@ -1036,6 +1042,7 @@ export default function SubmitPropertyPage() {
                   onChange={handleChange}
                   placeholder="0"
                   min="0"
+                  step="any"
                   className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
                 />
               </div>
@@ -1123,10 +1130,12 @@ export default function SubmitPropertyPage() {
                 >
                   <option value="">Select Status</option>
                   <option value="Pre-Launch">Pre-Launch</option>
+                  <option value="New Launch">New Launch</option>
                   <option value="Under Construction">Under Construction</option>
                   <option value="Mid Stage">Mid Stage</option>
                   <option value="Nearing Possession">Nearing Possession</option>
                   <option value="Ready to Move">Ready to Move</option>
+                  <option value="Immediate">Immediate</option>
                 </select>
               </div>
 
@@ -1250,28 +1259,66 @@ export default function SubmitPropertyPage() {
               Amenities
             </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              {defaultAmenitiesWithIcons.map(({ name, Icon }) => (
-                <motion.label
-                  key={name}
-                  className={`flex items-center gap-3 p-3 rounded-[var(--radius)] border cursor-pointer transition-all ${
-                    amenities.includes(name)
-                      ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-md"
-                      : "bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-soft)]"
-                  }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={amenities.includes(name)}
-                    onChange={() => toggleAmenity(name)}
-                    className="hidden"
-                  />
-                  <Icon className="w-5 h-5 shrink-0" />
-                  <span className="text-sm font-medium">{name}</span>
-                </motion.label>
-              ))}
+            <div className="space-y-8 mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full"></span>
+                  External Amenities
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {getExternalAmenitiesList().map(({ name, Icon }) => (
+                    <motion.label
+                      key={name}
+                      className={`flex items-center gap-3 p-3 rounded-[var(--radius)] border cursor-pointer transition-all ${
+                        amenities.includes(name)
+                          ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-md"
+                          : "bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-soft)]"
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={amenities.includes(name)}
+                        onChange={() => toggleAmenity(name)}
+                        className="hidden"
+                      />
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="text-sm font-medium">{name}</span>
+                    </motion.label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-[var(--primary)] rounded-full"></span>
+                  Internal Amenities
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {getInternalAmenitiesList().map(({ name, Icon }) => (
+                    <motion.label
+                      key={name}
+                      className={`flex items-center gap-3 p-3 rounded-[var(--radius)] border cursor-pointer transition-all ${
+                        amenities.includes(name)
+                          ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-md"
+                          : "bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--surface-soft)]"
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={amenities.includes(name)}
+                        onChange={() => toggleAmenity(name)}
+                        className="hidden"
+                      />
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="text-sm font-medium">{name}</span>
+                    </motion.label>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3 mb-6">

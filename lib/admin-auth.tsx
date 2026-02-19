@@ -176,9 +176,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Admin sign in error:", error.message);
+        console.error("Admin sign in error:", (error as Error).message);
       }
       return { error: error as Error };
     }
@@ -200,9 +200,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             : undefined,
       });
       return { error: error as Error | null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Admin password reset error:", error.message);
+        console.error("Admin password reset error:", (error as Error).message);
       }
       return { error: error as Error };
     }
@@ -215,9 +215,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         password: newPassword,
       });
       return { error: error as Error | null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Admin password update error:", error.message);
+        console.error("Admin password update error:", (error as Error).message);
       }
       return { error: error as Error };
     }

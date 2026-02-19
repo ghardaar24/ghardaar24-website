@@ -111,9 +111,9 @@ export default function DownloadsPage() {
       setUploadTitle("");
       setUploadDescription("");
       fetchBrochures();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upload error:", err);
-      setUploadError(err.message || "Failed to upload brochure");
+      setUploadError(err instanceof Error ? err.message : "Failed to upload brochure");
     } finally {
       setIsUploading(false);
     }

@@ -48,7 +48,7 @@ async function getProperty(id: string): Promise<Property | null> {
   }
 
   // Normalize brochures for backward compatibility
-  const propertyData = data as any;
+  const propertyData = data as Property & { brochure_url?: string };
   if (!propertyData.brochure_urls && propertyData.brochure_url) {
     propertyData.brochure_urls = [propertyData.brochure_url];
   }

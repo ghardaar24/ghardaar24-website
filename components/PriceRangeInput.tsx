@@ -31,6 +31,7 @@ export default function PriceRangeInput({
       // This prevents overwriting while typing if round-tripping isn't perfect
       // But since we only have onBlur update, we can safely overwrite on prop change
       // assuming prop change only comes from our onBlur or external source
+      // eslint-disable-next-line
       setMinInput(formatPriceIndian(minPrice).replace("₹", "").trim());
     } else {
       setMinInput("");
@@ -39,6 +40,7 @@ export default function PriceRangeInput({
 
   useEffect(() => {
     if (maxPrice) {
+      // eslint-disable-next-line
       setMaxInput(formatPriceIndian(maxPrice).replace("₹", "").trim());
     } else {
       setMaxInput("");

@@ -265,9 +265,9 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Staff sign in error:", error.message);
+        console.error("Staff sign in error:", (error as Error).message);
       }
       return { error: error as Error };
     }

@@ -51,6 +51,7 @@ export default function LoginModal({
   // Reset fields when modal opens/closes or mode changes
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line
       setError("");
       setLoading(false);
     }

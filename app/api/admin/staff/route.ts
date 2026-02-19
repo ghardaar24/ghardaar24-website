@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ staff: staffData || [] });
-  } catch (error: any) {
-    console.error("Error in GET /api/admin/staff:", error.message || error);
+  } catch (error) {
+    console.error("Error in GET /api/admin/staff:", error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }

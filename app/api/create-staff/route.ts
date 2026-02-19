@@ -196,10 +196,10 @@ export async function POST(request: NextRequest) {
       staff: staffData,
       isExistingUser: isExistingUser,
     });
-  } catch (error: any) {
-    console.error("Error in create-staff API:", error.message || error);
+  } catch (error) {
+    console.error("Error in create-staff API:", error instanceof Error ? error.message : String(error));
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }

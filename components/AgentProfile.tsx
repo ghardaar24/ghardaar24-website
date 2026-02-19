@@ -189,7 +189,7 @@ Budget: ${formData.budget}`;
                   Get Expert Property Advice
                 </h3>
                 <p className="text-gray-500">
-                  Fill in your details and we'll get back to you within 24
+                  Fill in your details and we&apos;ll get back to you within 24
                   hours.
                 </p>
               </div>

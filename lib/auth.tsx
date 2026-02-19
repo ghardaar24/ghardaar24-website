@@ -139,14 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log("No active session found");
           }
         }
-      } catch (error) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Error getting session:", error);
-        }
-      } finally {
-        setLoading(false);
       }
-    };
+    finally {
+      setLoading(false);
+    }
+  };
 
     getSession();
 
@@ -207,9 +204,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       return { error: error as Error | null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Sign in error:", error.message);
+        console.error("Sign in error:", (error as Error).message);
       }
       return { error: error as Error };
     }
@@ -366,9 +363,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : undefined,
       });
       return { error: error as Error | null };
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Password reset error:", error.message);
+        console.error("Password reset error:", (error as Error).message);
       }
       return { error: error as Error };
     }

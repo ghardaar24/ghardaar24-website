@@ -183,6 +183,7 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
 
   // Prevent hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 
@@ -429,6 +430,7 @@ export function HeroSearchBar() {
 
   // Prevent hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 

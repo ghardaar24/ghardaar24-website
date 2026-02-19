@@ -95,10 +95,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Staff role removed successfully. User account remains active.",
     });
-  } catch (error: any) {
-    console.error("Error in delete-staff API:", error);
+  } catch (error) {
+    console.error("Error in delete-staff API:", error instanceof Error ? error.message : String(error));
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }

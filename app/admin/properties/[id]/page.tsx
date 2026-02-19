@@ -17,10 +17,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
-  defaultAmenitiesWithIcons,
+  getExternalAmenitiesList,
+  getInternalAmenitiesList,
   defaultAmenityNames,
 } from "@/lib/amenityIcons";
 import PriceRangeInput from "@/components/PriceRangeInput";
+import AdminCheckbox from "@/components/admin/AdminCheckbox";
 
 export default function EditPropertyPage({
   params,
@@ -186,10 +188,15 @@ export default function EditPropertyPage({
     >
   ) => {
     const { name, value, type } = e.target;
+    // Check if the input is a checkbox, handling both direct type property and attribute
+    const isCheckbox =
+      type === "checkbox" ||
+      (e.target instanceof HTMLInputElement &&
+        e.target.getAttribute("type") === "checkbox");
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -417,9 +424,9 @@ export default function EditPropertyPage({
         .update({
           title: formData.title,
           description: formData.description,
-          min_price: parseInt(formData.min_price),
-          max_price: parseInt(formData.max_price),
-          price: parseInt(formData.min_price), // approximate
+          min_price: parseFloat(formData.min_price),
+          max_price: parseFloat(formData.max_price),
+          price: parseFloat(formData.min_price), // approximate
           state: formData.state,
           city: formData.city,
           area: formData.area,
@@ -435,7 +442,7 @@ export default function EditPropertyPage({
           brochure_urls: allBrochureUrls,
           // Project Details
           land_parcel: parseFloat(formData.land_parcel) || 0,
-          towers: parseInt(formData.towers) || 0,
+          towers: parseFloat(formData.towers) || 0,
           floors: formData.floors,
           config: formData.config,
           carpet_area: formData.carpet_area,
@@ -795,6 +802,7 @@ export default function EditPropertyPage({
                 onChange={handleChange}
                 placeholder="e.g., 6"
                 min="0"
+                step="any"
               />
             </div>
 
@@ -869,10 +877,12 @@ export default function EditPropertyPage({
               >
                 <option value="">Select Status</option>
                 <option value="Pre-Launch">Pre-Launch</option>
+                <option value="New Launch">New Launch</option>
                 <option value="Under Construction">Under Construction</option>
                 <option value="Mid Stage">Mid Stage</option>
                 <option value="Nearing Possession">Nearing Possession</option>
                 <option value="Ready to Move">Ready to Move</option>
+                <option value="Immediate">Immediate</option>
               </select>
             </div>
 
@@ -888,17 +898,18 @@ export default function EditPropertyPage({
               />
             </div>
 
-            <div className="form-group full">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  name="litigation"
-                  checked={formData.litigation}
-                  onChange={handleChange}
-                />
-                <span>Property under Litigation</span>
-              </label>
+            <div className="form-group full pt-2">
+              <AdminCheckbox
+                label="Property under Litigation"
+                name="litigation"
+                checked={formData.litigation}
+                onChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, litigation: checked }))
+                }
+              />
             </div>
+
+
           </div>
         </motion.div>
 
@@ -912,25 +923,58 @@ export default function EditPropertyPage({
             Amenities
           </h2>
 
-          <div className="amenities-grid">
-            {defaultAmenitiesWithIcons.map(({ name, Icon }) => (
-              <motion.label
-                key={name}
-                className={`amenity-checkbox ${
-                  amenities.includes(name) ? "selected" : ""
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <input
-                  type="checkbox"
-                  checked={amenities.includes(name)}
-                  onChange={() => toggleAmenity(name)}
-                />
-                <Icon className="w-4 h-4" />
-                <span>{name}</span>
-              </motion.label>
-            ))}
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-md font-semibold mb-3 text-gray-700">
+                External Amenities
+              </h3>
+              <div className="amenities-grid">
+                {getExternalAmenitiesList().map(({ name, Icon }) => (
+                  <motion.label
+                    key={name}
+                    className={`amenity-checkbox ${
+                      amenities.includes(name) ? "selected" : ""
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={amenities.includes(name)}
+                      onChange={() => toggleAmenity(name)}
+                    />
+                    <Icon className="w-4 h-4" />
+                    <span>{name}</span>
+                  </motion.label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-md font-semibold mb-3 text-gray-700">
+                Internal Amenities
+              </h3>
+              <div className="amenities-grid">
+                {getInternalAmenitiesList().map(({ name, Icon }) => (
+                  <motion.label
+                    key={name}
+                    className={`amenity-checkbox ${
+                      amenities.includes(name) ? "selected" : ""
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={amenities.includes(name)}
+                      onChange={() => toggleAmenity(name)}
+                    />
+                    <Icon className="w-4 h-4" />
+                    <span>{name}</span>
+                  </motion.label>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="custom-amenity-input">
@@ -1178,15 +1222,14 @@ export default function EditPropertyPage({
             Options
           </h2>
 
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="featured"
-              checked={formData.featured}
-              onChange={handleChange}
-            />
-            <span>Mark as Featured Property</span>
-          </label>
+          <AdminCheckbox
+            label="Mark as Featured Property"
+            name="featured"
+            checked={formData.featured}
+            onChange={(checked) =>
+              setFormData((prev) => ({ ...prev, featured: checked }))
+            }
+          />
         </motion.div>
 
         <motion.div

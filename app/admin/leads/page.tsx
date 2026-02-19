@@ -198,7 +198,7 @@ export default function LeadsPage() {
           <div className="relative min-w-[200px] w-full sm:w-auto">
             <select
               value={residencyFilter}
-              onChange={(e) => setResidencyFilter(e.target.value as any)}
+              onChange={(e) => setResidencyFilter(e.target.value as "all" | "indian" | "nri")}
               className="appearance-none w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer pr-10"
             >
               <option value="all">All Residency</option>

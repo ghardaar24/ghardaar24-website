@@ -65,6 +65,8 @@ export interface Property {
   submission_date?: string;
   approval_date?: string;
   rejection_reason?: string;
+  video_urls?: string[];
+  updated_at?: string;
   created_at: string;
 }
 

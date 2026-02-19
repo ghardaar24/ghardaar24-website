@@ -49,6 +49,7 @@ function HeaderContent() {
 
   // Prevent hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 

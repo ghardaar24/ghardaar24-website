@@ -119,10 +119,10 @@ export async function POST(request: NextRequest) {
       isStaff: !!existingStaff,
       isAdmin: !!existingAdmin,
     });
-  } catch (error: any) {
-    console.error("Error in lookup-user API:", error.message || error);
+  } catch (error) {
+    console.error("Error in lookup-user API:", error instanceof Error ? error.message : String(error));
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }

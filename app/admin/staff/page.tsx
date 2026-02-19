@@ -206,9 +206,9 @@ export default function StaffManagementPage() {
       if (result.isExistingUser) {
         alert("Staff member added successfully! They can use their existing login credentials.");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding staff:", error);
-      setFormError(error.message || "Failed to add staff member.");
+      setFormError(error instanceof Error ? error.message : "Failed to add staff member.");
     } finally {
       setSaving(false);
     }
@@ -246,8 +246,8 @@ export default function StaffManagementPage() {
       setStaff(prev => prev.map(s => s.id === editingStaff.id ? { ...s, name: formData.name } : s));
       setShowAddModal(false);
       resetForm();
-    } catch (error: any) {
-      setFormError(error.message || "Failed to update staff member.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Failed to update staff member.");
     } finally {
       setSaving(false);
     }
@@ -291,9 +291,9 @@ export default function StaffManagementPage() {
       setStaff(prev => prev.filter(s => s.id !== staffId));
       setSheetAccess(prev => prev.filter(a => a.staff_id !== staffId));
       setDeleteConfirm(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error deleting staff:", error);
-      alert(error.message || "Failed to delete staff member.");
+      alert(error instanceof Error ? error.message : "Failed to delete staff member.");
     }
   };
 

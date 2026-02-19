@@ -325,6 +325,7 @@ export default function CRMPage() {
   // Fetch clients (filtered by selected sheet if any)
   useEffect(() => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function fetchAllClients(query: any) {
       const BATCH_SIZE = 1000;
       let allData: CRMClient[] = [];
@@ -365,9 +366,11 @@ export default function CRMPage() {
 
         const data = await fetchAllClients(query);
         setClients(data);
-      } catch (error: any) {
-        console.error("Error fetching CRM clients:", error);
-        if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
+      } catch (error) {
+        console.error("Error fetching CRM clients:", error instanceof Error ? error.message : String(error));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pgError = error as any;
+        if (pgError?.code === '42P01' || pgError?.message?.includes('does not exist')) {
            alert("System Configuration Error: The 'crm_clients' database table is missing. Please contact the developer to run the database migration.");
         }
       } finally {
@@ -1111,9 +1114,11 @@ export default function CRMPage() {
       setNewCustomColumn("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       alert(`Successfully imported ${data?.length || 0} clients to "${importToExistingSheet ? sheets.find(s => s.id === importToExistingSheet)?.name : importSheetName}"! ${duplicateCount > 0 ? `(${duplicateCount} duplicates skipped)` : ""}`);
-    } catch (error: any) {
-      console.error("Error importing clients:", error);
-      alert(`Failed to import clients: ${error?.message || error?.details || "Unknown error"}. Check console for details.`);
+    } catch (error) {
+      console.error("Error importing clients:", error instanceof Error ? error.message : String(error));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pgError = error as any;
+      alert(`Failed to import clients: ${pgError?.message || pgError?.details || "Unknown error"}. Check console for details.`);
     } finally {
       setImporting(false);
     }
@@ -2802,7 +2807,7 @@ export default function CRMPage() {
                 </div>
                 <h3>Delete Sheet?</h3>
                 <p>
-                  This will permanently delete the sheet <strong>"{sheets.find(s => s.id === deleteSheetConfirm)?.name}"</strong> and all {clients.filter(c => c.sheet_id === deleteSheetConfirm).length} clients in it.
+                  This will permanently delete the sheet <strong>&quot;{sheets.find(s => s.id === deleteSheetConfirm)?.name}&quot;</strong> and all {clients.filter(c => c.sheet_id === deleteSheetConfirm).length} clients in it.
                 </p>
                 <div className="crm-delete-actions">
                   <button

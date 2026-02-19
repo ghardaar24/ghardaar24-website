@@ -58,9 +58,8 @@ const siteConfig = {
     "best property Dealer in Pune",
   ],
   author: "Ghardaar24",
-  twitterHandle: "@ghardaar24",
   phone: "+91 96736 55631",
-  email: "contact@ghardaar24.com",
+  email: "ghardaar24@gmail.com",
   address: {
     streetAddress: "Pune",
     addressLocality: "Pune",
