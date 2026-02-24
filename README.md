@@ -40,6 +40,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **WhatsApp Integration** - Instant floating chat button for quick inquiries
 - **Contact Forms** - Direct inquiry submission for properties of interest
 - **Responsive Design** - Mobile-first approach with seamless experience across all devices
+- **Downloads & Resources** - Dedicated page for users to download property brochures and guides
 - **User Authentication** - Email/password auth with phone stored in profile; users can sign in with email or phone
 - **Password Recovery** - Forgot password and reset password functionality
 - **Google Sheets Logging** - Server-side logging of signups and property submissions (optional)
@@ -63,6 +64,8 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Leads Management** - View and manage user profiles and leads
 - **Statistics Dashboard** - Overview of listings, inquiries, and pending approvals
 - **CRM System** - Comprehensive client management with lead tracking, status updates, and CSV import/export
+- **Invoice Generator** - Generate professional invoices for clients
+- **Downloads Management** - Manage brochures and resources available for public download
 
 ### 🛠️ Technical Features
 
@@ -86,6 +89,8 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 | **Authentication** | Supabase Auth           |
 | **Storage**        | Supabase Storage        |
 | **Animations**     | Framer Motion           |
+| **Data Viz**       | Recharts                |
+| **Data Parsing**   | SheetJS (xlsx)          |
 | **Onboarding**     | Intro.js                |
 | **Icons**          | Lucide React            |
 | **Deployment**     | Vercel                  |
@@ -114,12 +119,16 @@ ghardaar24-web/
 │   │   └── page.tsx              # Educational real estate guide
 │   ├── calculators/
 │   │   └── page.tsx              # Financial calculators page
+│   ├── downloads/
+│   │   └── page.tsx              # Public downloads & resources
 │   ├── services/
 │   │   ├── home-loans/           # Home loans service page
 │   │   └── interior-design/      # Interior design service page
 │   ├── staff/
 │   │   ├── login/page.tsx        # Staff login
-│   │   └── crm/page.tsx          # Staff CRM dashboard
+│   │   ├── crm/page.tsx          # Staff CRM dashboard
+│   │   ├── tasks/                # Assigned tasks management
+│   │   └── inquiries/            # Assigned inquiries management
 │   ├── vastu-consultation/   # Vastu consultation service page
 │   ├── auth/
 │   │   ├── login/page.tsx        # User login
@@ -139,7 +148,10 @@ ghardaar24-web/
 │       ├── leads/                # User leads management
 │       ├── settings/             # Admin settings
 │       ├── staff/                # Staff management
-│       └── crm/                  # CRM Client Management
+│       ├── crm/                  # CRM Client Management
+│       ├── tasks/                # CRM Tasks Management
+│       ├── downloads/            # Downloads Management
+│       └── invoice-generator/    # Professional Invoice Generator
 ├── components/                   # Reusable React components
 │   ├── Header.tsx                # Navigation header
 │   ├── Footer.tsx                # Site footer

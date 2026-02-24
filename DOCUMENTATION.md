@@ -369,11 +369,14 @@ const { data, error } = await query;
 | User Dashboard        | `app/dashboard/page.tsx`                | User's submitted properties overview       |
 | Real Estate Guide     | `app/real-estate-guide/page.tsx`        | Educational guide on real estate           |
 | Calculators           | `app/calculators/page.tsx`              | Financial calculators (EMI, Mortgage, ROI) |
+| Downloads             | `app/downloads/page.tsx`                | Public downloads & resources               |
 | Home Loans            | `app/services/home-loans/page.tsx`      | Home loans service information             |
 | Interior Design       | `app/services/interior-design/page.tsx` | Interior design service information        |
 | Vastu Consultation    | `app/services/vastu-consultation/page.tsx`| Vastu consultation service information     |
 | Staff Login           | `app/staff/login/page.tsx`              | Staff authentication page                  |
 | Staff CRM             | `app/staff/crm/page.tsx`                | Staff CRM dashboard                        |
+| Staff Tasks           | `app/staff/tasks/page.tsx`              | Assigned task management                   |
+| Staff Inquiries       | `app/staff/inquiries/page.tsx`          | Assigned inquiries management              |
 | Admin Dashboard       | `app/admin/page.tsx`                    | Admin overview and statistics              |
 | Admin Login           | `app/admin/login/page.tsx`              | Admin authentication page                  |
 | Admin Forgot Password | `app/admin/forgot-password/page.tsx`    | Admin password reset request               |
@@ -384,6 +387,9 @@ const { data, error } = await query;
 | Manage Inquiries      | `app/admin/inquiries/page.tsx`          | Inquiry management                         |
 | Manage Leads          | `app/admin/leads/page.tsx`              | User leads management                      |
 | CRM                   | `app/admin/crm/page.tsx`                | Client Relationship Management             |
+| CRM Tasks             | `app/admin/tasks/page.tsx`              | Admin task management                      |
+| Invoice Generator     | `app/admin/invoice-generator/page.tsx`  | Generate professional invoices             |
+| Manage Downloads      | `app/admin/downloads/page.tsx`          | Manage brochures & public downloads        |
 | User Login            | `app/auth/login/page.tsx`               | User authentication page                   |
 | User Signup           | `app/auth/signup/page.tsx`              | User registration page                     |
 | User Forgot Password  | `app/auth/forgot-password/page.tsx`     | User password reset request                |
@@ -569,6 +575,14 @@ For additional support:
 - Enhanced responsive design across all pages
 - Premium UI polish with improved animations and effects
 - Lucide icons throughout the application
+
+### v1.4.0 (February 2026)
+
+- Downloads & Resources page for public brochures tracking
+- Invoice Generator tool for administrators
+- Enhanced CRM with Staff Tasks and Inquiries mapping
+- Recharts integration for Analytics Dashboard Visualizations
+- Data export capabilities using `xlsx`
 
 ### v1.3.1 (January 2026)
 

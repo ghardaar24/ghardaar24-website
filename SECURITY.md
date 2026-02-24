@@ -151,6 +151,21 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | ---------------------------- | ------------ | ------------------------- |
 | `Admins can view admin list` | SELECT       | Only authenticated admins |
 
+### Staff Tasks Table Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Admins can manage tasks` | ALL | Only authenticated admins |
+| `Staff can view assigned tasks` | SELECT | Staff can read their tasks |
+| `Staff can update assigned tasks` | UPDATE | Staff can update task status |
+
+### Brochures Table Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Anyone can view active brochures` | SELECT | Public can view active downloads |
+| `Admins can manage brochures` | ALL | Only authenticated admins |
+
 ---
 
 ## Environment Variables
@@ -363,6 +378,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.4.0   | February 2026 | Added Downloads, CRM Tasks, and Invoice Generator  |
 | 1.3.1   | January 2026  | Secured API routes with auth checks, CSP updates   |
 | 1.3.0   | January 2026  | Staff auth context, CRM security                   |
 | 1.0.0   | December 2025 | Initial security policy                            |
