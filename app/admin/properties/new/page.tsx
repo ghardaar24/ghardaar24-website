@@ -12,6 +12,7 @@ import {
   FileText,
   Sparkles,
   Loader2,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,8 +34,6 @@ interface PropertyFormData {
   city: string;
   area: string;
   address: string;
-  bedrooms: string;
-  bathrooms: string;
   property_type: "apartment" | "house" | "villa" | "plot" | "commercial";
   listing_type: "sale" | "rent" | "resale";
   featured: boolean;
@@ -62,8 +61,6 @@ const initialFormData: PropertyFormData = {
   city: "",
   area: "",
   address: "",
-  bedrooms: "",
-  bathrooms: "",
   property_type: "apartment",
   listing_type: "sale",
   featured: false,
@@ -90,12 +87,18 @@ export default function NewPropertyPage() {
   const [customAmenity, setCustomAmenity] = useState("");
   const [brochures, setBrochures] = useState<File[]>([]);
   const [brochureNames, setBrochureNames] = useState<string[]>([]);
+  const [floorPlan, setFloorPlan] = useState<File | null>(null);
+  const [floorPlanPreview, setFloorPlanPreview] = useState<string | null>(null);
+  const [videos, setVideos] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [existingAreas, setExistingAreas] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brochureInputRef = useRef<HTMLInputElement>(null);
+  const floorPlanInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(
@@ -179,6 +182,44 @@ export default function NewPropertyPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + videos.length > 2) {
+      setError("Maximum 2 videos allowed for user submissions");
+      return;
+    }
+
+    const validFiles: File[] = [];
+    const validPreviews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("video/")) {
+        setError("Only video files are allowed");
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        setError("Video size must be less than 50MB");
+        return;
+      }
+      validFiles.push(file);
+      validPreviews.push(URL.createObjectURL(file));
+    }
+
+    setVideos((prev) => [...prev, ...validFiles]);
+    setVideoPreviews((prev) => [...prev, ...validPreviews]);
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+    setVideoPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+    if (videoInputRef.current) {
+      videoInputRef.current.value = "";
+    }
+  };
+
   const toggleAmenity = (amenity: string) => {
     setAmenities((prev) =>
       prev.includes(amenity)
@@ -215,6 +256,48 @@ export default function NewPropertyPage() {
     }
 
     return urls;
+  };
+
+  const uploadVideos = async (): Promise<string[]> => {
+    const urls: string[] = [];
+
+    for (const video of videos) {
+      const fileName = `user-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}-${video.name}`;
+      const { data, error } = await supabase.storage
+        .from("property-videos")
+        .upload(fileName, video);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from("property-videos")
+        .getPublicUrl(data.path);
+
+      urls.push(urlData.publicUrl);
+    }
+
+    return urls;
+  };
+
+  const uploadFloorPlan = async (): Promise<string | null> => {
+    if (!floorPlan) return null;
+
+    const fileName = `user-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}-${floorPlan.name}`;
+    const { data, error } = await supabase.storage
+      .from("property-images")
+      .upload(fileName, floorPlan);
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from("property-images")
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
   };
 
   const uploadBrochures = async (): Promise<string[]> => {
@@ -275,6 +358,26 @@ export default function NewPropertyPage() {
     }
   };
 
+  const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFloorPlan(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFloorPlanPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeFloorPlan = () => {
+    setFloorPlan(null);
+    setFloorPlanPreview(null);
+    if (floorPlanInputRef.current) {
+      floorPlanInputRef.current.value = "";
+    }
+  };
+
   const handleGenerateDescription = async () => {
     if (!formData.title || !formData.state || !formData.city) {
       setError(
@@ -303,8 +406,6 @@ export default function NewPropertyPage() {
             address: formData.address,
           },
           features: {
-            bedrooms: formData.bedrooms,
-            bathrooms: formData.bathrooms,
             amenities: amenities,
           },
           project_details: {
@@ -356,10 +457,22 @@ export default function NewPropertyPage() {
         imageUrls = await uploadImages();
       }
 
+      // Upload floor plan
+      let uploadedFloorPlanUrl: string | null = null;
+      if (floorPlan) {
+        uploadedFloorPlanUrl = await uploadFloorPlan();
+      }
+
       // Upload brochures
       let uploadedBrochureUrls: string[] = [];
       if (brochures.length > 0) {
         uploadedBrochureUrls = await uploadBrochures();
+      }
+
+      // Upload videos
+      let uploadedVideoUrls: string[] = [];
+      if (videos.length > 0) {
+        uploadedVideoUrls = await uploadVideos();
       }
 
       // Insert property
@@ -373,12 +486,12 @@ export default function NewPropertyPage() {
         city: formData.city,
         address: formData.address,
         area: formData.area,
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
         property_type: formData.property_type,
         listing_type: formData.listing_type,
         featured: formData.featured,
+        floor_plan_url: uploadedFloorPlanUrl,
         images: imageUrls,
+        video_urls: uploadedVideoUrls,
         amenities: amenities,
         brochure_urls: uploadedBrochureUrls,
         // Project Details
@@ -643,45 +756,6 @@ export default function NewPropertyPage() {
                 onChange={handleChange}
                 placeholder="e.g., 123, ABC Street, Andheri West"
                 required
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="admin-section-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
-            Property Details
-          </h2>
-
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="bedrooms">Bedrooms</label>
-              <input
-                type="number"
-                id="bedrooms"
-                name="bedrooms"
-                value={formData.bedrooms}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="bathrooms">Bathrooms</label>
-              <input
-                type="number"
-                id="bathrooms"
-                name="bathrooms"
-                value={formData.bathrooms}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
               />
             </div>
           </div>
@@ -1007,6 +1081,136 @@ export default function NewPropertyPage() {
                   <Upload className="w-6 h-6" />
                   <span>Add Images</span>
                   <span className="upload-hint">{images.length}/25</span>
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="admin-section-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.52 }}
+        >
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Floor Plan
+          </h2>
+
+          <div className="image-upload-area">
+            <input
+              type="file"
+              ref={floorPlanInputRef}
+              onChange={handleFloorPlanChange}
+              accept="image/*"
+              hidden
+            />
+
+            <div className="image-previews">
+              <AnimatePresence>
+                {floorPlanPreview && (
+                  <motion.div
+                    className="image-preview"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Image
+                      src={floorPlanPreview}
+                      alt="Floor Plan Preview"
+                      fill
+                      className="object-cover"
+                    />
+                    <motion.button
+                      type="button"
+                      className="remove-image"
+                      onClick={removeFloorPlan}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!floorPlanPreview && (
+                <motion.button
+                  type="button"
+                  className="upload-trigger"
+                  onClick={() => floorPlanInputRef.current?.click()}
+                  whileHover={{ scale: 1.02, borderColor: "var(--accent)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Upload className="w-6 h-6" />
+                  <span>Add Floor Plan</span>
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="admin-section-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.54 }}
+        >
+          <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+            Videos
+          </h2>
+
+          <div className="image-upload-area">
+            <input
+              type="file"
+              ref={videoInputRef}
+              onChange={handleVideoChange}
+              accept="video/*"
+              multiple
+              hidden
+            />
+
+            <div className="image-previews">
+              <AnimatePresence>
+                {videoPreviews.map((preview, index) => (
+                  <motion.div
+                    key={index}
+                    className="image-preview"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <video
+                      src={preview}
+                      className="w-full h-full object-contain bg-black"
+                      controls
+                    />
+                    <motion.button
+                      type="button"
+                      className="remove-image"
+                      onClick={() => removeVideo(index)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {videos.length < 2 && (
+                <motion.button
+                  type="button"
+                  className="upload-trigger"
+                  onClick={() => videoInputRef.current?.click()}
+                  whileHover={{ scale: 1.02, borderColor: "var(--accent)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Video className="w-6 h-6" />
+                  <span>Add Videos</span>
+                  <span className="upload-hint">{videos.length}/2</span>
                 </motion.button>
               )}
             </div>

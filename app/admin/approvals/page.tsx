@@ -295,9 +295,6 @@ export default function AdminApprovalsPage() {
 
                 <div className="approval-card-meta">
                   <span className="capitalize">{property.property_type}</span>
-                  {property.bedrooms > 0 && (
-                    <span>{property.bedrooms} BHK</span>
-                  )}
                   {property.carpet_area && <span>{property.carpet_area}</span>}
                 </div>
 

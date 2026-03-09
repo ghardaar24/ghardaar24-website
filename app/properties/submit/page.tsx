@@ -37,8 +37,6 @@ interface PropertyFormData {
   city: string;
   area: string;
   address: string;
-  bedrooms: string;
-  bathrooms: string;
   property_type: "apartment" | "house" | "villa" | "plot" | "commercial";
   listing_type: "rent" | "resale";
   // Project Details
@@ -69,8 +67,6 @@ const initialFormData: PropertyFormData = {
   city: "",
   area: "",
   address: "",
-  bedrooms: "",
-  bathrooms: "",
   property_type: "apartment",
   listing_type: "rent",
   // Project Details
@@ -163,6 +159,8 @@ export default function SubmitPropertyPage() {
   const [customAmenity, setCustomAmenity] = useState("");
   const [brochures, setBrochures] = useState<File[]>([]);
   const [brochureNames, setBrochureNames] = useState<string[]>([]);
+  const [floorPlan, setFloorPlan] = useState<File | null>(null);
+  const [floorPlanPreview, setFloorPlanPreview] = useState<string | null>(null);
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [existingAreas, setExistingAreas] = useState<string[]>([]);
@@ -172,6 +170,7 @@ export default function SubmitPropertyPage() {
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brochureInputRef = useRef<HTMLInputElement>(null);
+  const floorPlanInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
@@ -266,8 +265,8 @@ export default function SubmitPropertyPage() {
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + videos.length > 3) {
-      setError("Maximum 3 videos allowed for user submissions");
+    if (files.length + videos.length > 2) {
+      setError("Maximum 2 videos allowed for user submissions");
       return;
     }
 
@@ -336,6 +335,25 @@ export default function SubmitPropertyPage() {
     }
 
     return urls;
+  };
+
+  const uploadFloorPlan = async (): Promise<string | null> => {
+    if (!floorPlan) return null;
+
+    const fileName = `user-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}-${floorPlan.name}`;
+    const { data, error } = await supabase.storage
+      .from("property-images")
+      .upload(fileName, floorPlan);
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from("property-images")
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
   };
 
   const uploadBrochures = async (): Promise<string[]> => {
@@ -419,6 +437,26 @@ export default function SubmitPropertyPage() {
     }
   };
 
+  const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFloorPlan(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFloorPlanPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeFloorPlan = () => {
+    setFloorPlan(null);
+    setFloorPlanPreview(null);
+    if (floorPlanInputRef.current) {
+      floorPlanInputRef.current.value = "";
+    }
+  };
+
   const handleGenerateDescription = async () => {
     if (!formData.title || !formData.state || !formData.city) {
       setError(
@@ -447,8 +485,6 @@ export default function SubmitPropertyPage() {
             address: formData.address,
           },
           features: {
-            bedrooms: formData.bedrooms,
-            bathrooms: formData.bathrooms,
             amenities: amenities,
           },
           project_details: {
@@ -511,6 +547,12 @@ export default function SubmitPropertyPage() {
         imageUrls = await uploadImages();
       }
 
+      // Upload floor plan
+      let uploadedFloorPlanUrl: string | null = null;
+      if (floorPlan) {
+        uploadedFloorPlanUrl = await uploadFloorPlan();
+      }
+
       // Upload brochures
       let uploadedBrochureUrls: string[] = [];
       if (brochures.length > 0) {
@@ -534,11 +576,10 @@ export default function SubmitPropertyPage() {
         city: formData.city,
         address: formData.address,
         area: formData.area,
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
         property_type: formData.property_type,
         listing_type: formData.listing_type,
         featured: false,
+        floor_plan_url: uploadedFloorPlanUrl,
         images: imageUrls,
         video_urls: uploadedVideoUrls,
         amenities: amenities,
@@ -1007,45 +1048,6 @@ export default function SubmitPropertyPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor="bedrooms"
-                  className="block text-sm font-semibold text-[var(--foreground)]"
-                >
-                  Bedrooms
-                </label>
-                <input
-                  type="number"
-                  id="bedrooms"
-                  name="bedrooms"
-                  value={formData.bedrooms}
-                  onChange={handleChange}
-                  placeholder="0"
-                  min="0"
-                  step="any"
-                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="bathrooms"
-                  className="block text-sm font-semibold text-[var(--foreground)]"
-                >
-                  Bathrooms
-                </label>
-                <input
-                  type="number"
-                  id="bathrooms"
-                  name="bathrooms"
-                  value={formData.bathrooms}
-                  onChange={handleChange}
-                  placeholder="0"
-                  min="0"
-                  step="any"
-                  className="w-full px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all placeholder:text-[var(--text-muted)] text-[var(--foreground)]"
-                />
-              </div>
 
               <div className="space-y-2">
                 <label
@@ -1451,13 +1453,76 @@ export default function SubmitPropertyPage() {
             className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.62 }}
+          >
+            <h2 className="text-xl font-bold text-[var(--foreground)] mb-2 pb-2 border-b border-[var(--border)]">
+              Floor Plan
+            </h2>
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              Upload a floor plan or map of your property
+            </p>
+
+            <div className="space-y-6">
+              <input
+                type="file"
+                ref={floorPlanInputRef}
+                onChange={handleFloorPlanChange}
+                accept="image/*"
+                hidden
+              />
+
+              <div className="flex gap-4">
+                {floorPlanPreview ? (
+                  <motion.div
+                    className="relative aspect-[4/3] w-64 rounded-[var(--radius)] overflow-hidden border border-[var(--border)] group"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Image
+                      src={floorPlanPreview}
+                      alt="Floor Plan Preview"
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
+                    <motion.button
+                      type="button"
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      onClick={removeFloorPlan}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    type="button"
+                    className="aspect-[4/3] w-64 flex flex-col items-center justify-center gap-3 rounded-[var(--radius)] border-2 border-dashed border-[var(--border-hover)] bg-[var(--surface-soft)] text-[var(--text-secondary)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all"
+                    onClick={() => floorPlanInputRef.current?.click()}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Upload className="w-8 h-8 opacity-50" />
+                    <span className="text-sm font-medium">Add Floor Plan</span>
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65 }}
           >
             <h2 className="text-xl font-bold text-[var(--foreground)] mb-2 pb-2 border-b border-[var(--border)]">
               Videos
             </h2>
             <p className="text-sm text-[var(--text-muted)] mb-6">
-              Upload up to 3 videos of your property (Max 50MB each)
+              Upload up to 2 videos of your property (Max 50MB each)
             </p>
 
             <div className="space-y-6">
@@ -1510,7 +1575,7 @@ export default function SubmitPropertyPage() {
                     <Video className="w-8 h-8 opacity-50" />
                     <span className="text-sm font-medium">Add Videos</span>
                     <span className="text-xs text-[var(--text-muted)]">
-                      {videos.length}/3
+                      {videos.length}/2
                     </span>
                   </motion.button>
                 )}

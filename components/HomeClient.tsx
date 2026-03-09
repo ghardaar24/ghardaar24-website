@@ -70,13 +70,8 @@ function HomePropertyCard({
   const mainImage = property.images?.[0] || "/placeholder-property.jpg";
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (!isLoggedIn) {
-      e.preventDefault();
-      onLoginRequired(`/properties/${property.id}`);
-    } else {
-      router.push(`/properties/${property.id}`);
-    }
+  const handleClick = () => {
+    router.push(`/properties/${property.id}`);
   };
 
   return (
@@ -147,14 +142,6 @@ function HomePropertyCard({
           <h3 className="property-card-title">{property.title}</h3>
 
           <div className="property-card-features-new">
-            <div className="feature-item-new">
-              <Bed className="w-4 h-4" />
-              <span>{property.bedrooms}</span>
-            </div>
-            <div className="feature-item-new">
-              <Bath className="w-4 h-4" />
-              <span>{property.bathrooms}</span>
-            </div>
             <div className="feature-item-new">
               <Maximize className="w-4 h-4" />
               <span>{property.carpet_area || "N/A"}</span>
@@ -352,9 +339,6 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
                 <Link
                   href="/properties?featured=true"
                   className="btn-outline-new"
-                  onClick={(e) =>
-                    handleLinkClick(e, "/properties?featured=true")
-                  }
                 >
                   View all <ChevronRight className="w-4 h-4" />
                 </Link>
@@ -519,20 +503,6 @@ export function HeroSearchBar() {
                 <option value="house">House</option>
                 <option value="villa">Villa</option>
                 <option value="plot">Plot</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="search-filter">
-            <span className="search-filter-label">BHK</span>
-            <div className="search-filter-value">
-              <Bed className="w-4 h-4" />
-              <select name="bedrooms" defaultValue="">
-                <option value="">Any</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4+</option>
               </select>
             </div>
           </div>

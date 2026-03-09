@@ -28,6 +28,8 @@ export interface StaffProfile {
   email: string;
   name: string;
   is_active: boolean;
+  can_manage_properties: boolean;
+  can_generate_invoices: boolean;
   created_at?: string;
 }
 

@@ -1,5 +1,9 @@
+"use client";
+
 import InvoiceGenerator from "@/components/admin/InvoiceGenerator";
+import { useAdminAuth } from "@/lib/admin-auth";
 
 export default function InvoiceGeneratorPage() {
-  return <InvoiceGenerator />;
+  const { user } = useAdminAuth();
+  return <InvoiceGenerator userId={user?.id} userName={user?.email || "Admin"} />;
 }

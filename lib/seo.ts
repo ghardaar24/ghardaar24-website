@@ -220,8 +220,6 @@ export function generatePropertySchema(property: {
   images: string[];
   property_type: string;
   listing_type: string;
-  bedrooms: number;
-  bathrooms: number;
   carpet_area?: string;
   created_at: string;
 }) {
@@ -254,8 +252,6 @@ export function generatePropertySchema(property: {
       "@type": "GeoCoordinates",
       addressCountry: "IN",
     },
-    numberOfRooms: property.bedrooms,
-    numberOfBathroomsTotal: property.bathrooms,
     floorSize: {
       "@type": "QuantitativeValue",
       value: property.carpet_area ? parseInt(property.carpet_area) || 0 : 0,

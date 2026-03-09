@@ -17,7 +17,6 @@ interface SearchParams {
   listing_type?: string;
   min_price?: string;
   max_price?: string;
-  bedrooms?: string;
   possession?: string;
   featured?: string;
   search?: string;
@@ -65,16 +64,6 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
 
   if (searchParams.max_price) {
     query = query.lte("price", parseInt(searchParams.max_price));
-  }
-
-  if (searchParams.bedrooms) {
-    const beds =
-      searchParams.bedrooms === "5+" ? 5 : parseInt(searchParams.bedrooms);
-    if (searchParams.bedrooms === "5+") {
-      query = query.gte("bedrooms", beds);
-    } else {
-      query = query.eq("bedrooms", beds);
-    }
   }
 
   if (searchParams.possession) {

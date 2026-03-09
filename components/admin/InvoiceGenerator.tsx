@@ -1,9 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import { Printer, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Printer, Plus, Trash2, History, Clock, User, ChevronDown, ChevronUp, Eye, Loader2 } from "lucide-react";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
-export default function InvoiceGenerator() {
+interface InvoiceRecord {
+  id: string;
+  invoice_no: string;
+  date: string;
+  customer_name: string;
+  project_name: string;
+  total_amount: number;
+  invoice_data: Record<string, unknown>;
+  created_by: string;
+  created_at: string;
+  creator_name?: string;
+}
+
+interface InvoiceGeneratorProps {
+  /** The user ID (admin or staff) who is generating invoices */
+  userId?: string;
+  /** Display name of the user generating invoices */
+  userName?: string;
+}
+
+export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorProps) {
   const [invoiceData, setInvoiceData] = useState({
     invoiceNo: "",
     date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
@@ -35,6 +56,65 @@ export default function InvoiceGenerator() {
   const [items, setItems] = useState([
     { id: 1, description: "Description of Service Provided", amount: "0" }
   ]);
+
+  // History state
+  const [invoiceHistory, setInvoiceHistory] = useState<InvoiceRecord[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<InvoiceRecord | null>(null);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      // Fetch creator names
+      const creatorIds = [...new Set((data || []).map(d => d.created_by).filter(Boolean))];
+      let nameMap: Record<string, string> = {};
+
+      if (creatorIds.length > 0) {
+        const { data: staffData } = await supabase
+          .from("crm_staff")
+          .select("id, name")
+          .in("id", creatorIds);
+        
+        if (staffData) {
+          staffData.forEach(s => { nameMap[s.id] = s.name; });
+        }
+
+        // Also check admins
+        const { data: adminData } = await supabase
+          .from("admins")
+          .select("user_id, email")
+          .in("user_id", creatorIds);
+        
+        if (adminData) {
+          adminData.forEach(a => { nameMap[a.user_id] = a.email; });
+        }
+      }
+
+      setInvoiceHistory((data || []).map(d => ({
+        ...d,
+        creator_name: nameMap[d.created_by] || "Unknown"
+      })));
+    } catch (err) {
+      console.error("Error fetching invoice history:", err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -97,8 +177,83 @@ export default function InvoiceGenerator() {
     return str.trim() + " Only/-";
   };
 
-  const handlePrint = () => {
+  const saveInvoice = async () => {
+    if (!invoiceData.invoiceNo) {
+      setSaveMessage({ type: 'error', text: 'Invoice number is required to save.' });
+      setTimeout(() => setSaveMessage(null), 3000);
+      return;
+    }
+
+    setSavingInvoice(true);
+    setSaveMessage(null);
+
+    try {
+      const { error } = await supabase
+        .from("invoices")
+        .insert({
+          invoice_no: invoiceData.invoiceNo,
+          date: invoiceData.date,
+          customer_name: invoiceData.customerName,
+          project_name: invoiceData.projectName,
+          total_amount: totalAmount,
+          invoice_data: {
+            ...invoiceData,
+            items,
+          },
+          created_by: userId || null,
+        });
+
+      if (error) throw error;
+
+      setSaveMessage({ type: 'success', text: 'Invoice saved to history!' });
+      fetchHistory();
+    } catch (err: any) {
+      console.error("Error saving invoice:", err);
+      setSaveMessage({ type: 'error', text: err.message || 'Failed to save invoice.' });
+    } finally {
+      setSavingInvoice(false);
+      setTimeout(() => setSaveMessage(null), 4000);
+    }
+  };
+
+  const handlePrint = async () => {
+    // Auto-save before printing
+    await saveInvoice();
     window.print();
+  };
+
+  const loadInvoice = (record: InvoiceRecord) => {
+    const data = record.invoice_data as any;
+    if (data) {
+      setInvoiceData({
+        invoiceNo: data.invoiceNo || "",
+        date: data.date || "",
+        customerName: data.customerName || "",
+        projectName: data.projectName || "",
+        unitNo: data.unitNo || "",
+        companyPropName: data.companyPropName || "",
+        companyDetailsName: data.companyDetailsName || "",
+        companyAddress: data.companyAddress || "",
+        companyUserReraNo: data.companyUserReraNo || "",
+        companyPan: data.companyPan || "",
+        companyRera: data.companyRera || "",
+        companyGstNo: data.companyGstNo || "",
+        favouringName1: data.favouringName1 || "GHARDAAR24",
+        bankName1: data.bankName1 || "Union Bank of India",
+        accNo1: data.accNo1 || "583801010050654",
+        ifsc1: data.ifsc1 || "UBIN0558389",
+        favouringName2: data.favouringName2 || "Sanket Balwant Hire",
+        bankName2: data.bankName2 || "State Bank of India",
+        accNo2: data.accNo2 || "32271175190",
+        ifsc2: data.ifsc2 || "SBIN0012509",
+        selectedBank: data.selectedBank || "1",
+      });
+      if (data.items && Array.isArray(data.items)) {
+        setItems(data.items);
+      }
+    }
+    setViewingInvoice(null);
+    setShowHistory(false);
   };
 
   return (
@@ -405,9 +560,165 @@ export default function InvoiceGenerator() {
               </button>
             </div>
 
-            <button onClick={handlePrint} className="w-full mt-6 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-blue-600 hover:bg-blue-700 text-white h-10 py-2 px-4 gap-2">
-              <Printer className="w-4 h-4" /> Print Invoice
+            {/* Save Message */}
+            {saveMessage && (
+              <div className={`p-3 rounded-lg text-sm font-medium ${saveMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {saveMessage.text}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button onClick={handlePrint} className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-blue-600 hover:bg-blue-700 text-white h-10 py-2 px-4 gap-2">
+                {savingInvoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />} Print Invoice
+              </button>
+            </div>
+
+            {/* Invoice History Toggle */}
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="w-full mt-2 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 h-10 py-2 px-4 gap-2"
+            >
+              <History className="w-4 h-4" />
+              {showHistory ? 'Hide' : 'Show'} Invoice History
+              {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+
+            {/* Invoice History Panel */}
+            {showHistory && (
+              <div className="border border-gray-200 rounded-xl overflow-hidden mt-4">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <History className="w-4 h-4" />
+                    Invoice History
+                  </h3>
+                  <button onClick={fetchHistory} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                    Refresh
+                  </button>
+                </div>
+
+                {historyLoading ? (
+                  <div className="p-8 text-center">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                    <p className="text-sm text-gray-500 mt-2">Loading history...</p>
+                  </div>
+                ) : invoiceHistory.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <History className="w-8 h-8 mx-auto text-gray-300 mb-2" />
+                    <p className="text-sm text-gray-500">No invoices generated yet.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                    {invoiceHistory.map(record => (
+                      <div
+                        key={record.id}
+                        className="px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => setViewingInvoice(record)}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-semibold text-gray-800">
+                            #{record.invoice_no}
+                          </span>
+                          <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                            ₹{formatCurrency(record.total_amount)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          {record.customer_name && (
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {record.customer_name}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(record.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Generated by: {record.creator_name || "Admin"}
+                          {record.project_name && ` · Project: ${record.project_name}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* View Invoice Detail Modal */}
+            {viewingInvoice && (
+              <div
+                className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                onClick={() => setViewingInvoice(null)}
+              >
+                <div
+                  className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Invoice #{viewingInvoice.invoice_no}</h3>
+                    <button onClick={() => setViewingInvoice(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+                  </div>
+                  <div className="px-5 py-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-500 block text-xs">Date</span>
+                        <span className="font-medium">{viewingInvoice.date}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs">Total Amount</span>
+                        <span className="font-semibold text-green-700">₹{formatCurrency(viewingInvoice.total_amount)}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs">Customer</span>
+                        <span className="font-medium">{viewingInvoice.customer_name || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs">Project</span>
+                        <span className="font-medium">{viewingInvoice.project_name || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs">Generated By</span>
+                        <span className="font-medium">{viewingInvoice.creator_name || "Unknown"}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs">Created At</span>
+                        <span className="font-medium">{new Date(viewingInvoice.created_at).toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+
+                    {/* Items from invoice_data */}
+                    {(viewingInvoice.invoice_data as any)?.items && (
+                      <div className="mt-4">
+                        <span className="text-gray-500 text-xs block mb-2">Items</span>
+                        <div className="space-y-2">
+                          {((viewingInvoice.invoice_data as any).items as any[]).map((item: any, i: number) => (
+                            <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-sm">
+                              <span>{item.description || `Item ${i + 1}`}</span>
+                              <span className="font-semibold">₹{formatCurrency(item.amount || 0)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-5 py-3 border-t border-gray-200 flex gap-2">
+                    <button
+                      onClick={() => loadInvoice(viewingInvoice)}
+                      className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 gap-2"
+                    >
+                      <Eye className="w-4 h-4" /> Load into Editor
+                    </button>
+                    <button
+                      onClick={() => setViewingInvoice(null)}
+                      className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 h-9 px-4"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

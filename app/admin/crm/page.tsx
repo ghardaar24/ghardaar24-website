@@ -1485,7 +1485,7 @@ export default function CRMPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <div className="admin-table-container overflow-x-auto">
+        <div className="admin-table-container">
           <table className="admin-table table-fixed w-full min-w-[1000px]">
             <thead>
               <tr>

@@ -35,6 +35,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 import PropertyDetailsClient from "@/components/PropertyDetailsClient";
+import ReadMoreText from "@/components/ReadMoreText";
+import PropertySectionNavbar from "@/components/PropertySectionNavbar";
 
 async function getProperty(id: string): Promise<Property | null> {
   const { data, error } = await supabase
@@ -96,6 +98,15 @@ export default async function PropertyDetailsPage({
   }
 
   const similarProperties = await getSimilarProperties(property);
+
+  const sections = [
+    { id: "overview", label: "Overview" },
+    { id: "description", label: "Description" },
+    ...(property.land_parcel || property.towers || property.floors || property.config || property.carpet_area || property.rera_no || property.possession_status || property.target_possession || property.litigation !== undefined ? [{ id: "project-overview", label: "Project Details" }] : []),
+    ...(property.amenities && property.amenities.length > 0 ? [{ id: "amenities", label: "Amenities" }] : []),
+    ...(property.floor_plan_url ? [{ id: "floor-plan", label: "Floor Plan" }] : []),
+    ...(property.video_urls && property.video_urls.length > 0 ? [{ id: "videos", label: "Videos" }] : []),
+  ];
 
   return (
     <>
@@ -215,32 +226,14 @@ export default async function PropertyDetailsPage({
                     </div>
                   </MotionSection>
 
+                  <PropertySectionNavbar sections={sections} />
+
                   {/* Key Features */}
                   <MotionSection delay={0.3}>
-                    <StaggerContainer className="key-features">
-                      <StaggerItem>
-                        <div className="key-feature">
-                          <Bed className="w-6 h-6 text-primary" />
-                          <div>
-                            <span className="feature-value">
-                              {property.bedrooms}
-                            </span>
-                            <span className="feature-label">Bedrooms</span>
-                          </div>
-                        </div>
-                      </StaggerItem>
-                      <StaggerItem>
-                        <div className="key-feature">
-                          <Bath className="w-6 h-6 text-primary" />
-                          <div>
-                            <span className="feature-value">
-                              {property.bathrooms}
-                            </span>
-                            <span className="feature-label">Bathrooms</span>
-                          </div>
-                        </div>
-                      </StaggerItem>
-                      <StaggerItem>
+                    <div id="overview">
+                      <StaggerContainer className="key-features">
+
+                        <StaggerItem>
                         <div className="key-feature">
                           <Maximize className="w-6 h-6 text-primary" />
                           <div>
@@ -265,15 +258,14 @@ export default async function PropertyDetailsPage({
                         </div>
                       </StaggerItem>
                     </StaggerContainer>
+                    </div>
                   </MotionSection>
 
                   {/* Description */}
                   <MotionSection delay={0.4}>
-                    <div className="property-section">
+                    <div className="property-section" id="description">
                       <h2 className="section-heading">Description</h2>
-                      <p className="property-description">
-                        {property.description}
-                      </p>
+                      <ReadMoreText text={property.description || ""} maxLength={250} />
                     </div>
                   </MotionSection>
 
@@ -288,7 +280,7 @@ export default async function PropertyDetailsPage({
                     property.target_possession ||
                     property.litigation !== undefined) && (
                     <MotionSection delay={0.45}>
-                      <div className="property-section">
+                      <div className="property-section" id="project-overview">
                         <h2 className="section-heading">Project Overview</h2>
                         <StaggerContainer
                           className="project-overview-grid"
@@ -465,7 +457,7 @@ export default async function PropertyDetailsPage({
                   {/* Amenities */}
                   {property.amenities && property.amenities.length > 0 && (
                     <MotionSection delay={0.5}>
-                      <div className="property-section">
+                      <div className="property-section" id="amenities">
                         <h2 className="section-heading">Amenities</h2>
                         <StaggerContainer className="amenities-grid" fast>
                           {property.amenities.map((amenity: string) => {
@@ -480,6 +472,44 @@ export default async function PropertyDetailsPage({
                             );
                           })}
                         </StaggerContainer>
+                      </div>
+                    </MotionSection>
+                  )}
+
+                  {/* Floor Plan */}
+                  {property.floor_plan_url && (
+                    <MotionSection delay={0.51}>
+                      <div className="property-section" id="floor-plan">
+                        <h2 className="section-heading">Floor Plan</h2>
+                        <div className="relative w-full h-[400px] md:h-[600px] rounded-xl overflow-hidden shadow-lg">
+                          <Image
+                            src={property.floor_plan_url}
+                            alt="Floor Plan"
+                            fill
+                            className="object-contain bg-white"
+                          />
+                        </div>
+                      </div>
+                    </MotionSection>
+                  )}
+
+                  {/* Videos */}
+                  {property.video_urls && property.video_urls.length > 0 && (
+                    <MotionSection delay={0.515}>
+                      <div className="property-section" id="videos">
+                        <h2 className="section-heading">Videos</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {property.video_urls.map((url, index) => (
+                            <div key={index} className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
+                              <video
+                                src={url}
+                                className="w-full h-full object-contain"
+                                controls
+                                preload="metadata"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </MotionSection>
                   )}

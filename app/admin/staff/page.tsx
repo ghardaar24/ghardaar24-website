@@ -34,6 +34,8 @@ interface Staff {
   email: string;
   name: string;
   is_active: boolean;
+  can_manage_properties: boolean;
+  can_generate_invoices: boolean;
   created_at: string;
 }
 
@@ -63,7 +65,7 @@ export default function StaffManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
-  const [accessTab, setAccessTab] = useState<'sheets' | 'inquiries'>('sheets');
+  const [accessTab, setAccessTab] = useState<'sheets' | 'inquiries' | 'permissions'>('sheets');
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -267,6 +269,23 @@ export default function StaffManagementPage() {
     } catch (error) {
       console.error("Error toggling staff status:", error);
       alert("Failed to update staff status.");
+    }
+  };
+
+  // Toggle staff permissions
+  const toggleStaffPermission = async (staffId: string, permissionStr: 'can_manage_properties' | 'can_generate_invoices', currentValue: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("crm_staff")
+        .update({ [permissionStr]: !currentValue })
+        .eq("id", staffId);
+
+      if (error) throw error;
+
+      setStaff(prev => prev.map(s => s.id === staffId ? { ...s, [permissionStr]: !currentValue } : s));
+    } catch (error) {
+      console.error("Error toggling staff permission:", error);
+      alert(`Failed to update ${permissionStr}.`);
     }
   };
 
@@ -920,12 +939,12 @@ export default function StaffManagementPage() {
               </div>
 
               <div style={{ padding: '1.5rem' }}>
-                {/* Tabs */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
                   <button
                     onClick={() => setAccessTab('sheets')}
                     style={{
                       flex: 1,
+                      minWidth: 'max-content',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -948,6 +967,7 @@ export default function StaffManagementPage() {
                     onClick={() => setAccessTab('inquiries')}
                     style={{
                       flex: 1,
+                      minWidth: 'max-content',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -965,6 +985,29 @@ export default function StaffManagementPage() {
                   >
                     <MessageSquare className="w-4 h-4" />
                     Inquiries
+                  </button>
+                  <button
+                    onClick={() => setAccessTab('permissions')}
+                    style={{
+                      flex: 1,
+                      minWidth: 'max-content',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: accessTab === 'permissions' ? '2px solid #10b981' : '1px solid #e5e7eb',
+                      background: accessTab === 'permissions' ? '#d1fae5' : 'white',
+                      color: accessTab === 'permissions' ? '#047857' : '#6b7280',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <Shield className="w-4 h-4" />
+                    Privileges
                   </button>
                 </div>
 
@@ -1095,6 +1138,103 @@ export default function StaffManagementPage() {
                           </button>
                         );
                       })}
+                    </div>
+                  </>
+                )}
+
+                {/* Privileges Tab Content */}
+                {accessTab === 'permissions' && (
+                  <>
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                      Select which global tools and sections this staff member can access.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {/* Properties Permission */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.875rem 1rem',
+                          background: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <Building className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                              Manage Properties
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              Allows adding and editing real estate listings
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => toggleStaffPermission(selectedStaff.id, 'can_manage_properties', selectedStaff.can_manage_properties)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            padding: '0.25rem 0.625rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: selectedStaff.can_manage_properties ? '#dcfce7' : '#f3f4f6',
+                            color: selectedStaff.can_manage_properties ? '#166534' : '#4b5563',
+                          }}
+                        >
+                          {selectedStaff.can_manage_properties ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                        </button>
+                      </div>
+
+                      {/* Invoices Permission */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.875rem 1rem',
+                          background: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <FileSpreadsheet className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                              Invoice Generator
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              Allows creating and printing official invoices
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => toggleStaffPermission(selectedStaff.id, 'can_generate_invoices', selectedStaff.can_generate_invoices)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            padding: '0.25rem 0.625rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: selectedStaff.can_generate_invoices ? '#dcfce7' : '#f3f4f6',
+                            color: selectedStaff.can_generate_invoices ? '#166534' : '#4b5563',
+                          }}
+                        >
+                          {selectedStaff.can_generate_invoices ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}

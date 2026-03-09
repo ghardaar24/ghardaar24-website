@@ -29,8 +29,7 @@ export interface Property {
   max_price?: number;
   area: string;
   address: string;
-  bedrooms: number;
-  bathrooms: number;
+  floor_plan_url?: string;
   property_type: "apartment" | "house" | "villa" | "plot" | "commercial";
   listing_type: "sale" | "rent" | "resale";
   images: string[];

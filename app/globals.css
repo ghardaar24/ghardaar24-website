@@ -288,7 +288,6 @@ html {
 
 /* Smooth scrolling containers */
 .staff-table-wrapper,
-.admin-table-container,
 .staff-modal-body,
 .staff-comment-history {
   scroll-behavior: smooth;
@@ -3724,6 +3723,60 @@ button:focus-visible {
   border-radius: var(--radius);
 }
 
+.gallery-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.gallery-modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s ease;
+}
+
+.gallery-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.gallery-modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-modal-counter {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+
 .gallery-thumbnails {
   display: flex;
   gap: 0.75rem;
@@ -4764,9 +4817,10 @@ button:focus-visible {
 .admin-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--gray-50);
   position: relative;
+  overflow: hidden;
 }
 
 @media (min-width: 1024px) {
@@ -5466,11 +5520,9 @@ button:focus-visible {
 
 /* Admin Table */
 .admin-table-container {
-  overflow-x: auto;
+  overflow: visible;
   border-radius: var(--radius);
   border: 1px solid var(--gray-200);
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
   position: relative;
 }
 
@@ -12951,7 +13003,7 @@ button:focus-visible {
 
 /* Properties Page Mobile Cards */
 .properties-section-responsive {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .properties-table-desktop {
@@ -16415,8 +16467,9 @@ a.contact-item:hover {
 
 /* Admin Layout Base */
 .admin-layout {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--surface-soft);
+  overflow: hidden;
 }
 
 .admin-mobile-header {
@@ -16468,6 +16521,10 @@ a.contact-item:hover {
   padding: 1rem;
   padding-top: 70px; /* Mobile header height + spacing */
   transition: margin-left 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 1024px) {
@@ -16475,6 +16532,7 @@ a.contact-item:hover {
     margin-left: 260px;
     padding: 2rem;
     padding-top: 2rem;
+    height: 100vh;
   }
 }
 
@@ -23915,7 +23973,8 @@ body {
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0, 0, 0, 0.03);
   border: none;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   margin-top: 1.5rem;
 }
 

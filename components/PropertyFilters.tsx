@@ -14,13 +14,11 @@ interface FilterState {
   listing_type: string;
   min_price: string;
   max_price: string;
-  bedrooms: string;
   possession: string;
   search: string;
 }
 
 const propertyTypes = ["apartment", "house", "villa", "plot", "commercial"];
-const bedroomOptions = ["1", "2", "3", "4", "5+"];
 
 // Price presets with Indian notation (K = Thousand, L = Lakh, Cr = Crore)
 const pricePresets = [
@@ -95,18 +93,6 @@ const filterFields = [
       })),
     ],
   },
-  // Listing Type moved to top-level toggle
-  {
-    name: "bedrooms",
-    label: "Bedrooms",
-    options: [
-      { value: "", label: "Any" },
-      ...bedroomOptions.map((b) => ({
-        value: b,
-        label: `${b} ${b === "5+" ? "" : "BHK"}`,
-      })),
-    ],
-  },
   {
     name: "possession",
     label: "Possession",
@@ -164,7 +150,6 @@ export default function PropertyFilters() {
       listing_type: searchParams.get("listing_type") || "",
       min_price: searchParams.get("min_price") || "",
       max_price: searchParams.get("max_price") || "",
-      bedrooms: searchParams.get("bedrooms") || "",
       possession: searchParams.get("possession") || "",
       search: searchParams.get("search") || "",
     }),
@@ -187,7 +172,6 @@ export default function PropertyFilters() {
       listing_type: searchParams.get("listing_type") || "",
       min_price: searchParams.get("min_price") || "",
       max_price: searchParams.get("max_price") || "",
-      bedrooms: searchParams.get("bedrooms") || "",
       possession: searchParams.get("possession") || "",
       search: searchParams.get("search") || "",
     };
@@ -223,7 +207,6 @@ export default function PropertyFilters() {
       listing_type: "", // Also clear listing type? Or keep it? Usually clear all resets all.
       min_price: "",
       max_price: "",
-      bedrooms: "",
       possession: "",
       search: "",
     };

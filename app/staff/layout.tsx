@@ -4,7 +4,7 @@ import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { StaffAuthProvider, useStaffAuth } from "@/lib/staff-auth";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare } from "lucide-react";
+import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt } from "lucide-react";
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
   const { staffProfile, accessibleInquiryTypes, loading, signOut } = useStaffAuth();
@@ -95,6 +95,24 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
             >
               <MessageSquare className="w-4 h-4" />
               Inquiries
+            </Link>
+          )}
+          {staffProfile.can_manage_properties && (
+            <Link
+              href="/staff/properties"
+              className={`staff-nav-link ${pathname === "/staff/properties" ? "active" : ""}`}
+            >
+              <Building className="w-4 h-4" />
+              Properties
+            </Link>
+          )}
+          {staffProfile.can_generate_invoices && (
+            <Link
+              href="/staff/invoice-generator"
+              className={`staff-nav-link ${pathname === "/staff/invoice-generator" ? "active" : ""}`}
+            >
+              <Receipt className="w-4 h-4" />
+              Invoice Generator
             </Link>
           )}
         </div>
