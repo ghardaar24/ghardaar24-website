@@ -22,6 +22,7 @@ import {
   Download,
   ClipboardList,
   Receipt,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -36,6 +37,7 @@ const navItems = [
   { href: "/admin/leads", icon: User, label: "Leads" },
   { href: "/admin/crm", icon: Users, label: "CRM" },
   { href: "/admin/tasks", icon: ClipboardList, label: "Tasks" },
+  { href: "/admin/site-visits", icon: Eye, label: "Site Visits" },
   { href: "/admin/staff", icon: UserCog, label: "Staff Management" },
   { href: "/admin/downloads", icon: Download, label: "Downloads" },
   { href: "/admin/invoice-generator", icon: Receipt, label: "Invoice Gen" },

@@ -4,7 +4,7 @@ import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { StaffAuthProvider, useStaffAuth } from "@/lib/staff-auth";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt } from "lucide-react";
+import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt, MapPin } from "lucide-react";
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
   const { staffProfile, accessibleInquiryTypes, loading, signOut } = useStaffAuth();
@@ -87,6 +87,13 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
           >
             <CheckSquare className="w-4 h-4" />
             My Tasks
+          </Link>
+          <Link
+            href="/staff/site-visits"
+            className={`staff-nav-link ${pathname === "/staff/site-visits" ? "active" : ""}`}
+          >
+            <MapPin className="w-4 h-4" />
+            Site Visits
           </Link>
           {hasInquiryAccess && (
             <Link
