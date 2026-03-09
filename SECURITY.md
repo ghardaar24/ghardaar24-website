@@ -65,6 +65,7 @@ const { admin } = useAdminAuth();
 if (!admin) {
   redirect("/admin/login");
 }
+```
 
 ### Staff Access
 
@@ -165,6 +166,30 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | --- | --- | --- |
 | `Anyone can view active brochures` | SELECT | Public can view active downloads |
 | `Admins can manage brochures` | ALL | Only authenticated admins |
+
+### Invoices Table Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Admins can manage all invoices` | ALL | Only authenticated admins |
+| `Staff with permission can manage all invoices` | ALL | Staff with `can_generate_invoices` flag |
+
+### Site Visits Table Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Staff can insert own site visits` | INSERT | Active staff can create their own visits |
+| `Staff can read own site visits` | SELECT | Staff can read their own visits |
+| `Admins can read all site visits` | SELECT | Admins can view all visits |
+| `Admins can manage all site visits` | ALL | Admins have full access |
+
+### Site Visit Photos Storage Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Anyone can view site visit photos` | SELECT | Public can view photos |
+| `Staff can upload site visit photos` | INSERT | Active staff can upload |
+| `Admins can delete site visit photos` | DELETE | Only admins can delete |
 
 ---
 
@@ -378,6 +403,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.5.0   | March 2026    | Site visits, invoices, staff permissions, floor plans|
 | 1.4.0   | February 2026 | Added Downloads, CRM Tasks, and Invoice Generator  |
 | 1.3.1   | January 2026  | Secured API routes with auth checks, CSP updates   |
 | 1.3.0   | January 2026  | Staff auth context, CRM security                   |

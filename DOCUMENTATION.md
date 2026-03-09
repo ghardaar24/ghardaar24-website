@@ -76,8 +76,6 @@ Stores all property listings with their details.
 | `city`              | TEXT        | City name                                          |
 | `area`              | TEXT        | Area/Locality                                      |
 | `address`           | TEXT        | Full address                                       |
-| `bedrooms`          | INTEGER     | Number of bedrooms                                 |
-| `bathrooms`         | INTEGER     | Number of bathrooms                                |
 | `property_type`     | TEXT        | apartment, house, villa, plot, commercial          |
 | `listing_type`      | TEXT        | sale, rent, or resale                              |
 | `images`            | TEXT[]      | Array of image URLs                                |
@@ -87,8 +85,9 @@ Stores all property listings with their details.
 | `featured`          | BOOLEAN     | Featured listing flag                              |
 | `status`            | TEXT        | active, sold, rented, inactive                     |
 | `builder_developer` | TEXT        | Builder or developer name                          |
-| `land_parcel`       | INTEGER     | Land parcel size                                   |
-| `towers`            | INTEGER     | Number of towers                                   |
+| `floor_plan_url`    | TEXT        | Floor plan image URL                               |
+| `land_parcel`       | NUMERIC     | Land parcel size                                   |
+| `towers`            | NUMERIC     | Number of towers                                   |
 | `floors`            | TEXT        | Floor information                                  |
 | `config`            | TEXT        | Property configuration                             |
 | `carpet_area`       | TEXT        | Carpet area details                                |
@@ -150,12 +149,14 @@ Stores admin login credentials (separate from user auth).
 
 Stores staff details for the CRM portal.
 
-| Column      | Type    | Description                |
-| ----------- | ------- | -------------------------- |
-| `id`        | UUID    | Primary key (matches auth) |
-| `email`     | TEXT    | Staff email                |
-| `name`      | TEXT    | Staff name                 |
-| `is_active` | BOOLEAN | Access control flag        |
+| Column                    | Type    | Description                              |
+| ------------------------- | ------- | ---------------------------------------- |
+| `id`                      | UUID    | Primary key (matches auth)               |
+| `email`                   | TEXT    | Staff email                              |
+| `name`                    | TEXT    | Staff name                               |
+| `is_active`               | BOOLEAN | Access control flag                      |
+| `can_manage_properties`   | BOOLEAN | Permission to manage properties          |
+| `can_generate_invoices`   | BOOLEAN | Permission to generate invoices          |
 
 ### CRM Sheets Access (crm_sheet_access)
 
@@ -204,6 +205,38 @@ Stores state/city combinations for location dropdown filtering.
 
 > **Note**: State and city are stored together with a unique constraint on the combination.
 
+### Invoices Table
+
+Stores generated invoice history.
+
+| Column          | Type        | Description                          |
+| --------------- | ----------- | ------------------------------------ |
+| `id`            | UUID        | Primary key                          |
+| `invoice_no`    | TEXT        | Invoice number                       |
+| `date`          | TEXT        | Invoice date                         |
+| `customer_name` | TEXT        | Customer name                        |
+| `project_name`  | TEXT        | Project name                         |
+| `total_amount`  | BIGINT      | Total invoice amount                 |
+| `invoice_data`  | JSONB       | Full invoice details (line items)    |
+| `created_by`    | UUID        | User who created the invoice         |
+| `created_at`    | TIMESTAMPTZ | Creation timestamp                   |
+| `updated_at`    | TIMESTAMPTZ | Last update timestamp                |
+
+### Site Visits Table
+
+Stores staff site visit records with photo proof.
+
+| Column           | Type        | Description                  |
+| ---------------- | ----------- | ---------------------------- |
+| `id`             | UUID        | Primary key                  |
+| `staff_id`       | UUID        | Reference to `crm_staff`     |
+| `property_title` | TEXT        | Property visited             |
+| `location`       | TEXT        | Visit location               |
+| `visit_date`     | DATE        | Date of visit                |
+| `notes`          | TEXT        | Optional visit notes         |
+| `photo_url`      | TEXT        | Photo proof URL              |
+| `created_at`     | TIMESTAMPTZ | Creation timestamp           |
+
 ---
 
 ## API Reference
@@ -250,18 +283,19 @@ GOOGLE_SHEETS_SPREADSHEET_ID=your_spreadsheet_id
 
 ### Lib Utilities
 
-| Utility         | Path                   | Description                            |
-| --------------- | ---------------------- | -------------------------------------- |
-| `supabase`      | `lib/supabase.ts`      | Supabase client configuration          |
-| `auth`          | `lib/auth.tsx`         | User authentication context provider   |
-| `admin-auth`    | `lib/admin-auth.tsx`   | Admin authentication context provider  |
-| `staff-auth`    | `lib/staff-auth.tsx`   | Staff authentication context provider  |
-| `seo`           | `lib/seo.ts`           | SEO configuration and metadata         |
-| `motion`        | `lib/motion.tsx`       | Animation utilities with Framer Motion |
-| `rate-limit`    | `lib/rate-limit.ts`    | API rate limiting utilities            |
-| `amenityIcons`  | `lib/amenityIcons.ts`  | Amenity icon mappings                  |
-| `indian-cities` | `lib/indian-cities.ts` | State and city data for India          |
-| `utils`         | `lib/utils.ts`         | General helper functions               |
+| Utility          | Path                    | Description                            |
+| ---------------- | ----------------------- | -------------------------------------- |
+| `supabase`       | `lib/supabase.ts`       | Supabase client configuration + types  |
+| `auth`           | `lib/auth.tsx`          | User authentication context provider   |
+| `admin-auth`     | `lib/admin-auth.tsx`    | Admin authentication context provider  |
+| `staff-auth`     | `lib/staff-auth.tsx`    | Staff authentication context provider  |
+| `google-sheets`  | `lib/google-sheets.ts`  | Google Sheets logging integration      |
+| `seo`            | `lib/seo.ts`            | SEO configuration and metadata         |
+| `motion`         | `lib/motion.tsx`        | Animation utilities with Framer Motion |
+| `rate-limit`     | `lib/rate-limit.ts`     | API rate limiting utilities            |
+| `amenityIcons`   | `lib/amenityIcons.ts`   | Amenity icon mappings                  |
+| `indian-cities`  | `lib/indian-cities.ts`  | State and city data for India          |
+| `utils`          | `lib/utils.ts`          | General helper functions               |
 
 ### Common Queries
 
@@ -317,7 +351,6 @@ if (propertyType) query = query.eq("property_type", propertyType);
 if (listingType) query = query.eq("listing_type", listingType);
 if (minPrice) query = query.gte("price", minPrice);
 if (maxPrice) query = query.lte("price", maxPrice);
-if (bedrooms) query = query.eq("bedrooms", bedrooms);
 if (possession) query = query.ilike("possession_status", `%${possession}%`);
 
 const { data, error } = await query;
@@ -329,94 +362,111 @@ const { data, error } = await query;
 
 ### Public Components
 
-| Component               | Path                                   | Description                                |
-| ----------------------- | -------------------------------------- | ------------------------------------------ |
-| `Header`                | `components/Header.tsx`                | Navigation header with mobile menu         |
-| `Footer`                | `components/Footer.tsx`                | Site footer with social links              |
-| `PropertyCard`          | `components/PropertyCard.tsx`          | Property listing card                      |
-| `PropertyFilters`       | `components/PropertyFilters.tsx`       | Search and filter form with state/city     |
-| `ImageGallery`          | `components/ImageGallery.tsx`          | Property image gallery                     |
-| `ContactForm`           | `components/ContactForm.tsx`           | Inquiry submission form                    |
-| `EMICalculator`         | `components/EMICalculator.tsx`         | EMI calculator widget                      |
-| `MortgageCalculator`    | `components/MortgageCalculator.tsx`    | Detailed mortgage/loan calculator          |
-| `ROICalculator`         | `components/ROICalculator.tsx`         | Investment ROI analysis calculator         |
-| `WhyChooseUs`           | `components/WhyChooseUs.tsx`           | Value propositions                         |
-| `TrustIndicators`       | `components/TrustIndicators.tsx`       | Trust badges                               |
-| `FloatingWhatsApp`      | `components/FloatingWhatsApp.tsx`      | WhatsApp chat button                       |
-| `AgentProfile`          | `components/AgentProfile.tsx`          | Agent details with integrated contact form |
-| `PopularLocalities`     | `components/PopularLocalities.tsx`     | Grid of popular locations                  |
-| `InquiryCTA`            | `components/InquiryCTA.tsx`            | Call to action for inquiries               |
-| `ScrollToButton`        | `components/ScrollToButton.tsx`        | Button to scroll to specific section       |
-| `LoginModal`            | `components/LoginModal.tsx`            | User login/signup modal with forgot pass   |
-| `PropertyAuthGuard`     | `components/PropertyAuthGuard.tsx`     | Auth protection for property pages         |
-| `PropertyDetailsClient` | `components/PropertyDetailsClient.tsx` | Client-side property details wrapper       |
-| `HomeClient`            | `components/HomeClient.tsx`            | Client-side homepage components            |
+| Component                | Path                                    | Description                                |
+| ------------------------ | --------------------------------------- | ------------------------------------------ |
+| `Header`                 | `components/Header.tsx`                 | Navigation header with mobile menu         |
+| `Footer`                 | `components/Footer.tsx`                 | Site footer with social links              |
+| `PropertyCard`           | `components/PropertyCard.tsx`           | Property listing card                      |
+| `PropertyFilters`        | `components/PropertyFilters.tsx`        | Search and filter form with state/city     |
+| `PriceRangeInput`        | `components/PriceRangeInput.tsx`        | Min/Max price range input component        |
+| `PropertySectionNavbar`  | `components/PropertySectionNavbar.tsx`  | Property detail section navigation         |
+| `ImageGallery`           | `components/ImageGallery.tsx`           | Property image gallery                     |
+| `ContactForm`            | `components/ContactForm.tsx`            | Inquiry submission form                    |
+| `ConsultationFormModal`  | `components/ConsultationFormModal.tsx`  | Vastu/service consultation form modal      |
+| `EMICalculator`          | `components/EMICalculator.tsx`          | EMI calculator widget                      |
+| `MortgageCalculator`     | `components/MortgageCalculator.tsx`     | Detailed mortgage/loan calculator          |
+| `ROICalculator`          | `components/ROICalculator.tsx`          | Investment ROI analysis calculator         |
+| `WhyChooseUs`            | `components/WhyChooseUs.tsx`            | Value propositions                         |
+| `TrustIndicators`        | `components/TrustIndicators.tsx`        | Trust badges                               |
+| `FloatingWhatsApp`       | `components/FloatingWhatsApp.tsx`       | WhatsApp chat button                       |
+| `AgentProfile`           | `components/AgentProfile.tsx`           | Agent details with integrated contact form |
+| `PopularLocalities`      | `components/PopularLocalities.tsx`      | Grid of popular locations                  |
+| `InquiryCTA`             | `components/InquiryCTA.tsx`             | Call to action for inquiries               |
+| `ScrollToButton`         | `components/ScrollToButton.tsx`         | Button to scroll to specific section       |
+| `LoginModal`             | `components/LoginModal.tsx`             | User login/signup modal with forgot pass   |
+| `PropertyAuthGuard`      | `components/PropertyAuthGuard.tsx`      | Auth protection for property pages         |
+| `PropertyDetailsClient`  | `components/PropertyDetailsClient.tsx`  | Client-side property details wrapper       |
+| `HomeClient`             | `components/HomeClient.tsx`             | Client-side homepage components            |
+| `ReadMoreText`           | `components/ReadMoreText.tsx`           | Expandable read more text component        |
+| `IntroTour`              | `components/IntroTour.tsx`              | Interactive onboarding tour (Intro.js)     |
 
 ### Admin Components
 
-| Component     | Path                         | Description            |
-| ------------- | ---------------------------- | ---------------------- |
-| `AdminLayout` | `components/AdminLayout.tsx` | Admin dashboard layout |
+| Component          | Path                                  | Description                        |
+| ------------------ | ------------------------------------- | ---------------------------------- |
+| `AdminLayout`      | `components/AdminLayout.tsx`          | Admin dashboard layout             |
+| `AdminCheckbox`    | `components/admin/AdminCheckbox.tsx`  | Reusable admin checkbox component  |
+| `InvoiceGenerator` | `components/admin/InvoiceGenerator.tsx`| Shared invoice generator component |
 
 ### Pages
 
-| Page                  | Path                                    | Description                                |
-| --------------------- | --------------------------------------- | ------------------------------------------ |
-| Home                  | `app/page.tsx`                          | Landing page with hero and features        |
-| Properties            | `app/properties/page.tsx`               | Property listings with filters             |
-| Property Details      | `app/properties/[id]/page.tsx`          | Individual property page                   |
-| Submit Property       | `app/properties/submit/page.tsx`        | User property submission form              |
-| User Dashboard        | `app/dashboard/page.tsx`                | User's submitted properties overview       |
-| Real Estate Guide     | `app/real-estate-guide/page.tsx`        | Educational guide on real estate           |
-| Calculators           | `app/calculators/page.tsx`              | Financial calculators (EMI, Mortgage, ROI) |
-| Downloads             | `app/downloads/page.tsx`                | Public downloads & resources               |
-| Home Loans            | `app/services/home-loans/page.tsx`      | Home loans service information             |
-| Interior Design       | `app/services/interior-design/page.tsx` | Interior design service information        |
-| Vastu Consultation    | `app/services/vastu-consultation/page.tsx`| Vastu consultation service information     |
-| Staff Login           | `app/staff/login/page.tsx`              | Staff authentication page                  |
-| Staff CRM             | `app/staff/crm/page.tsx`                | Staff CRM dashboard                        |
-| Staff Tasks           | `app/staff/tasks/page.tsx`              | Assigned task management                   |
-| Staff Inquiries       | `app/staff/inquiries/page.tsx`          | Assigned inquiries management              |
-| Admin Dashboard       | `app/admin/page.tsx`                    | Admin overview and statistics              |
-| Admin Login           | `app/admin/login/page.tsx`              | Admin authentication page                  |
-| Admin Forgot Password | `app/admin/forgot-password/page.tsx`    | Admin password reset request               |
-| Admin Reset Password  | `app/admin/reset-password/page.tsx`     | Admin password reset confirmation          |
-| Manage Properties     | `app/admin/properties/page.tsx`         | Property CRUD operations                   |
-| Property Approvals    | `app/admin/approvals/page.tsx`          | Review/approve user-submitted properties   |
-| Manage Locations      | `app/admin/locations/page.tsx`          | State and city management                  |
-| Manage Inquiries      | `app/admin/inquiries/page.tsx`          | Inquiry management                         |
-| Manage Leads          | `app/admin/leads/page.tsx`              | User leads management                      |
-| CRM                   | `app/admin/crm/page.tsx`                | Client Relationship Management             |
-| CRM Tasks             | `app/admin/tasks/page.tsx`              | Admin task management                      |
-| Invoice Generator     | `app/admin/invoice-generator/page.tsx`  | Generate professional invoices             |
-| Manage Downloads      | `app/admin/downloads/page.tsx`          | Manage brochures & public downloads        |
-| User Login            | `app/auth/login/page.tsx`               | User authentication page                   |
-| User Signup           | `app/auth/signup/page.tsx`              | User registration page                     |
-| User Forgot Password  | `app/auth/forgot-password/page.tsx`     | User password reset request                |
-| User Reset Password   | `app/auth/reset-password/page.tsx`      | User password reset confirmation           |
-| Staff Management      | `app/admin/staff/page.tsx`              | Manage staff members (Admin only)          |
-| Admin Settings        | `app/admin/settings/page.tsx`           | Admin settings and configuration           |
+| Page                    | Path                                      | Description                                |
+| ----------------------- | ----------------------------------------- | ------------------------------------------ |
+| Home                    | `app/page.tsx`                            | Landing page with hero and features        |
+| Properties              | `app/properties/page.tsx`                 | Property listings with filters             |
+| Property Details        | `app/properties/[id]/page.tsx`            | Individual property page                   |
+| Submit Property         | `app/properties/submit/page.tsx`          | User property submission form              |
+| User Dashboard          | `app/dashboard/page.tsx`                  | User's submitted properties overview       |
+| Real Estate Guide       | `app/real-estate-guide/page.tsx`          | Educational guide on real estate           |
+| Calculators             | `app/calculators/page.tsx`                | Financial calculators (EMI, Mortgage, ROI) |
+| Downloads               | `app/downloads/page.tsx`                  | Public downloads & resources               |
+| Home Loans              | `app/services/home-loans/page.tsx`        | Home loans service information             |
+| Interior Design         | `app/services/interior-design/page.tsx`   | Interior design service information        |
+| Vastu Consultation      | `app/services/vastu-consultation/page.tsx`| Vastu consultation service information     |
+| Staff Login             | `app/staff/login/page.tsx`                | Staff authentication page                  |
+| Staff CRM               | `app/staff/crm/page.tsx`                  | Staff CRM dashboard                        |
+| Staff Tasks             | `app/staff/tasks/page.tsx`                | Assigned task management                   |
+| Staff Site Visits       | `app/staff/site-visits/page.tsx`          | Record site visits with photo proof        |
+| Staff Inquiries         | `app/staff/inquiries/page.tsx`            | Assigned inquiries management              |
+| Staff Properties        | `app/staff/properties/page.tsx`           | Property management (permission-gated)     |
+| Staff Invoice Generator | `app/staff/invoice-generator/page.tsx`    | Invoice generator (permission-gated)       |
+| Admin Dashboard         | `app/admin/page.tsx`                      | Admin overview and statistics              |
+| Admin Login             | `app/admin/login/page.tsx`                | Admin authentication page                  |
+| Admin Forgot Password   | `app/admin/forgot-password/page.tsx`      | Admin password reset request               |
+| Admin Reset Password    | `app/admin/reset-password/page.tsx`       | Admin password reset confirmation          |
+| Manage Properties       | `app/admin/properties/page.tsx`           | Property CRUD operations                   |
+| Property Approvals      | `app/admin/approvals/page.tsx`            | Review/approve user-submitted properties   |
+| Manage Locations        | `app/admin/locations/page.tsx`            | State and city management                  |
+| Manage Inquiries        | `app/admin/inquiries/page.tsx`            | Inquiry management                         |
+| Manage Leads            | `app/admin/leads/page.tsx`                | User leads management                      |
+| CRM                     | `app/admin/crm/page.tsx`                  | Client Relationship Management             |
+| CRM Analytics           | `app/admin/crm/analytics/page.tsx`        | CRM analytics dashboard (Recharts)         |
+| CRM Activity Logs       | `app/admin/crm/logs/page.tsx`             | CRM activity log viewer                    |
+| CRM Tasks               | `app/admin/tasks/page.tsx`                | Admin task management                      |
+| Admin Site Visits       | `app/admin/site-visits/page.tsx`          | View and filter all staff site visits      |
+| Invoice Generator       | `app/admin/invoice-generator/page.tsx`    | Generate professional invoices             |
+| Manage Downloads        | `app/admin/downloads/page.tsx`            | Manage brochures & public downloads        |
+| User Login              | `app/auth/login/page.tsx`                 | User authentication page                   |
+| User Signup             | `app/auth/signup/page.tsx`                | User registration page                     |
+| User Forgot Password    | `app/auth/forgot-password/page.tsx`       | User password reset request                |
+| User Reset Password     | `app/auth/reset-password/page.tsx`        | User password reset confirmation           |
+| Staff Management        | `app/admin/staff/page.tsx`                | Manage staff members (Admin only)          |
+| Admin Settings          | `app/admin/settings/page.tsx`             | Admin settings and configuration           |
 
 ### API Routes
 
-| Route                | Path                                    | Description                        |
-| -------------------- | --------------------------------------- | ---------------------------------- |
-| Generate Description | `app/api/generate-description/route.ts` | AI property description via Gemini |
-| Log To Sheets        | `app/api/log-to-sheets/route.ts`        | Optional logging to Google Sheets  |
-| Create Staff         | `app/api/create-staff/route.ts`         | Admin: Create new staff member     |
-| Update Staff         | `app/api/update-staff/route.ts`         | Admin: Update staff details        |
-| Delete Staff         | `app/api/delete-staff/route.ts`         | Admin: Delete staff member         |
+| Route                | Path                                     | Description                        |
+| -------------------- | ---------------------------------------- | ---------------------------------- |
+| Generate Description | `app/api/generate-description/route.ts`  | AI property description via Gemini |
+| Log To Sheets        | `app/api/log-to-sheets/route.ts`         | Optional logging to Google Sheets  |
+| Create Staff         | `app/api/create-staff/route.ts`          | Admin: Create new staff member     |
+| Update Staff         | `app/api/update-staff/route.ts`          | Admin: Update staff details        |
+| Delete Staff         | `app/api/delete-staff/route.ts`          | Admin: Delete staff member         |
 | Get Excluded IDs     | `app/api/admin/get-excluded-ids/route.ts`| Get IDs to exclude from leads      |
-| Lookup User          | `app/api/lookup-user/route.ts`          | Look up user for auth override     |
-| Staff Tasks          | `app/api/staff/tasks/route.ts`          | Staff CRM task management          |
+| Admin Staff          | `app/api/admin/staff/route.ts`           | Admin staff management endpoint    |
+| Admin Tasks          | `app/api/admin/tasks/route.ts`           | Admin task management endpoint     |
+| Lookup User          | `app/api/lookup-user/route.ts`           | Look up user for auth override     |
+| Staff Tasks          | `app/api/staff/tasks/route.ts`           | Staff CRM task management          |
 
 ### CRM Capabilities
 
 The CRM system (`app/admin/crm`) provides:
 - **Client Management**: Add, edit, delete client capabilities
-- **Lead Tracking**: Track lead stage, type, and source
+- **Lead Tracking**: Track lead stage, type, source, and deal status
 - **Communication**: Log comments and expected visit dates
 - **Import/Export**: Bulk import via CSV and export functionality
+- **Analytics Dashboard**: Visual analytics with charts (Recharts) for lead stages, types, and trends
+- **Activity Logs**: Comprehensive audit trail of all CRM actions by staff
 
 
 ---
@@ -555,26 +605,21 @@ For additional support:
 
 ## Changelog
 
-### v1.2.0 (December 2024)
+### v1.5.0 (March 2026)
 
-- Forgot Password / Reset Password functionality for users and admins
-- Services pages (Home Loans, Interior Design)
-- Rate limiting on API endpoints
-- Security improvements with Content-Security-Policy headers
-- Owner details collection for user property submissions
-- Optional logging of signups/properties to Google Sheets
-
-### v1.1.0 (December 2024)
-
-- User property submission feature
-- Admin property approvals panel
-- User dashboard for tracking submitted properties
-- State and city-based location filtering
-- AI-powered property description generation (Google Gemini)
-- Admin locations management page
-- Enhanced responsive design across all pages
-- Premium UI polish with improved animations and effects
-- Lucide icons throughout the application
+- Site Visits feature for staff (record visits with photo proof) and admin (view/filter all visits)
+- Invoice history with `invoices` table and full JSONB data storage
+- Granular staff permissions (`can_manage_properties`, `can_generate_invoices`)
+- Staff-accessible Properties page (permission-gated)
+- Staff-accessible Invoice Generator (permission-gated)
+- Floor plan image support for properties
+- Removed `bedrooms` and `bathrooms` columns from properties
+- Changed `land_parcel` and `towers` columns to NUMERIC type
+- `site-visit-photos` storage bucket for visit photo uploads
+- CRM Analytics Dashboard with Recharts visualizations
+- CRM Activity Logs viewer
+- New components: `ConsultationFormModal`, `PriceRangeInput`, `PropertySectionNavbar`, `ReadMoreText`, `AdminCheckbox`
+- `robots.ts` for dynamic robots.txt generation
 
 ### v1.4.0 (February 2026)
 
@@ -605,6 +650,27 @@ For additional support:
 - Enhanced Security (Admins only display page access)
 - Staff Management System (Create, Update, Delete Staff)
 - Additional UI/UX refinements
+
+### v1.2.0 (December 2024)
+
+- Forgot Password / Reset Password functionality for users and admins
+- Services pages (Home Loans, Interior Design)
+- Rate limiting on API endpoints
+- Security improvements with Content-Security-Policy headers
+- Owner details collection for user property submissions
+- Optional logging of signups/properties to Google Sheets
+
+### v1.1.0 (December 2024)
+
+- User property submission feature
+- Admin property approvals panel
+- User dashboard for tracking submitted properties
+- State and city-based location filtering
+- AI-powered property description generation (Google Gemini)
+- Admin locations management page
+- Enhanced responsive design across all pages
+- Premium UI polish with improved animations and effects
+- Lucide icons throughout the application
 
 ### v1.0.0 (December 2024)
 
