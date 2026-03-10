@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { StaffAuthProvider, useStaffAuth } from "@/lib/staff-auth";
+import { useStaffAuth } from "@/lib/staff-auth";
 import Link from "next/link";
 import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt, MapPin } from "lucide-react";
 

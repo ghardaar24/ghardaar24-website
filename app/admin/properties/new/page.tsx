@@ -45,6 +45,7 @@ interface PropertyFormData {
   carpet_area: string;
   // RERA & Legal Details
   rera_no: string;
+  rera_possession: string;
   possession_status: string;
   target_possession: string;
   litigation: boolean;
@@ -72,6 +73,7 @@ const initialFormData: PropertyFormData = {
   carpet_area: "",
   // RERA & Legal Details
   rera_no: "",
+  rera_possession: "",
   possession_status: "",
   target_possession: "",
   litigation: false,
@@ -91,7 +93,6 @@ export default function NewPropertyPage() {
   const [floorPlanPreview, setFloorPlanPreview] = useState<string | null>(null);
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
-  const [existingAreas, setExistingAreas] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -502,6 +503,7 @@ export default function NewPropertyPage() {
         carpet_area: formData.carpet_area,
         // RERA & Legal Details
         rera_no: formData.rera_no,
+        rera_possession: formData.rera_possession,
         possession_status: formData.possession_status,
         target_possession: formData.target_possession,
         litigation: formData.litigation,
@@ -858,6 +860,18 @@ export default function NewPropertyPage() {
                 value={formData.rera_no}
                 onChange={handleChange}
                 placeholder="e.g., P52100047..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="rera_possession">RERA Possession</label>
+              <input
+                type="text"
+                id="rera_possession"
+                name="rera_possession"
+                value={formData.rera_possession}
+                onChange={handleChange}
+                placeholder="e.g., Dec 2025"
               />
             </div>
 

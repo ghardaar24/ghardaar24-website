@@ -12,7 +12,6 @@ import {
   CheckCircle,
   XCircle,
   Plus,
-  Home,
   Building2,
   MapPin,
   Calendar,
@@ -40,6 +39,7 @@ export default function DashboardPage() {
     if (user?.id) {
       fetchUserProperties();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   async function fetchUserProperties() {

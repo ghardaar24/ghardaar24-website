@@ -24,7 +24,7 @@ interface InvoiceGeneratorProps {
   userName?: string;
 }
 
-export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorProps) {
+export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   const [invoiceData, setInvoiceData] = useState({
     invoiceNo: "",
     date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
@@ -78,7 +78,7 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
 
       // Fetch creator names
       const creatorIds = [...new Set((data || []).map(d => d.created_by).filter(Boolean))];
-      let nameMap: Record<string, string> = {};
+      const nameMap: Record<string, string> = {};
 
       if (creatorIds.length > 0) {
         const { data: staffData } = await supabase
@@ -163,17 +163,17 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
       "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
     ];
 
-    let strNum = num.toString();
+    const strNum = num.toString();
     if (strNum.length > 9) return "overflow";
     const n = ("000000000" + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
     if (!n) return "";
 
     let str = "";
-    str += n[1] !== "00" ? (a[Number(n[1])] || b[n[1][0] as any] + " " + a[n[1][1] as any]) + "Crore " : "";
-    str += n[2] !== "00" ? (a[Number(n[2])] || b[n[2][0] as any] + " " + a[n[2][1] as any]) + "Lakh " : "";
-    str += n[3] !== "00" ? (a[Number(n[3])] || b[n[3][0] as any] + " " + a[n[3][1] as any]) + "Thousand " : "";
-    str += n[4] !== "0" ? (a[Number(n[4])] || b[n[4][0] as any] + " " + a[n[4][1] as any]) + "Hundred " : "";
-    str += n[5] !== "00" ? (str !== "" ? "and " : "") + (a[Number(n[5])] || b[n[5][0] as any] + " " + a[n[5][1] as any]) : "";
+    str += n[1] !== "00" ? (a[Number(n[1])] || b[Number(n[1][0])] + " " + a[Number(n[1][1])]) + "Crore " : "";
+    str += n[2] !== "00" ? (a[Number(n[2])] || b[Number(n[2][0])] + " " + a[Number(n[2][1])]) + "Lakh " : "";
+    str += n[3] !== "00" ? (a[Number(n[3])] || b[Number(n[3][0])] + " " + a[Number(n[3][1])]) + "Thousand " : "";
+    str += n[4] !== "0" ? (a[Number(n[4])] || b[Number(n[4][0])] + " " + a[Number(n[4][1])]) + "Hundred " : "";
+    str += n[5] !== "00" ? (str !== "" ? "and " : "") + (a[Number(n[5])] || b[Number(n[5][0])] + " " + a[Number(n[5][1])]) : "";
     return str.trim() + " Only/-";
   };
 
@@ -207,9 +207,9 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
 
       setSaveMessage({ type: 'success', text: 'Invoice saved to history!' });
       fetchHistory();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving invoice:", err);
-      setSaveMessage({ type: 'error', text: err.message || 'Failed to save invoice.' });
+      setSaveMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save invoice.' });
     } finally {
       setSavingInvoice(false);
       setTimeout(() => setSaveMessage(null), 4000);
@@ -223,6 +223,7 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
   };
 
   const loadInvoice = (record: InvoiceRecord) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.invoice_data as any;
     if (data) {
       setInvoiceData({
@@ -688,10 +689,12 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
                     </div>
 
                     {/* Items from invoice_data */}
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {(viewingInvoice.invoice_data as any)?.items && (
                       <div className="mt-4">
                         <span className="text-gray-500 text-xs block mb-2">Items</span>
                         <div className="space-y-2">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                           {((viewingInvoice.invoice_data as any).items as any[]).map((item: any, i: number) => (
                             <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-sm">
                               <span>{item.description || `Item ${i + 1}`}</span>

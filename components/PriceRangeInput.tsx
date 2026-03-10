@@ -76,8 +76,7 @@ export default function PriceRangeInput({
   };
 
   const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    type: "min" | "max"
+    e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -145,7 +144,7 @@ export default function PriceRangeInput({
               value={minInput}
               onChange={(e) => handleMinChange(e.target.value)}
               onBlur={handleMinBlur}
-              onKeyDown={(e) => handleKeyDown(e, "min")}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>
@@ -182,7 +181,7 @@ export default function PriceRangeInput({
               value={maxInput}
               onChange={(e) => handleMaxChange(e.target.value)}
               onBlur={handleMaxBlur}
-              onKeyDown={(e) => handleKeyDown(e, "max")}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>

@@ -44,6 +44,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* Google Analytics */}
+        {/* eslint-disable-next-line @next/next/next-script-for-ga */}
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-QEHYN9XRC7"

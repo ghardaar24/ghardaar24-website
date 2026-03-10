@@ -26,6 +26,7 @@ export default function IntroTour() {
     }, 1500);
 
     return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, loading, user]);
 
   const startIntro = async () => {

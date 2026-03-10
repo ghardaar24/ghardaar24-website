@@ -81,6 +81,7 @@ export default function AdminTasksPage() {
     if (!authLoading && session) {
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, session]);
 
   const fetchData = async () => {

@@ -200,7 +200,7 @@ function HeaderContent() {
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {resourcesDropdownLinks.map((link, index) => (
+                    {resourcesDropdownLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}

@@ -72,6 +72,11 @@ export async function POST(req: NextRequest) {
       }
       ${project_details.floors ? `- Floors: ${project_details.floors}` : ""}
       ${
+        project_details.rera_possession
+          ? `- RERA Possession: ${project_details.rera_possession}`
+          : ""
+      }
+      ${
         project_details.possession_status
           ? `- Possession: ${project_details.possession_status}`
           : ""

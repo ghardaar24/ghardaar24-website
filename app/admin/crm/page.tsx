@@ -25,8 +25,6 @@ import {
   CheckCircle,
   Clock,
   FileSpreadsheet,
-  MoreVertical,
-  UserCog,
   ChevronLeft,
   ChevronRight,
   Sheet,
@@ -127,7 +125,6 @@ export default function CRMPage() {
   const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
   const [importSheetName, setImportSheetName] = useState("");
   const [importToExistingSheet, setImportToExistingSheet] = useState<string | null>(null);
-  const [showSheetMenu, setShowSheetMenu] = useState<string | null>(null);
   const [deleteSheetConfirm, setDeleteSheetConfirm] = useState<string | null>(null);
 
   // Excel Import State
@@ -656,6 +653,7 @@ export default function CRMPage() {
       const latestComment = updatedHistory.length > 0 ? updatedHistory[0].comment : null;
 
       // Prepare update data (exclude new_calling_comment from spread)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { new_calling_comment, ...restFormData } = formData;
 
       if (editingClient) {

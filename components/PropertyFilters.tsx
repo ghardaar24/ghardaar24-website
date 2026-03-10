@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { Search, SlidersHorizontal, X, IndianRupee } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 import { supabase } from "@/lib/supabase";
@@ -132,14 +132,6 @@ export default function PropertyFilters() {
   const uniqueStates = Array.from(
     new Set(locations.map((l) => l.state))
   ).sort();
-  const availableCities = useMemo(() => {
-    const currentState = searchParams.get("state");
-    if (!currentState) return [];
-    return locations
-      .filter((l) => l.state === currentState)
-      .map((l) => l.city)
-      .sort();
-  }, [locations, searchParams]);
 
   // Initialize filters from URL params, update when searchParams change
   const initialFilters = useMemo<FilterState>(

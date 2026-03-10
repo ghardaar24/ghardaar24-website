@@ -144,6 +144,7 @@ export default function CRMLogsPage() {
     if (user) {
       fetchLogs();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, selectedSheet, selectedStaff, selectedActionType]);
 
   // Filter logs by search query (client-side)

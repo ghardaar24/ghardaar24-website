@@ -52,6 +52,7 @@ export default function EditPropertyPage({
     carpet_area: "",
     // RERA & Legal Details
     rera_no: "",
+    rera_possession: "",
     possession_status: "",
     target_possession: "",
     litigation: false,
@@ -117,6 +118,7 @@ export default function EditPropertyPage({
           carpet_area: data.carpet_area || "",
           // RERA & Legal Details
           rera_no: data.rera_no || "",
+          rera_possession: data.rera_possession || "",
           possession_status: data.possession_status || "",
           target_possession: data.target_possession || "",
           litigation: data.litigation || false,
@@ -505,7 +507,7 @@ export default function EditPropertyPage({
         uploadedFloorPlanUrl = urlData.publicUrl;
       }
 
-      let allVideoUrls = [...existingVideoUrls];
+      const allVideoUrls = [...existingVideoUrls];
       if (videos.length > 0) {
         for (const video of videos) {
           const fileExt = video.name.split(".").pop();
@@ -555,6 +557,7 @@ export default function EditPropertyPage({
           carpet_area: formData.carpet_area,
           // RERA & Legal Details
           rera_no: formData.rera_no,
+          rera_possession: formData.rera_possession,
           possession_status: formData.possession_status,
           target_possession: formData.target_possession,
           litigation: formData.litigation,
@@ -934,6 +937,18 @@ export default function EditPropertyPage({
                 value={formData.rera_no}
                 onChange={handleChange}
                 placeholder="e.g., P52100047..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="rera_possession">RERA Possession</label>
+              <input
+                type="text"
+                id="rera_possession"
+                name="rera_possession"
+                value={formData.rera_possession}
+                onChange={handleChange}
+                placeholder="e.g., Dec 2025"
               />
             </div>
 

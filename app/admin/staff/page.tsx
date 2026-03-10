@@ -36,6 +36,7 @@ interface Staff {
   is_active: boolean;
   can_manage_properties: boolean;
   can_generate_invoices: boolean;
+  can_add_sheets: boolean;
   created_at: string;
 }
 
@@ -273,7 +274,7 @@ export default function StaffManagementPage() {
   };
 
   // Toggle staff permissions
-  const toggleStaffPermission = async (staffId: string, permissionStr: 'can_manage_properties' | 'can_generate_invoices', currentValue: boolean) => {
+  const toggleStaffPermission = async (staffId: string, permissionStr: 'can_manage_properties' | 'can_generate_invoices' | 'can_add_sheets', currentValue: boolean) => {
     try {
       const { error } = await supabase
         .from("crm_staff")
@@ -283,6 +284,7 @@ export default function StaffManagementPage() {
       if (error) throw error;
 
       setStaff(prev => prev.map(s => s.id === staffId ? { ...s, [permissionStr]: !currentValue } : s));
+      setSelectedStaff(prev => prev && prev.id === staffId ? { ...prev, [permissionStr]: !currentValue } : prev);
     } catch (error) {
       console.error("Error toggling staff permission:", error);
       alert(`Failed to update ${permissionStr}.`);
@@ -1233,6 +1235,49 @@ export default function StaffManagementPage() {
                           }}
                         >
                           {selectedStaff.can_generate_invoices ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                        </button>
+                      </div>
+
+                      {/* Add Sheets Permission */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.875rem 1rem',
+                          background: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <FileSpreadsheet className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                              Create CRM Sheets
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              Allows creating new sheets for personal and admin use
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => toggleStaffPermission(selectedStaff.id, 'can_add_sheets', selectedStaff.can_add_sheets)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.375rem',
+                            padding: '0.25rem 0.625rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: selectedStaff.can_add_sheets ? '#dcfce7' : '#f3f4f6',
+                            color: selectedStaff.can_add_sheets ? '#166534' : '#4b5563',
+                          }}
+                        >
+                          {selectedStaff.can_add_sheets ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
                         </button>
                       </div>
                     </div>

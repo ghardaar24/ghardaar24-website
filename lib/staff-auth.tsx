@@ -30,6 +30,7 @@ export interface StaffProfile {
   is_active: boolean;
   can_manage_properties: boolean;
   can_generate_invoices: boolean;
+  can_add_sheets: boolean;
   created_at?: string;
 }
 

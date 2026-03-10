@@ -15,8 +15,6 @@ import {
 } from "@/lib/seo";
 import { getAmenityIcon } from "@/lib/amenityIcons";
 import {
-  Bed,
-  Bath,
   Maximize,
   MapPin,
   Calendar,
@@ -388,6 +386,23 @@ export default async function PropertyDetailsPage({
                                   </span>
                                   <span className="project-overview-label">
                                     RERA No.
+                                  </span>
+                                </div>
+                              </div>
+                            </StaggerItem>
+                          )}
+                          {property.rera_possession && (
+                            <StaggerItem>
+                              <div className="project-overview-item">
+                                <div className="project-overview-icon">
+                                  <Calendar className="w-5 h-5" />
+                                </div>
+                                <div className="project-overview-content">
+                                  <span className="project-overview-value">
+                                    {property.rera_possession}
+                                  </span>
+                                  <span className="project-overview-label">
+                                    RERA Possession
                                   </span>
                                 </div>
                               </div>

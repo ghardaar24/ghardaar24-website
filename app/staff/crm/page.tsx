@@ -19,6 +19,7 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 
 // Types
@@ -110,6 +111,13 @@ export default function StaffCRMPage() {
   const [newCallingComment, setNewCallingComment] = useState<string>("");
   const [addingComment, setAddingComment] = useState(false);
 
+  // New sheet creation state
+  const [showAddSheetModal, setShowAddSheetModal] = useState(false);
+  const [newSheetName, setNewSheetName] = useState("");
+  const [newSheetDescription, setNewSheetDescription] = useState("");
+  const [creatingSheet, setCreatingSheet] = useState(false);
+  const [sheetError, setSheetError] = useState("");
+
   // Fetch accessible sheets
   useEffect(() => {
     async function fetchSheets() {
@@ -142,6 +150,7 @@ export default function StaffCRMPage() {
     if (!authLoading && staffProfile) {
       fetchSheets();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, staffProfile, accessibleSheets]);
 
   // Fetch clients for selected sheet
@@ -470,6 +479,49 @@ export default function StaffCRMPage() {
     }
   };
 
+  // Handle creating a new sheet
+  const handleCreateSheet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSheetName.trim() || !staffProfile) return;
+    
+    setCreatingSheet(true);
+    setSheetError("");
+
+    try {
+      const response = await fetch("/api/staff/create-sheet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetName: newSheetName.trim(),
+          description: newSheetDescription.trim(),
+          staffId: staffProfile.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create sheet");
+      }
+
+      // Add the new sheet to the UI and select it
+      setSheets((prev) => [...prev, result]);
+      setSelectedSheetId(result.id);
+      
+      // Close and reset modal
+      setShowAddSheetModal(false);
+      setNewSheetName("");
+      setNewSheetDescription("");
+    } catch (error) {
+      console.error("Error creating sheet:", error);
+      setSheetError(error instanceof Error ? error.message : "Failed to create sheet");
+    } finally {
+      setCreatingSheet(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -505,6 +557,15 @@ export default function StaffCRMPage() {
           <h1 className="text-2xl font-bold text-gray-900">CRM Clients</h1>
           <p className="text-gray-500">View and search client data</p>
         </div>
+        {staffProfile?.can_add_sheets && (
+          <button
+            onClick={() => setShowAddSheetModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Sheet
+          </button>
+        )}
       </div>
 
       {/* Sheet Tabs */}
@@ -1085,6 +1146,96 @@ export default function StaffCRMPage() {
                   Close
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Sheet Modal */}
+      <AnimatePresence>
+        {showAddSheetModal && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowAddSheetModal(false)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <h2 className="text-xl font-bold text-gray-900">Create New Sheet</h2>
+                <button
+                  onClick={() => setShowAddSheetModal(false)}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateSheet} className="p-6 space-y-4">
+                {sheetError && (
+                  <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <span>{sheetError}</span>
+                  </div>
+                )}
+                
+                <div>
+                  <label htmlFor="sheetName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Sheet Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="sheetName"
+                    value={newSheetName}
+                    onChange={(e) => setNewSheetName(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="e.g. Q3 Fall Leads"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="sheetDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    id="sheetDescription"
+                    value={newSheetDescription}
+                    onChange={(e) => setNewSheetDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                    placeholder="Notes about this sheet..."
+                  />
+                </div>
+
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddSheetModal(false)}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={creatingSheet || !newSheetName.trim()}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
+                  >
+                    {creatingSheet ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      "Create Sheet"
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

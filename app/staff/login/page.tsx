@@ -27,7 +27,7 @@ export default function StaffLoginPage() {
       } else {
         router.push("/staff/crm");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);

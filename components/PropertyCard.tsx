@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bed, Bath, Maximize, MapPin } from "lucide-react";
+import { Maximize, MapPin } from "lucide-react";
 import { Property } from "@/lib/supabase";
 import { formatPrice, formatPriceRange } from "@/lib/utils";
 import { motion } from "@/lib/motion";

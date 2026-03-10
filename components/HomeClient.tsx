@@ -11,8 +11,6 @@ import { formatPrice } from "@/lib/utils";
 import {
   Search,
   Building,
-  Bed,
-  Bath,
   Maximize,
   MapPin,
   ChevronRight,
@@ -23,7 +21,6 @@ import {
   Store,
   Wallet,
   Building2,
-  Calendar,
   Tag,
 } from "lucide-react";
 import {
@@ -58,13 +55,9 @@ const propertyTypes: { type: string; label: string; icon: ReactNode }[] = [
 function HomePropertyCard({
   property,
   index = 0,
-  onLoginRequired,
-  isLoggedIn,
 }: {
   property: Property;
   index?: number;
-  onLoginRequired: (redirectUrl: string) => void;
-  isLoggedIn: boolean;
 }) {
   const router = useRouter();
   const mainImage = property.images?.[0] || "/placeholder-property.jpg";
@@ -290,8 +283,6 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
                     key={property.id}
                     property={property}
                     index={index}
-                    onLoginRequired={handleLoginRequired}
-                    isLoggedIn={false}
                   />
                 ))}
               </div>
@@ -351,8 +342,6 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
                   key={property.id}
                   property={property}
                   index={index}
-                  onLoginRequired={handleLoginRequired}
-                  isLoggedIn={!!user}
                 />
               ))}
             </div>

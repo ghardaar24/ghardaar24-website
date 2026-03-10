@@ -10,14 +10,12 @@ import {
   FileText,
   Loader2,
   Plus,
-  MoreVertical,
   X,
   Eye,
   Check,
   AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
-import Image from "next/image";
 
 export default function DownloadsPage() {
   const [brochures, setBrochures] = useState<Brochure[]>([]);
@@ -79,7 +77,7 @@ export default function DownloadsPage() {
     try {
       // 1. Upload file to storage
       const fileName = `${Date.now()}-${uploadFile.name.replace(/\s+/g, "-")}`;
-      const { data: uploadData, error: uploadErr } = await supabase.storage
+      const { error: uploadErr } = await supabase.storage
         .from("company-brochures")
         .upload(fileName, uploadFile, {
           cacheControl: "3600",

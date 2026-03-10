@@ -19,7 +19,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { ArrowLeft, Loader2, Calendar } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface CRMClient {
@@ -147,18 +147,6 @@ export default function AnalyticsPage() {
     value,
     originalKey: name,
   }));
-
-  // 4. Clients by Location
-  const locationCounts = clients.reduce((acc, client) => {
-    const location = client.location_category || "Unspecified";
-    acc[location] = (acc[location] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const locationData = Object.entries(locationCounts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10); // Top 10 locations
 
   // 5. Growth Trend (Last 30 days)
   const last30Days = [...Array(30)].map((_, i) => {

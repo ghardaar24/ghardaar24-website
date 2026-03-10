@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // If we get data back, user is an admin
       // Any error (including RLS/406) means user is not an admin or can't be verified
       setIsAdmin(!!data && !error);
-    } catch (err) {
+    } catch {
       // Silently fail - regular users won't have admin access anyway
       setIsAdmin(false);
     }

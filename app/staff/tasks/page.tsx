@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
+import { useStaffAuth } from "@/lib/staff-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
   Clock,

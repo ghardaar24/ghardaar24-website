@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { Mail, AlertCircle, CheckCircle } from "lucide-react";

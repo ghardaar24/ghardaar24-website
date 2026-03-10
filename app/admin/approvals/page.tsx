@@ -46,6 +46,7 @@ export default function AdminApprovalsPage() {
 
   useEffect(() => {
     fetchProperties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   async function fetchProperties() {
@@ -160,12 +161,6 @@ export default function AdminApprovalsPage() {
       p.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.submitter?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const tabCounts = {
-    pending: properties.length,
-    approved: 0,
-    rejected: 0,
-  };
 
   if (loading) {
     return (

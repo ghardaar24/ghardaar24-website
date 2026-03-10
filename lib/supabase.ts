@@ -47,6 +47,7 @@ export interface Property {
   carpet_area?: string;
   // RERA & Legal Details
   rera_no?: string;
+  rera_possession?: string;
   possession_status?: string;
   target_possession?: string;
   litigation?: boolean;

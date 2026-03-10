@@ -6,7 +6,6 @@ import {
   Landmark,
   ShieldCheck,
   FileText,
-  HandshakeIcon,
   Phone,
   ArrowRight,
   CheckCircle,

@@ -6,7 +6,6 @@ import {
   Palette,
   Sofa,
   Lightbulb,
-  Ruler,
   Phone,
   ArrowRight,
   CheckCircle,
@@ -14,8 +13,6 @@ import {
   UtensilsCrossed,
   Bath,
   Tv,
-  Armchair,
-  Home,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
