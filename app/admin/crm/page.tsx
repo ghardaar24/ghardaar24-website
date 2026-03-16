@@ -1025,7 +1025,7 @@ export default function CRMPage() {
               } else if (lowerValue.includes("disqualified")) {
                 client[fieldName] = "disqualified";
               } else if (lowerValue.includes("cb") || lowerValue.includes("callback") || lowerValue.includes("month")) {
-                client[fieldName] = "callback_later";
+                client[fieldName] = "callback_required";
               }
             } else if (fieldName === "lead_type") {
               const lowerValue = value.toLowerCase();
