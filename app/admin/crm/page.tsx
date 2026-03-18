@@ -61,6 +61,7 @@ interface CRMClient {
   calling_comment: string | null;
   calling_comment_history: CallingCommentEntry[];
   expected_visit_date: string | null;
+  expected_visit_time: string | null;
   deal_status: "open" | "locked" | "lost";
   admin_notes: string | null;
   sheet_id: string | null;
@@ -206,6 +207,31 @@ export default function CRMPage() {
       });
 
       if (!response.ok) throw new Error("Failed to create task");
+      
+      // Also save the date/time back to the CRM client record
+      if (taskData.clientId && (taskData.due_date || taskData.due_time)) {
+        const updateData: Record<string, string | null> = {};
+        if (taskData.due_date) updateData.expected_visit_date = taskData.due_date;
+        if (taskData.due_time) updateData.expected_visit_time = taskData.due_time;
+        
+        await supabase
+          .from("crm_clients")
+          .update(updateData)
+          .eq("id", taskData.clientId);
+        
+        // Update local state
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === taskData.clientId
+              ? {
+                  ...c,
+                  ...(taskData.due_date ? { expected_visit_date: taskData.due_date } : {}),
+                  ...(taskData.due_time ? { expected_visit_time: taskData.due_time } : {}),
+                }
+              : c
+          )
+        );
+      }
       
       setShowTaskModal(false);
     } catch (err) {
@@ -1707,27 +1733,60 @@ export default function CRMPage() {
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         {editingCell?.clientId === client.id && editingCell?.field === "expected_visit_date" ? (
-                          <input
-                            type="date"
-                            value={editingValue}
-                            onChange={(e) => handleInlineUpdate(client.id, "expected_visit_date", e.target.value)}
-                            onBlur={cancelEditing}
-                            onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
-                            autoFocus
-                            className="crm-inline-input"
-                          />
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="date"
+                              value={editingValue}
+                              onChange={(e) => handleInlineUpdate(client.id, "expected_visit_date", e.target.value)}
+                              onBlur={cancelEditing}
+                              onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
+                              autoFocus
+                              className="crm-inline-input"
+                              style={{ maxWidth: '130px' }}
+                            />
+                          </div>
+                        ) : editingCell?.clientId === client.id && editingCell?.field === "expected_visit_time" ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="time"
+                              value={editingValue}
+                              onChange={(e) => handleInlineUpdate(client.id, "expected_visit_time", e.target.value)}
+                              onBlur={cancelEditing}
+                              onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
+                              autoFocus
+                              className="crm-inline-input"
+                              style={{ maxWidth: '110px' }}
+                            />
+                          </div>
                         ) : (
-                          <span
-                            className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-all"
-                            onClick={() => startEditing(client.id, "expected_visit_date", client.expected_visit_date || "")}
-                          >
-                            {client.expected_visit_date
-                              ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
-                                  day: "numeric",
-                                  month: "short",
-                                })
-                              : "-"}
-                          </span>
+                          <div className="flex flex-col gap-0.5">
+                            <span
+                              className="cursor-pointer hover:bg-gray-100 px-2 py-0.5 rounded transition-all text-sm"
+                              onClick={() => startEditing(client.id, "expected_visit_date", client.expected_visit_date || "")}
+                            >
+                              {client.expected_visit_date
+                                ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                  })
+                                : "-"}
+                            </span>
+                            {client.expected_visit_date && (
+                              <span
+                                className="cursor-pointer hover:bg-gray-100 px-2 py-0.5 rounded transition-all text-xs text-indigo-600"
+                                onClick={() => startEditing(client.id, "expected_visit_time", client.expected_visit_time || "")}
+                              >
+                                {client.expected_visit_time
+                                  ? (() => {
+                                      const [h, m] = client.expected_visit_time.split(':');
+                                      const t = new Date();
+                                      t.setHours(parseInt(h, 10), parseInt(m, 10));
+                                      return t.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
+                                    })()
+                                  : "+ Add time"}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
@@ -2690,6 +2749,16 @@ export default function CRMPage() {
                                   })
                                 : "Not Scheduled"}
                             </div>
+                            {selectedClient.expected_visit_time && (
+                              <div className="text-sm font-medium text-indigo-600 mt-0.5">
+                                {(() => {
+                                  const [h, m] = selectedClient.expected_visit_time.split(':');
+                                  const t = new Date();
+                                  t.setHours(parseInt(h, 10), parseInt(m, 10));
+                                  return `at ${t.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                                })()}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

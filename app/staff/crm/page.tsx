@@ -40,6 +40,7 @@ interface CRMClient {
   calling_comment: string | null;
   calling_comment_history: CallingCommentEntry[];
   expected_visit_date: string | null;
+  expected_visit_time: string | null;
   deal_status: "open" | "locked" | "lost";
   admin_notes: string | null;
   sheet_id: string | null;
@@ -150,6 +151,31 @@ export default function StaffCRMPage() {
       });
 
       if (!response.ok) throw new Error("Failed to create task");
+      
+      // Also save the date/time back to the CRM client record
+      if (taskData.clientId && (taskData.due_date || taskData.due_time)) {
+        const updateData: Record<string, string | null> = {};
+        if (taskData.due_date) updateData.expected_visit_date = taskData.due_date;
+        if (taskData.due_time) updateData.expected_visit_time = taskData.due_time;
+        
+        await supabaseStaff
+          .from("crm_clients")
+          .update(updateData)
+          .eq("id", taskData.clientId);
+        
+        // Update local state
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === taskData.clientId
+              ? {
+                  ...c,
+                  ...(taskData.due_date ? { expected_visit_date: taskData.due_date } : {}),
+                  ...(taskData.due_time ? { expected_visit_time: taskData.due_time } : {}),
+                }
+              : c
+          )
+        );
+      }
       
       setShowTaskModal(false);
     } catch (err) {
@@ -390,6 +416,27 @@ export default function StaffCRMPage() {
     }
   };
 
+  // Format date+time for display in the CRM table
+  const formatVisitDateTime = (date: string | null, time: string | null) => {
+    if (!date) return "-";
+    const dateStr = new Date(date).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    });
+    if (time) {
+      const [hours, minutes] = time.split(':');
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+      const timeStr = timeDate.toLocaleTimeString("en-IN", {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      return `${dateStr}, ${timeStr}`;
+    }
+    return dateStr;
+  };
+
   // Get human-readable field label
   const getFieldLabel = (field: string): string => {
     const labels: Record<string, string> = {
@@ -397,6 +444,7 @@ export default function StaffCRMPage() {
       lead_type: "Lead Type",
       location_category: "Location",
       expected_visit_date: "Expected Visit Date",
+      expected_visit_time: "Expected Visit Time",
       deal_status: "Deal Status",
     };
     return labels[field] || field;
@@ -705,6 +753,65 @@ export default function StaffCRMPage() {
         </div>
       </div>
 
+      {/* Upcoming Visits & Followups */}
+      {(() => {
+        const upcomingClients = clients
+          .filter(
+            (c) =>
+              (c.lead_stage === "visit_booked" || c.lead_stage === "follow_up_req") &&
+              c.expected_visit_date &&
+              new Date(c.expected_visit_date) >= new Date(new Date().toDateString())
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.expected_visit_date!).getTime() - new Date(b.expected_visit_date!).getTime()
+          )
+          .slice(0, 5);
+
+        if (upcomingClients.length === 0) return null;
+
+        return (
+          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-2" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2 mb-3">
+              <Calendar className="w-4 h-4 text-indigo-500" />
+              Upcoming Visits & Followups
+            </h3>
+            <div className="flex flex-col gap-2">
+              {upcomingClients.map((c) => {
+                const stageOpt = LEAD_STAGE_OPTIONS.find((o) => o.value === c.lead_stage);
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 hover:border-indigo-200 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedClient(c);
+                      setShowDetailsModal(true);
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full"
+                        style={{ backgroundColor: `${stageOpt?.color}20`, color: stageOpt?.color }}
+                      >
+                        {stageOpt?.label}
+                      </span>
+                      <span className="font-medium text-gray-900 text-sm">{c.client_name}</span>
+                      {c.customer_number && (
+                        <span className="text-xs text-gray-400">{c.customer_number}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="font-medium">{formatVisitDateTime(c.expected_visit_date, c.expected_visit_time)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Search and Filters */}
       <div className="staff-filters-card">
         <div className="staff-search-row">
@@ -935,27 +1042,60 @@ export default function StaffCRMPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600" onClick={(e) => e.stopPropagation()}>
                       {editingCell?.clientId === client.id && editingCell?.field === "expected_visit_date" ? (
-                        <input
-                          type="date"
-                          value={editingValue}
-                          onChange={(e) => handleInlineUpdate(client.id, "expected_visit_date", e.target.value)}
-                          onBlur={cancelEditing}
-                          onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
-                          autoFocus
-                          className="crm-inline-input"
-                        />
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="date"
+                            value={editingValue}
+                            onChange={(e) => handleInlineUpdate(client.id, "expected_visit_date", e.target.value)}
+                            onBlur={cancelEditing}
+                            onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
+                            autoFocus
+                            className="crm-inline-input"
+                            style={{ maxWidth: '130px' }}
+                          />
+                        </div>
+                      ) : editingCell?.clientId === client.id && editingCell?.field === "expected_visit_time" ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="time"
+                            value={editingValue}
+                            onChange={(e) => handleInlineUpdate(client.id, "expected_visit_time", e.target.value)}
+                            onBlur={cancelEditing}
+                            onKeyDown={(e) => e.key === "Escape" && cancelEditing()}
+                            autoFocus
+                            className="crm-inline-input"
+                            style={{ maxWidth: '110px' }}
+                          />
+                        </div>
                       ) : (
-                        <span
-                          className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-all"
-                          onClick={() => startEditing(client.id, "expected_visit_date", client.expected_visit_date || "")}
-                        >
-                          {client.expected_visit_date
-                            ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                              })
-                            : "-"}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className="cursor-pointer hover:bg-gray-100 px-2 py-0.5 rounded transition-all text-sm"
+                            onClick={() => startEditing(client.id, "expected_visit_date", client.expected_visit_date || "")}
+                          >
+                            {client.expected_visit_date
+                              ? new Date(client.expected_visit_date).toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                })
+                              : "-"}
+                          </span>
+                          {client.expected_visit_date && (
+                            <span
+                              className="cursor-pointer hover:bg-gray-100 px-2 py-0.5 rounded transition-all text-xs text-indigo-600"
+                              onClick={() => startEditing(client.id, "expected_visit_time", client.expected_visit_time || "")}
+                            >
+                              {client.expected_visit_time
+                                ? (() => {
+                                    const [h, m] = client.expected_visit_time.split(':');
+                                    const t = new Date();
+                                    t.setHours(parseInt(h, 10), parseInt(m, 10));
+                                    return t.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
+                                  })()
+                                : "+ Add time"}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
