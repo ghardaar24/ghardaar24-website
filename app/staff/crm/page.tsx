@@ -1556,12 +1556,16 @@ export default function StaffCRMPage() {
       {/* Task Creation Modal */}
       <AnimatePresence>
         {showTaskModal && (
-          <div className="modal-overlay">
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowTaskModal(false)}
+          >
             <motion.div
               className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-gray-100"
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
                 <div className="flex items-center gap-3">
@@ -1681,7 +1685,10 @@ export default function StaffCRMPage() {
       {/* Edit Client Modal */}
       <AnimatePresence>
         {showEditModal && editingClient && (
-          <div className="modal-overlay">
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowEditModal(false)}
+          >
             <motion.div
               className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-y-auto max-h-[90vh] border border-gray-100"
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
