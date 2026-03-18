@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Edit2,
 } from "lucide-react";
 
 // Types
@@ -102,6 +103,19 @@ export default function StaffCRMPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Edit Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingClient, setEditingClient] = useState<CRMClient | null>(null);
+  const [formData, setFormData] = useState({
+    lead_stage: "follow_up_req" as CRMClient["lead_stage"],
+    lead_type: "cold" as CRMClient["lead_type"],
+    location_category: "",
+    expected_visit_date: "",
+    expected_visit_time: "",
+    deal_status: "open" as CRMClient["deal_status"],
+    facing: "",
+  });
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -631,6 +645,74 @@ export default function StaffCRMPage() {
       setSheetError(error instanceof Error ? error.message : "Failed to create sheet");
     } finally {
       setCreatingSheet(false);
+    }
+  };
+
+  // Handle edit form submit
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+
+    try {
+      const { error } = await supabaseStaff
+        .from("crm_clients")
+        .update({
+          ...formData,
+          expected_visit_date: formData.expected_visit_date || null,
+          expected_visit_time: formData.expected_visit_time || null,
+          facing: formData.facing || null,
+        })
+        .eq("id", editingClient.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setClients((prev) =>
+        prev.map((c) =>
+          c.id === editingClient.id
+            ? {
+                ...c,
+                ...formData,
+                expected_visit_date: formData.expected_visit_date || null,
+                expected_visit_time: formData.expected_visit_time || null,
+                facing: formData.facing || null,
+                updated_at: new Date().toISOString(),
+              }
+            : c
+        )
+      );
+
+      // Log the activity
+      // A generic update log, since we don't easily track which fields changed out of many
+      await logActivity(
+        editingClient,
+        "update_field",
+        "Client Details",
+        null,
+        "Updated via Details Edit Modal"
+      );
+
+      setShowEditModal(false);
+
+      // TRIGGER TASK MODAL IF STAGE CHANGED
+      if (
+        formData.lead_stage !== editingClient.lead_stage &&
+        (formData.lead_stage === "visit_booked" || formData.lead_stage === "follow_up_req")
+      ) {
+        setTaskData({
+          clientId: editingClient.id,
+          clientName: editingClient.client_name,
+          title: `Follow up with ${editingClient.client_name}`,
+          description: `Automatically created from CRM when stage changed to ${LEAD_STAGE_OPTIONS.find((o) => o.value === formData.lead_stage)?.label}`,
+          priority: formData.lead_stage === "visit_booked" ? "high" : "medium",
+          due_date: "",
+          due_time: "",
+        });
+        setShowTaskModal(true);
+      }
+    } catch (error) {
+      console.error("Error saving client:", error);
+      alert("Failed to save changes. Please try again.");
     }
   };
 
@@ -1343,15 +1425,38 @@ export default function StaffCRMPage() {
                   )}
                 </div>
 
-                <button
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    setNewCallingComment(""); // Clear form on close
-                  }}
-                  className="w-full py-2.5 px-4 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
-                >
-                  Close
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      setNewCallingComment(""); // Clear form on close
+                    }}
+                    className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingClient(selectedClient);
+                      setFormData({
+                        lead_stage: selectedClient.lead_stage,
+                        lead_type: selectedClient.lead_type,
+                        location_category: selectedClient.location_category || "",
+                        expected_visit_date: selectedClient.expected_visit_date || "",
+                        expected_visit_time: selectedClient.expected_visit_time || "",
+                        deal_status: selectedClient.deal_status,
+                        facing: selectedClient.facing || "",
+                      });
+                      setShowDetailsModal(false);
+                      setShowEditModal(true);
+                      setNewCallingComment(""); // Clear form on close
+                    }}
+                    className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit Details
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -1564,6 +1669,177 @@ export default function StaffCRMPage() {
                       ) : (
                         "Create Task"
                       )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Client Modal */}
+      <AnimatePresence>
+        {showEditModal && editingClient && (
+          <div className="modal-overlay">
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-y-auto max-h-[90vh] border border-gray-100"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Edit2 className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Edit Client Details
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleEditSubmit} className="space-y-6">
+                  {/* Read-Only Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Client Name
+                      </label>
+                      <input
+                        type="text"
+                        disabled
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                        value={editingClient.client_name}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Customer Number
+                      </label>
+                      <input
+                        type="text"
+                        disabled
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                        value={editingClient.customer_number || ""}
+                      />
+                    </div>
+                    <div className="md:col-span-2 text-xs text-center text-gray-500 mt-[-10px]">
+                      Name and phone number cannot be edited by staff.
+                    </div>
+                  </div>
+
+                  {/* Editable Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lead Stage *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={formData.lead_stage}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setFormData({ ...formData, lead_stage: e.target.value as any })}
+                      >
+                        {LEAD_STAGE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lead Type *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={formData.lead_type}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setFormData({ ...formData, lead_type: e.target.value as any })}
+                      >
+                        {LEAD_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Location Preference</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={formData.location_category}
+                        onChange={(e) => setFormData({ ...formData, location_category: e.target.value })}
+                        placeholder="e.g. North City"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Facing Preference</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={formData.facing}
+                        onChange={(e) => setFormData({ ...formData, facing: e.target.value })}
+                        placeholder="e.g. East, West"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected Visit Date</label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={formData.expected_visit_date}
+                        onChange={(e) => setFormData({ ...formData, expected_visit_date: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected Visit Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={formData.expected_visit_time}
+                        onChange={(e) => setFormData({ ...formData, expected_visit_time: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Deal Status *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={formData.deal_status}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setFormData({ ...formData, deal_status: e.target.value as any })}
+                      >
+                        {DEAL_STATUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-gray-100 mt-6">
+                    <button
+                      type="button"
+                      className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-[2] px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium shadow-sm hover:shadow"
+                    >
+                      Save Changes
                     </button>
                   </div>
                 </form>
