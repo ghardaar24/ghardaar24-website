@@ -33,9 +33,10 @@ interface CRMClient {
   id: string;
   client_name: string;
   customer_number: string | null;
-  lead_stage: "follow_up_req" | "dnp" | "disqualified" | "callback_required" | "natc" | "visit_booked" | "call_after_1_2_months";
+  lead_stage: "follow_up_req" | "dnp" | "disqualified" | "callback_required" | "natc" | "visit_booked" | "call_after_1_2_months" | "vdnb";
   lead_type: "hot" | "warm" | "cold";
   location_category: string | null;
+  facing: string | null;
   calling_comment: string | null;
   calling_comment_history: CallingCommentEntry[];
   expected_visit_date: string | null;
@@ -67,6 +68,7 @@ const LEAD_STAGE_OPTIONS = [
   { value: "visit_booked", label: "VISIT BOOKED", color: "#15803d" }, // Green
   { value: "disqualified", label: "Disqualified", color: "#dc2626" }, // Red
   { value: "call_after_1_2_months", label: "Call after 1-2 Months", color: "#8b5cf6" }, // Violet
+  { value: "vdnb", label: "VDNB", color: "#14b8a6" }, // Teal
 ];
 
 const LEAD_TYPE_OPTIONS = [
@@ -110,6 +112,53 @@ export default function StaffCRMPage() {
   // New calling comment state
   const [newCallingComment, setNewCallingComment] = useState<string>("");
   const [addingComment, setAddingComment] = useState(false);
+
+  // Task Assignment State
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskData, setTaskData] = useState({
+    clientId: "",
+    clientName: "",
+    title: "",
+    description: "",
+    priority: "medium" as "low" | "medium" | "high",
+    due_date: "",
+    due_time: "",
+  });
+  const [taskSaving, setTaskSaving] = useState(false);
+
+  const handleCreateTaskSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskData.title.trim() || !staffProfile) {
+      alert("Title is required");
+      return;
+    }
+    setTaskSaving(true);
+    try {
+      const payload = {
+        title: taskData.title,
+        description: taskData.description,
+        assigned_to: staffProfile.id,
+        priority: taskData.priority,
+        due_date: taskData.due_date || null,
+        due_time: taskData.due_time || null,
+      };
+      
+      const response = await fetch("/api/staff/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to create task");
+      
+      setShowTaskModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error creating task.");
+    } finally {
+      setTaskSaving(false);
+    }
+  };
 
   // New sheet creation state
   const [showAddSheetModal, setShowAddSheetModal] = useState(false);
@@ -408,6 +457,21 @@ export default function StaffCRMPage() {
         )
       );
       cancelEditing();
+      
+      // TRIGGER TASK MODAL
+      if (field === "lead_stage" && (value === "visit_booked" || value === "follow_up_req")) {
+        const clientObj = clients.find(c => c.id === clientId);
+        setTaskData({
+          clientId,
+          clientName: clientObj?.client_name || "",
+          title: `Follow up with ${clientObj?.client_name || "Client"}`,
+          description: `Automatically created from CRM when stage changed to ${LEAD_STAGE_OPTIONS.find(o => o.value === value)?.label}`,
+          priority: value === "visit_booked" ? "high" : "medium",
+          due_date: "",
+          due_time: "",
+        });
+        setShowTaskModal(true);
+      }
     } catch (error) {
       console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
@@ -762,6 +826,9 @@ export default function StaffCRMPage() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Visit Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Expected Info
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Status
@@ -1238,6 +1305,131 @@ export default function StaffCRMPage() {
               </form>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Task Creation Modal */}
+      <AnimatePresence>
+        {showTaskModal && (
+          <div className="modal-overlay">
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-gray-100"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <CheckCircle className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Create Task for {taskData.clientName}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowTaskModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleCreateTaskSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Task Title *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={taskData.title}
+                      onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
+                      placeholder="e.g. Call client about property"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Due Date
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={taskData.due_date}
+                        onChange={(e) => setTaskData({ ...taskData, due_date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Due Time
+                      </label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={taskData.due_time}
+                        onChange={(e) => setTaskData({ ...taskData, due_time: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Priority
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                      value={taskData.priority}
+                      onChange={(e) => setTaskData({ ...taskData, priority: e.target.value as "low" | "medium" | "high" })}
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none min-h-[100px]"
+                      value={taskData.description}
+                      onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+                      placeholder="Task details..."
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-4 border-t border-gray-100">
+                    <button
+                      type="button"
+                      className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      onClick={() => setShowTaskModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={taskSaving}
+                      className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 font-medium flex items-center justify-center gap-2"
+                    >
+                      {taskSaving ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Create Task"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

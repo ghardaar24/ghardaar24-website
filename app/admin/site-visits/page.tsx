@@ -29,6 +29,7 @@ interface SiteVisit {
   property_title: string;
   location: string;
   visit_date: string;
+  visit_time: string | null;
   notes: string | null;
   photo_url: string;
   created_at: string;
@@ -160,12 +161,27 @@ export default function AdminSiteVisitsPage() {
 
   const hasActiveFilters = searchQuery || selectedStaff || dateFrom || dateTo;
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-IN", {
+  const formatDate = (dateStr: string, timeStr?: string | null) => {
+    const date = new Date(dateStr + "T00:00:00");
+    const dateString = date.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+
+    if (timeStr) {
+      const [hours, minutes] = timeStr.split(':');
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+      const timeString = timeDate.toLocaleTimeString("en-IN", {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return `${dateString} at ${timeString}`;
+    }
+
+    return dateString;
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -453,7 +469,7 @@ export default function AdminSiteVisitsPage() {
                   </span>
                   <span>
                     <Calendar className="w-3.5 h-3.5" />
-                    {formatDate(visit.visit_date)}
+                    {formatDate(visit.visit_date, visit.visit_time)}
                   </span>
                   <span>
                     <Clock className="w-3.5 h-3.5" />

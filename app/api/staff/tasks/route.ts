@@ -78,6 +78,57 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST - Create new task for self
+export async function POST(request: NextRequest) {
+  try {
+    const auth = await verifyStaff(request);
+    if ("error" in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const { user, supabaseAdmin } = auth;
+    const body = await request.json();
+    const { title, description, priority, due_date, due_time } = body;
+
+    if (!title) {
+      return NextResponse.json(
+        { error: "Title is required" },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("staff_tasks")
+      .insert({
+        title,
+        description: description || null,
+        assigned_to: user.id, // Implicitly assigned to themselves
+        assigned_by: null, // No admin assigned this
+        priority: priority || "medium",
+        due_date: due_date || null,
+        due_time: due_time || null,
+      })
+      .select(`
+        *,
+        assigning_admin:admins!assigned_by(id, name, email)
+      `)
+      .single();
+
+    if (error) {
+      console.error("Error creating task:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ task: data });
+  } catch (error: unknown) {
+    console.error("Error in POST /api/staff/tasks:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT - Update task status
 export async function PUT(request: NextRequest) {
   try {

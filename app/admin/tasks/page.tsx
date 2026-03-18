@@ -35,6 +35,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   status: "pending" | "in_progress" | "completed";
   due_date: string | null;
+  due_time: string | null;
   completed_at: string | null;
   created_at: string;
   assigned_staff?: { id: string; name: string; email: string };
@@ -75,6 +76,7 @@ export default function AdminTasksPage() {
     assigned_to: "",
     priority: "medium" as "low" | "medium" | "high",
     due_date: "",
+    due_time: "",
   });
 
   useEffect(() => {
@@ -150,6 +152,7 @@ export default function AdminTasksPage() {
       assigned_to: "",
       priority: "medium",
       due_date: "",
+      due_time: "",
     });
     setEditingTask(null);
     setError("");
@@ -168,6 +171,7 @@ export default function AdminTasksPage() {
       assigned_to: task.assigned_to,
       priority: task.priority,
       due_date: task.due_date ? task.due_date.split("T")[0] : "",
+      due_time: task.due_time || "",
     });
     setShowModal(true);
   };
@@ -186,6 +190,7 @@ export default function AdminTasksPage() {
       const payload = {
         ...formData,
         due_date: formData.due_date || null,
+        due_time: formData.due_time || null,
         ...(editingTask && { id: editingTask.id }),
       };
 
@@ -288,14 +293,26 @@ export default function AdminTasksPage() {
     );
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return "No due date";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
+    const dateStr = date.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+    if (timeString) {
+      const [hours, minutes] = timeString.split(':');
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+      const timeStr = timeDate.toLocaleTimeString("en-IN", {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return `${dateStr} at ${timeStr}`;
+    }
+    return dateStr;
   };
 
   const isOverdue = (task: Task) => {
@@ -506,7 +523,7 @@ export default function AdminTasksPage() {
                   </span>
                   <span>
                     <Calendar className="w-4 h-4" />
-                    {formatDate(task.due_date)}
+                    {formatDate(task.due_date, task.due_time)}
                   </span>
                   <span>
                     <Clock className="w-4 h-4" />
@@ -627,7 +644,7 @@ export default function AdminTasksPage() {
                 </div>
 
                 {/* Priority & Due Date Row */}
-                <div className="task-form-row">
+                <div className="task-form-row" style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
                   <div className="task-form-group">
                     <label className="task-form-label">
                       <Flag className="w-4 h-4" />
@@ -658,7 +675,7 @@ export default function AdminTasksPage() {
                     </div>
                   </div>
 
-                  <div className="task-form-group">
+                  <div className="task-form-group flex-1 min-w-[140px]">
                     <label className="task-form-label">
                       <Calendar className="w-4 h-4" />
                       Due Date
@@ -671,6 +688,22 @@ export default function AdminTasksPage() {
                         onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                       />
                       <Calendar className="date-icon w-4 h-4" />
+                    </div>
+                  </div>
+
+                  <div className="task-form-group flex-1 min-w-[140px]">
+                    <label className="task-form-label">
+                      <Clock className="w-4 h-4" />
+                      Due Time
+                    </label>
+                    <div className="task-date-wrapper">
+                      <input
+                        type="time"
+                        className="task-form-date"
+                        value={formData.due_time}
+                        onChange={(e) => setFormData({ ...formData, due_time: e.target.value })}
+                      />
+                      <Clock className="date-icon w-4 h-4" />
                     </div>
                   </div>
                 </div>

@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     const { user, supabaseAdmin } = auth;
     const body = await request.json();
-    const { title, description, assigned_to, priority, due_date } = body;
+    const { title, description, assigned_to, priority, due_date, due_time } = body;
 
     if (!title || !assigned_to) {
       return NextResponse.json(
@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
         assigned_by: user.id,
         priority: priority || "medium",
         due_date: due_date || null,
+        due_time: due_time || null,
       })
       .select(`
         *,
@@ -155,7 +156,7 @@ export async function PUT(request: NextRequest) {
 
     const { supabaseAdmin } = auth;
     const body = await request.json();
-    const { id, title, description, assigned_to, priority, status, due_date } = body;
+    const { id, title, description, assigned_to, priority, status, due_date, due_time } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Task ID is required" }, { status: 400 });
@@ -173,6 +174,7 @@ export async function PUT(request: NextRequest) {
       }
     }
     if (due_date !== undefined) updateData.due_date = due_date;
+    if (due_time !== undefined) updateData.due_time = due_time;
 
     const { data, error } = await supabaseAdmin
       .from("staff_tasks")

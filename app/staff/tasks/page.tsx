@@ -22,6 +22,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   status: "pending" | "in_progress" | "completed";
   due_date: string | null;
+  due_time: string | null;
   completed_at: string | null;
   created_at: string;
   assigning_admin?: { id: string; name: string; email: string };
@@ -135,14 +136,26 @@ export default function StaffTasksPage() {
     );
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return "No due date";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
+    const dateStr = date.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+    if (timeString) {
+      const [hours, minutes] = timeString.split(':');
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+      const timeStr = timeDate.toLocaleTimeString("en-IN", {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return `${dateStr} at ${timeStr}`;
+    }
+    return dateStr;
   };
 
   const isOverdue = (task: Task) => {
@@ -327,7 +340,7 @@ export default function StaffTasksPage() {
                 <div className="task-meta">
                   <span>
                     <Calendar className="w-4 h-4" />
-                    Due: {formatDate(task.due_date)}
+                    Due: {formatDate(task.due_date, task.due_time)}
                   </span>
                   {task.assigning_admin && (
                     <span>

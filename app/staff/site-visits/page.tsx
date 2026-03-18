@@ -23,6 +23,7 @@ interface SiteVisit {
   property_title: string;
   location: string;
   visit_date: string;
+  visit_time: string | null;
   notes: string | null;
   photo_url: string;
   created_at: string;
@@ -45,6 +46,7 @@ export default function StaffSiteVisitsPage() {
   const [visitDate, setVisitDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [visitTime, setVisitTime] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export default function StaffSiteVisitsPage() {
     setPropertyTitle("");
     setLocation("");
     setVisitDate(new Date().toISOString().split("T")[0]);
+    setVisitTime("");
     setNotes("");
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -135,6 +138,7 @@ export default function StaffSiteVisitsPage() {
           property_title: propertyTitle.trim(),
           location: location.trim(),
           visit_date: visitDate,
+          visit_time: visitTime || null,
           notes: notes.trim() || null,
           photo_url: publicUrl,
         });
@@ -156,12 +160,27 @@ export default function StaffSiteVisitsPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-IN", {
+  const formatDate = (dateStr: string, timeStr?: string | null) => {
+    const date = new Date(dateStr + "T00:00:00");
+    const dateString = date.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+
+    if (timeStr) {
+      const [hours, minutes] = timeStr.split(':');
+      const timeDate = new Date();
+      timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+      const timeString = timeDate.toLocaleTimeString("en-IN", {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return `${dateString} at ${timeString}`;
+    }
+
+    return dateString;
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -289,18 +308,32 @@ export default function StaffSiteVisitsPage() {
                   />
                 </div>
 
-                <div className="sv-form-group">
-                  <label>
-                    <Calendar className="w-4 h-4" />
-                    Visit Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={visitDate}
-                    onChange={(e) => setVisitDate(e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="sv-form-group">
+                    <label>
+                      <Calendar className="w-4 h-4" />
+                      Visit Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={visitDate}
+                      onChange={(e) => setVisitDate(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                      required
+                    />
+                  </div>
+
+                  <div className="sv-form-group">
+                    <label>
+                      <Clock className="w-4 h-4" />
+                      Visit Time
+                    </label>
+                    <input
+                      type="time"
+                      value={visitTime}
+                      onChange={(e) => setVisitTime(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <div className="sv-form-group sv-form-full">
@@ -475,7 +508,7 @@ export default function StaffSiteVisitsPage() {
                   </span>
                   <span>
                     <Calendar className="w-3.5 h-3.5" />
-                    {formatDate(visit.visit_date)}
+                    {formatDate(visit.visit_date, visit.visit_time)}
                   </span>
                   <span className="sv-visit-ago">
                     <Clock className="w-3.5 h-3.5" />

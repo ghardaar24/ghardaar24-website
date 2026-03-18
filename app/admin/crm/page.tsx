@@ -54,9 +54,10 @@ interface CRMClient {
   id: string;
   client_name: string;
   customer_number: string | null;
-  lead_stage: "follow_up_req" | "dnp" | "disqualified" | "callback_required" | "natc" | "visit_booked" | "call_after_1_2_months";
+  lead_stage: "follow_up_req" | "dnp" | "disqualified" | "callback_required" | "natc" | "visit_booked" | "call_after_1_2_months" | "vdnb";
   lead_type: "hot" | "warm" | "cold";
   location_category: string | null;
+  facing: string | null;
   calling_comment: string | null;
   calling_comment_history: CallingCommentEntry[];
   expected_visit_date: string | null;
@@ -83,6 +84,7 @@ const LEAD_STAGE_OPTIONS = [
   { value: "visit_booked", label: "VISIT BOOKED", color: "#15803d" }, // Green
   { value: "disqualified", label: "Disqualified", color: "#dc2626" }, // Red
   { value: "call_after_1_2_months", label: "Call after 1-2 Months", color: "#8b5cf6" }, // Violet
+  { value: "vdnb", label: "VDNB", color: "#14b8a6" }, // Teal
 ];
 
 const LEAD_TYPE_OPTIONS = [
@@ -144,8 +146,75 @@ export default function CRMPage() {
   const [editingCommentIndex, setEditingCommentIndex] = useState<number | null>(null);
   const [editingCommentValue, setEditingCommentValue] = useState<string>("");
 
+  // Task Assignment State
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskData, setTaskData] = useState({
+    clientId: "",
+    clientName: "",
+    assigned_to: "",
+    title: "",
+    description: "",
+    priority: "medium" as "low" | "medium" | "high",
+    due_date: "",
+    due_time: "",
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [staffOptions, setStaffOptions] = useState<any[]>([]);
+  const [taskSaving, setTaskSaving] = useState(false);
+
   // Client-side mounting state for Portal
   const [isMounted, setIsMounted] = useState(false);
+  
+  const fetchStaffForTasks = async () => {
+    try {
+      // In Admin CRM, we use service role or session for API
+      const response = await fetch("/api/admin/staff");
+      if (response.ok) {
+        const result = await response.json();
+        setStaffOptions(result.staff || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCreateTaskSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskData.title.trim() || !taskData.assigned_to) {
+      alert("Title and Assignee are required");
+      return;
+    }
+    setTaskSaving(true);
+    try {
+      const payload = {
+        title: taskData.title,
+        description: taskData.description,
+        assigned_to: taskData.assigned_to,
+        priority: taskData.priority,
+        due_date: taskData.due_date || null,
+        due_time: taskData.due_time || null,
+      };
+      
+      const response = await fetch("/api/admin/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // The API endpoint handles its own auth via cookies usually, 
+          // but we provide what we can
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to create task");
+      
+      setShowTaskModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error creating task.");
+    } finally {
+      setTaskSaving(false);
+    }
+  };
   
   useEffect(() => {
     setIsMounted(true);
@@ -215,7 +284,6 @@ export default function CRMPage() {
 
 
 
-  // Form state
   const [formData, setFormData] = useState({
     client_name: "",
     customer_number: "",
@@ -227,6 +295,7 @@ export default function CRMPage() {
     deal_status: "open" as CRMClient["deal_status"],
     admin_notes: "",
     sheet_id: "",
+    facing: "",
   });
 
   // Import state
@@ -489,6 +558,7 @@ export default function CRMPage() {
       deal_status: "open",
       admin_notes: "",
       sheet_id: selectedSheetId && selectedSheetId !== "all" ? selectedSheetId : (sheets.length > 0 ? sheets[0].id : ""),
+      facing: "",
     });
     setEditingClient(null);
     setEditingCommentIndex(null);
@@ -664,6 +734,7 @@ export default function CRMPage() {
             calling_comment: latestComment,
             calling_comment_history: updatedHistory,
             expected_visit_date: formData.expected_visit_date || null,
+            facing: formData.facing || null,
             sheet_id: formData.sheet_id || null,
           })
           .eq("id", editingClient.id);
@@ -678,6 +749,7 @@ export default function CRMPage() {
                   ...restFormData, 
                   calling_comment: latestComment,
                   calling_comment_history: updatedHistory,
+                  facing: formData.facing,
                   updated_at: new Date().toISOString() 
                 } 
               : c
@@ -692,6 +764,7 @@ export default function CRMPage() {
               calling_comment: latestComment,
               calling_comment_history: updatedHistory,
               expected_visit_date: formData.expected_visit_date || null,
+              facing: formData.facing || null,
               sheet_id: formData.sheet_id || (selectedSheetId && selectedSheetId !== "all" ? selectedSheetId : null),
             },
           ])
@@ -704,6 +777,23 @@ export default function CRMPage() {
 
       setShowAddModal(false);
       resetForm();
+
+      // TRIGGER TASK MODAL IF STAGE CHANGED
+      const isNewStage = !editingClient || editingClient.lead_stage !== formData.lead_stage;
+      if (isNewStage && (formData.lead_stage === "visit_booked" || formData.lead_stage === "follow_up_req")) {
+        setTaskData({
+          clientId: editingClient?.id || "",
+          clientName: formData.client_name,
+          assigned_to: "",
+          title: `Follow up with ${formData.client_name}`,
+          description: `Automatically created from CRM when stage changed to ${LEAD_STAGE_OPTIONS.find(o => o.value === formData.lead_stage)?.label}`,
+          priority: formData.lead_stage === "visit_booked" ? "high" : "medium",
+          due_date: "",
+          due_time: "",
+        });
+        fetchStaffForTasks();
+        setShowTaskModal(true);
+      }
     } catch (error) {
       console.error("Error saving client:", error);
       alert("Failed to save client. Please try again.");
@@ -802,6 +892,23 @@ export default function CRMPage() {
         )
       );
       cancelEditing();
+      
+      // TRIGGER TASK MODAL
+      if (field === "lead_stage" && (value === "visit_booked" || value === "follow_up_req")) {
+        const client = clients.find(c => c.id === clientId);
+        setTaskData({
+          clientId,
+          clientName: client?.client_name || "",
+          assigned_to: "",
+          title: `Follow up with ${client?.client_name || "Client"}`,
+          description: `Automatically created from CRM when stage changed to ${LEAD_STAGE_OPTIONS.find(o => o.value === value)?.label}`,
+          priority: value === "visit_booked" ? "high" : "medium",
+          due_date: "",
+          due_time: "",
+        });
+        fetchStaffForTasks();
+        setShowTaskModal(true);
+      }
     } catch (error) {
       console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
@@ -1535,10 +1642,10 @@ export default function CRMPage() {
                             className="crm-inline-select"
                             style={{ ...getLeadStageBadge(editingValue as CRMClient["lead_stage"]), minWidth: "120px" }}
                           >
-                            {LEAD_STAGE_OPTIONS.map((opt) => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
+                          {LEAD_STAGE_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
                         ) : (
                           <span
                             className="crm-badge cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all"
@@ -1680,6 +1787,7 @@ export default function CRMPage() {
                                 deal_status: client.deal_status,
                                 admin_notes: client.admin_notes || "",
                                 sheet_id: client.sheet_id || "",
+                                facing: client.facing || "",
                               });
                               setShowAddModal(true);
                             }}
@@ -1868,13 +1976,26 @@ export default function CRMPage() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Location Category</label>
+                    <label>Area</label>
                     <input
                       type="text"
                       value={formData.location_category}
                       onChange={(e) => setFormData((prev) => ({ ...prev, location_category: e.target.value }))}
-                      placeholder="e.g., West, East"
+                      placeholder="e.g. South Delhi"
                     />
+                  </div>
+                  <div className="form-group">
+                    <label>Facing</label>
+                    <select
+                      value={formData.facing}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, facing: e.target.value }))}
+                    >
+                      <option value="">Select Facing</option>
+                      <option value="East">East</option>
+                      <option value="West">West</option>
+                      <option value="North">North</option>
+                      <option value="South">South</option>
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Expected Visit Date</label>
@@ -2735,6 +2856,7 @@ export default function CRMPage() {
                           deal_status: selectedClient.deal_status,
                           admin_notes: selectedClient.admin_notes || "",
                           sheet_id: selectedClient.sheet_id || "",
+                          facing: selectedClient.facing || "",
                         });
                         setShowDetailsModal(false);
                         setShowAddModal(true);
@@ -2821,6 +2943,150 @@ export default function CRMPage() {
                     Yes, Delete Sheet
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Task Creation Modal */}
+      <AnimatePresence>
+        {isMounted && showTaskModal && (
+          <div className="modal-overlay">
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-gray-100"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <CheckCircle className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Assign Task for {taskData.clientName}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowTaskModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleCreateTaskSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Task Title *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      className="crm-input"
+                      value={taskData.title}
+                      onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
+                      placeholder="e.g. Call client about property"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Assign To *
+                    </label>
+                    <select
+                      required
+                      className="crm-select"
+                      value={taskData.assigned_to}
+                      onChange={(e) => setTaskData({ ...taskData, assigned_to: e.target.value })}
+                    >
+                      <option value="">Select Staff Member</option>
+                      {staffOptions.map((staff) => (
+                        <option key={staff.id} value={staff.id}>
+                          {staff.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Due Date
+                      </label>
+                      <input
+                        type="date"
+                        className="crm-input"
+                        value={taskData.due_date}
+                        onChange={(e) => setTaskData({ ...taskData, due_date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Due Time
+                      </label>
+                      <input
+                        type="time"
+                        className="crm-input"
+                        value={taskData.due_time}
+                        onChange={(e) => setTaskData({ ...taskData, due_time: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Priority
+                    </label>
+                    <select
+                      className="crm-select"
+                      value={taskData.priority}
+                      onChange={(e) => setTaskData({ ...taskData, priority: e.target.value as "low" | "medium" | "high" })}
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      className="crm-input min-h-[100px]"
+                      value={taskData.description}
+                      onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+                      placeholder="Task details..."
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-4 border-t border-gray-100">
+                    <button
+                      type="button"
+                      className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      onClick={() => setShowTaskModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={taskSaving}
+                      className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 font-medium flex items-center justify-center gap-2"
+                    >
+                      {taskSaving ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Assign Task"
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             </motion.div>
           </div>
