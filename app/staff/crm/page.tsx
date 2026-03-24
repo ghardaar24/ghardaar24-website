@@ -45,6 +45,7 @@ interface CRMClient {
   deal_status: "open" | "locked" | "lost";
   admin_notes: string | null;
   sheet_id: string | null;
+  added_by?: string | null;
   created_at: string;
 }
 
@@ -116,6 +117,71 @@ export default function StaffCRMPage() {
     deal_status: "open" as CRMClient["deal_status"],
     facing: "",
   });
+
+  // Add Lead State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addFormData, setAddFormData] = useState({
+    client_name: "",
+    customer_number: "",
+    lead_stage: "follow_up_req" as CRMClient["lead_stage"],
+    lead_type: "cold" as CRMClient["lead_type"],
+    location_category: "",
+    expected_visit_date: "",
+    expected_visit_time: "",
+    deal_status: "open" as CRMClient["deal_status"],
+    facing: "",
+    calling_comment: "",
+  });
+  const [addingLead, setAddingLead] = useState(false);
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addFormData.client_name.trim() || !staffProfile) return;
+    setAddingLead(true);
+    try {
+      const payload = {
+        client_name: addFormData.client_name,
+        customer_number: addFormData.customer_number || null,
+        lead_stage: addFormData.lead_stage,
+        lead_type: addFormData.lead_type,
+        location_category: addFormData.location_category || null,
+        deal_status: addFormData.deal_status,
+        added_by: staffProfile.id,
+        sheet_id: null,
+        expected_visit_date: addFormData.expected_visit_date || null,
+        expected_visit_time: addFormData.expected_visit_time || null,
+        facing: addFormData.facing || null,
+        calling_comment: addFormData.calling_comment || null,
+        calling_comment_history: addFormData.calling_comment
+          ? [{ comment: addFormData.calling_comment, date: new Date().toISOString(), addedBy: "staff" }]
+          : [],
+      };
+      const { data, error } = await supabaseStaff.from("crm_clients").insert([payload]).select().single();
+      if (error) throw error;
+      
+      if (selectedSheetId === "my_leads") {
+        setClients((prev) => [data, ...prev]);
+      }
+      setShowAddModal(false);
+      setAddFormData({
+        client_name: "",
+        customer_number: "",
+        lead_stage: "follow_up_req",
+        lead_type: "cold",
+        location_category: "",
+        expected_visit_date: "",
+        expected_visit_time: "",
+        deal_status: "open",
+        facing: "",
+        calling_comment: "",
+      });
+    } catch (error) {
+      console.error("Error adding lead:", error);
+      alert("Failed to add lead.");
+    } finally {
+      setAddingLead(false);
+    }
+  };
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -252,11 +318,18 @@ export default function StaffCRMPage() {
       }
 
       try {
-        const { data, error } = await supabaseStaff
+        let query = supabaseStaff
           .from("crm_clients")
           .select("*")
-          .eq("sheet_id", selectedSheetId)
           .order("created_at", { ascending: false });
+
+        if (selectedSheetId === "my_leads") {
+          query = query.is("sheet_id", null).eq("added_by", staffProfile?.id);
+        } else {
+          query = query.eq("sheet_id", selectedSheetId);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         setClients(data || []);
@@ -271,7 +344,7 @@ export default function StaffCRMPage() {
       setIsLoading(true);
       fetchClients();
     }
-  }, [selectedSheetId]);
+  }, [selectedSheetId, staffProfile]);
 
   // Real-time subscription for live updates
   useEffect(() => {
@@ -288,8 +361,11 @@ export default function StaffCRMPage() {
         },
         (payload) => {
           const newClient = payload.new as CRMClient;
-          // Only add if it belongs to the current sheet
-          if (newClient.sheet_id === selectedSheetId) {
+          // Only add if it belongs to the current sheet or my leads
+          if (
+            (selectedSheetId === "my_leads" && !newClient.sheet_id && newClient.added_by === staffProfile?.id) ||
+            (selectedSheetId !== "my_leads" && newClient.sheet_id === selectedSheetId)
+          ) {
             setClients((prev) => [newClient, ...prev]);
           }
         }
@@ -325,7 +401,7 @@ export default function StaffCRMPage() {
     return () => {
       supabaseStaff.removeChannel(channel);
     };
-  }, [selectedSheetId]);
+  }, [selectedSheetId, staffProfile?.id]);
 
   // Filter clients
   const filteredClients = clients.filter((client) => {
@@ -751,19 +827,35 @@ export default function StaffCRMPage() {
           <h1 className="text-2xl font-bold text-gray-900">CRM Clients</h1>
           <p className="text-gray-500">View and search client data</p>
         </div>
-        {staffProfile?.can_add_sheets && (
+        <div className="flex gap-2">
           <button
-            onClick={() => setShowAddSheetModal(true)}
+            onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
           >
             <Plus className="w-5 h-5" />
-            Add New Sheet
+            Add Lead
           </button>
-        )}
+          {staffProfile?.can_add_sheets && (
+            <button
+              onClick={() => setShowAddSheetModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors shadow-sm font-medium border border-indigo-200"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Sheet
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Sheet Tabs */}
       <div className="staff-tabs-container">
+        <button
+          onClick={() => setSelectedSheetId("my_leads")}
+          className={`staff-tab ${selectedSheetId === "my_leads" ? "active" : ""}`}
+        >
+          <Users className="w-4 h-4" />
+          My Uploaded Leads
+        </button>
         {sheets.map((sheet) => (
           <button
             key={sheet.id}
@@ -1847,6 +1939,190 @@ export default function StaffCRMPage() {
                       className="flex-[2] px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium shadow-sm hover:shadow"
                     >
                       Save Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Add Client Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-y-auto max-h-[90vh] border border-gray-100"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Plus className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Add New Lead
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleAddSubmit} className="space-y-6">
+                  {/* Editable Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Client Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.client_name}
+                        onChange={(e) => setAddFormData({ ...addFormData, client_name: e.target.value })}
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.customer_number}
+                        onChange={(e) => setAddFormData({ ...addFormData, customer_number: e.target.value })}
+                        placeholder="+91 ..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lead Stage *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={addFormData.lead_stage}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setAddFormData({ ...addFormData, lead_stage: e.target.value as any })}
+                      >
+                        {LEAD_STAGE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lead Type *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={addFormData.lead_type}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setAddFormData({ ...addFormData, lead_type: e.target.value as any })}
+                      >
+                        {LEAD_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Location Preference</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.location_category}
+                        onChange={(e) => setAddFormData({ ...addFormData, location_category: e.target.value })}
+                        placeholder="e.g. North City"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Facing Preference</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.facing}
+                        onChange={(e) => setAddFormData({ ...addFormData, facing: e.target.value })}
+                        placeholder="e.g. East, West"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected Visit Date</label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.expected_visit_date}
+                        onChange={(e) => setAddFormData({ ...addFormData, expected_visit_date: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected Visit Time</label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.expected_visit_time}
+                        onChange={(e) => setAddFormData({ ...addFormData, expected_visit_time: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Initial Calling Comment</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={addFormData.calling_comment}
+                        onChange={(e) => setAddFormData({ ...addFormData, calling_comment: e.target.value })}
+                        placeholder="Add a comment..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Deal Status *</label>
+                      <select
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={addFormData.deal_status}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onChange={(e) => setAddFormData({ ...addFormData, deal_status: e.target.value as any })}
+                      >
+                        {DEAL_STATUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-gray-100 mt-6">
+                    <button
+                      type="button"
+                      className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                      onClick={() => setShowAddModal(false)}
+                      disabled={addingLead}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={addingLead}
+                      className="flex-[2] px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium shadow-sm hover:shadow disabled:opacity-50"
+                    >
+                      {addingLead ? "Saving..." : "Add Lead"}
                     </button>
                   </div>
                 </form>

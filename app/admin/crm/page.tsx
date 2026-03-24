@@ -65,6 +65,8 @@ interface CRMClient {
   deal_status: "open" | "locked" | "lost";
   admin_notes: string | null;
   sheet_id: string | null;
+  added_by?: string | null;
+  crm_staff?: { name: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -448,7 +450,7 @@ export default function CRMPage() {
       try {
         let query = supabase
           .from("crm_clients")
-          .select("*")
+          .select("*, crm_staff:added_by(name)")
           .order("created_at", { ascending: false });
 
         // Filter by selected sheet if not "all"
@@ -1269,6 +1271,7 @@ export default function CRMPage() {
       "Expected Visit Date",
       "Deal Status",
       "Admin Notes",
+      "Added By",
       "Created At",
     ];
 
@@ -1287,6 +1290,7 @@ export default function CRMPage() {
             `"${c.expected_visit_date || ""}"`,
             `"${DEAL_STATUS_OPTIONS.find((o) => o.value === c.deal_status)?.label || c.deal_status}"`,
             `"${(c.admin_notes || "").replace(/"/g, '""')}"`,
+            `"${c.crm_staff?.name || "Admin"}"`,
             `"${new Date(c.created_at).toLocaleDateString()}"`,
           ].join(",")
         ),
@@ -2779,6 +2783,21 @@ export default function CRMPage() {
                           </div>
                         </div>
                         
+                        {/* Added By User */}
+                        {selectedClient.added_by && selectedClient.crm_staff && (
+                           <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                            <div className="p-2 bg-teal-100 text-teal-600 rounded-lg mt-1">
+                              <Users className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Added By</label>
+                              <div className="text-lg font-medium text-gray-900">
+                                {selectedClient.crm_staff.name}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Sheet Info if needed */}
                         {selectedClient.sheet_id && (
                            <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
