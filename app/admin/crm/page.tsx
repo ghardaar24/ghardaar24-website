@@ -105,7 +105,7 @@ const DEAL_STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 50;
 
 export default function CRMPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, session, loading } = useAdminAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
@@ -204,8 +204,7 @@ export default function CRMPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // The API endpoint handles its own auth via cookies usually, 
-          // but we provide what we can
+          "Authorization": `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify(payload),
       });
