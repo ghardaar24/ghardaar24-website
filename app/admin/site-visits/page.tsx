@@ -15,6 +15,8 @@ import {
   ChevronDown,
   Image as ImageIcon,
   Eye,
+  User,
+  Phone,
 } from "lucide-react";
 
 interface StaffMember {
@@ -33,6 +35,8 @@ interface SiteVisit {
   notes: string | null;
   photo_url: string;
   created_at: string;
+  client_name: string | null;
+  client_mobile: string | null;
   crm_staff: {
     name: string;
     email: string;
@@ -124,6 +128,8 @@ export default function AdminSiteVisitsPage() {
         visit.property_title.toLowerCase().includes(q) ||
         visit.location.toLowerCase().includes(q) ||
         visit.crm_staff?.name?.toLowerCase().includes(q) ||
+        (visit.client_name && visit.client_name.toLowerCase().includes(q)) ||
+        (visit.client_mobile && visit.client_mobile.includes(q)) ||
         (visit.notes && visit.notes.toLowerCase().includes(q));
       if (!matchesSearch) return false;
     }
@@ -462,6 +468,22 @@ export default function AdminSiteVisitsPage() {
                     {visit.crm_staff?.name || "Unknown"}
                   </span>
                 </div>
+                {(visit.client_name || visit.client_mobile) && (
+                  <div className="admin-sv-visit-client">
+                    {visit.client_name && (
+                      <span>
+                        <User className="w-3.5 h-3.5" />
+                        {visit.client_name}
+                      </span>
+                    )}
+                    {visit.client_mobile && (
+                      <span>
+                        <Phone className="w-3.5 h-3.5" />
+                        {visit.client_mobile}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="admin-sv-visit-meta">
                   <span>
                     <MapPin className="w-3.5 h-3.5" />

@@ -16,6 +16,9 @@ import {
   Building,
   Loader2,
   Image as ImageIcon,
+  User,
+  Phone,
+  History,
 } from "lucide-react";
 
 interface SiteVisit {
@@ -27,6 +30,15 @@ interface SiteVisit {
   notes: string | null;
   photo_url: string;
   created_at: string;
+  client_name: string | null;
+  client_mobile: string | null;
+}
+
+interface ClientVisitHistory {
+  property_title: string;
+  location: string;
+  visit_date: string;
+  staff_name?: string;
 }
 
 export default function StaffSiteVisitsPage() {
@@ -47,11 +59,16 @@ export default function StaffSiteVisitsPage() {
     new Date().toISOString().split("T")[0]
   );
   const [visitTime, setVisitTime] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientMobile, setClientMobile] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+  const [clientVisitHistory, setClientVisitHistory] = useState<ClientVisitHistory[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mobileDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch staff's visits
   useEffect(() => {
@@ -96,10 +113,57 @@ export default function StaffSiteVisitsPage() {
     setLocation("");
     setVisitDate(new Date().toISOString().split("T")[0]);
     setVisitTime("");
+    setClientName("");
+    setClientMobile("");
     setNotes("");
     setPhotoFile(null);
     setPhotoPreview(null);
+    setClientVisitHistory([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Lookup client visit history by mobile number
+  const lookupClientHistory = async (mobile: string) => {
+    const cleaned = mobile.replace(/\D/g, "");
+    if (cleaned.length < 10) {
+      setClientVisitHistory([]);
+      return;
+    }
+
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabaseStaff
+        .from("site_visits")
+        .select("property_title, location, visit_date, crm_staff(name)")
+        .eq("client_mobile", cleaned)
+        .order("visit_date", { ascending: false });
+
+      if (error) throw error;
+
+      setClientVisitHistory(
+        (data || []).map((v: Record<string, unknown>) => ({
+          property_title: v.property_title as string,
+          location: v.location as string,
+          visit_date: v.visit_date as string,
+          staff_name: (v.crm_staff as Record<string, string> | null)?.name,
+        }))
+      );
+    } catch (err) {
+      console.error("Error looking up client history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleMobileChange = (value: string) => {
+    // Allow only digits, max 10
+    const cleaned = value.replace(/\D/g, "").slice(0, 10);
+    setClientMobile(cleaned);
+
+    if (mobileDebounceRef.current) clearTimeout(mobileDebounceRef.current);
+    mobileDebounceRef.current = setTimeout(() => {
+      lookupClientHistory(cleaned);
+    }, 500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +203,8 @@ export default function StaffSiteVisitsPage() {
           location: location.trim(),
           visit_date: visitDate,
           visit_time: visitTime || null,
+          client_name: clientName.trim() || null,
+          client_mobile: clientMobile || null,
           notes: notes.trim() || null,
           photo_url: publicUrl,
         });
@@ -307,6 +373,86 @@ export default function StaffSiteVisitsPage() {
                     required
                   />
                 </div>
+
+                <div className="sv-form-group">
+                  <label>
+                    <User className="w-4 h-4" />
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="e.g., Rahul Sharma"
+                  />
+                </div>
+
+                <div className="sv-form-group">
+                  <label>
+                    <Phone className="w-4 h-4" />
+                    Mob No.
+                  </label>
+                  <input
+                    type="tel"
+                    value={clientMobile}
+                    onChange={(e) => handleMobileChange(e.target.value)}
+                    placeholder="e.g., 9876543210"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                  />
+                </div>
+
+                {/* Client Visit History */}
+                {loadingHistory && (
+                  <div className="sv-form-full sv-client-history-loading">
+                    <Loader2 className="w-4 h-4 sv-spin" />
+                    <span>Checking visit history...</span>
+                  </div>
+                )}
+                {clientVisitHistory.length > 0 && (
+                  <div className="sv-form-group sv-form-full">
+                    <div className="sv-client-history">
+                      <div className="sv-client-history-header">
+                        <History className="w-4 h-4" />
+                        <span>
+                          This client has visited{" "}
+                          <strong>{clientVisitHistory.length}</strong> project
+                          {clientVisitHistory.length > 1 ? "s" : ""} before
+                        </span>
+                      </div>
+                      <div className="sv-client-history-list">
+                        {clientVisitHistory.map((h, i) => (
+                          <div key={i} className="sv-client-history-item">
+                            <div className="sv-client-history-project">
+                              <Building className="w-3.5 h-3.5" />
+                              {h.property_title}
+                            </div>
+                            <div className="sv-client-history-details">
+                              <span>
+                                <MapPin className="w-3 h-3" />
+                                {h.location}
+                              </span>
+                              <span>
+                                <Calendar className="w-3 h-3" />
+                                {new Date(h.visit_date + "T00:00:00").toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                              {h.staff_name && (
+                                <span>
+                                  <User className="w-3 h-3" />
+                                  {h.staff_name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="sv-form-group">
@@ -501,6 +647,22 @@ export default function StaffSiteVisitsPage() {
               </div>
               <div className="sv-visit-info">
                 <h3>{visit.property_title}</h3>
+                {(visit.client_name || visit.client_mobile) && (
+                  <div className="sv-visit-client">
+                    {visit.client_name && (
+                      <span>
+                        <User className="w-3.5 h-3.5" />
+                        {visit.client_name}
+                      </span>
+                    )}
+                    {visit.client_mobile && (
+                      <span>
+                        <Phone className="w-3.5 h-3.5" />
+                        {visit.client_mobile}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="sv-visit-meta">
                   <span>
                     <MapPin className="w-3.5 h-3.5" />
