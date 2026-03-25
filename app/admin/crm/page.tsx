@@ -170,11 +170,13 @@ export default function CRMPage() {
   
   const fetchStaffForTasks = async () => {
     try {
-      // In Admin CRM, we use service role or session for API
-      const response = await fetch("/api/admin/staff");
-      if (response.ok) {
-        const result = await response.json();
-        setStaffOptions(result.staff || []);
+      const { data, error } = await supabase
+        .from("crm_staff")
+        .select("id, name, email")
+        .eq("is_active", true)
+        .order("name");
+      if (!error && data) {
+        setStaffOptions(data);
       }
     } catch (e) {
       console.error(e);
