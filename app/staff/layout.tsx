@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt, MapPin, Camera, Loader2, User, Mail } from "lucide-react";
+import { LayoutDashboard, LogOut, FileSpreadsheet, MessageSquare, CheckSquare, Building, Receipt, MapPin, Camera, Loader2, User } from "lucide-react";
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
   const { staffProfile, accessibleInquiryTypes, loading, signOut, refreshProfile } = useStaffAuth();

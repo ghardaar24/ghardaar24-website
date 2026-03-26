@@ -46,15 +46,13 @@ export default function StaffTasksPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [success, setSuccess] = useState("");
-
-  // Filter state
   const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     if (!authLoading && session) {
       fetchTasks();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, session, filterStatus]);
 
   const fetchTasks = async () => {
@@ -97,7 +95,7 @@ export default function StaffTasksPage() {
       }
 
       if (newStatus === "completed") {
-        setSuccess("Task marked as completed! 🎉");
+        setSuccess("Task marked as completed!");
         setTimeout(() => setSuccess(""), 3000);
       }
 
@@ -109,33 +107,6 @@ export default function StaffTasksPage() {
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const option = PRIORITY_OPTIONS.find((p) => p.value === priority);
-    return (
-      <span
-        className="task-badge"
-        style={{ background: `${option?.color}20`, color: option?.color }}
-      >
-        <Flag className="w-3 h-3" />
-        {option?.label}
-      </span>
-    );
-  };
-
-  const getStatusBadge = (status: string) => {
-    const option = STATUS_OPTIONS.find((s) => s.value === status);
-    const Icon = option?.icon || Clock;
-    return (
-      <span
-        className="task-badge"
-        style={{ background: `${option?.color}20`, color: option?.color }}
-      >
-        <Icon className="w-3 h-3" />
-        {option?.label}
-      </span>
-    );
-  };
-
   const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return "No due date";
     const date = new Date(dateString);
@@ -145,13 +116,13 @@ export default function StaffTasksPage() {
       year: "numeric",
     });
     if (timeString) {
-      const [hours, minutes] = timeString.split(':');
+      const [hours, minutes] = timeString.split(":");
       const timeDate = new Date();
       timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
       const timeStr = timeDate.toLocaleTimeString("en-IN", {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
       });
       return `${dateStr} at ${timeStr}`;
     }
@@ -184,24 +155,166 @@ export default function StaffTasksPage() {
     return null;
   }
 
-  return (
-    <div className="staff-tasks-page">
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <h1>My Tasks</h1>
-          <p>Tasks assigned to you by the admin</p>
+  const badgeStyle = (color: string): React.CSSProperties => ({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.25rem",
+    padding: "0.25rem 0.625rem",
+    borderRadius: "100px",
+    fontSize: "0.75rem",
+    fontWeight: 500,
+    background: `${color}20`,
+    color,
+  });
+
+  const renderTaskCard = (task: Task) => {
+    const priorityOpt = PRIORITY_OPTIONS.find((p) => p.value === task.priority);
+    const statusOpt = STATUS_OPTIONS.find((s) => s.value === task.status);
+    const StatusIcon = statusOpt?.icon || Clock;
+    const overdue = isOverdue(task);
+    const completed = task.status === "completed";
+
+    return (
+      <motion.div
+        key={task.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        layout
+        style={{
+          background: overdue ? "#fef2f2" : completed ? "#f0fdf4" : "#f9fafb",
+          borderRadius: "12px",
+          padding: "1.25rem",
+          border: `1px solid ${overdue ? "#fecaca" : completed ? "#bbf7d0" : "#e5e7eb"}`,
+          opacity: completed ? 0.75 : 1,
+          transition: "all 0.2s",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#111827", margin: "0 0 0.5rem" }}>{task.title}</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              <span style={badgeStyle(priorityOpt?.color || "#6b7280")}>
+                <Flag className="w-3 h-3" />
+                {priorityOpt?.label}
+              </span>
+              <span style={badgeStyle(statusOpt?.color || "#6b7280")}>
+                <StatusIcon className="w-3 h-3" />
+                {statusOpt?.label}
+              </span>
+              {overdue && (
+                <span style={badgeStyle("#ef4444")}>
+                  <AlertCircle className="w-3 h-3" />
+                  Overdue
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          {!completed && (
+            <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+              {task.status === "pending" && (
+                <button
+                  onClick={() => handleStatusChange(task.id, "in_progress")}
+                  disabled={updating === task.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.375rem",
+                    padding: "0.5rem 0.875rem",
+                    borderRadius: "8px",
+                    fontSize: "0.813rem",
+                    fontWeight: 500,
+                    border: "none",
+                    cursor: updating === task.id ? "not-allowed" : "pointer",
+                    opacity: updating === task.id ? 0.6 : 1,
+                    background: "#dbeafe",
+                    color: "#1d4ed8",
+                  }}
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  {updating === task.id ? "..." : "Start"}
+                </button>
+              )}
+              <button
+                onClick={() => handleStatusChange(task.id, "completed")}
+                disabled={updating === task.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                  padding: "0.5rem 0.875rem",
+                  borderRadius: "8px",
+                  fontSize: "0.813rem",
+                  fontWeight: 500,
+                  border: "none",
+                  cursor: updating === task.id ? "not-allowed" : "pointer",
+                  opacity: updating === task.id ? 0.6 : 1,
+                  background: "#22c55e",
+                  color: "white",
+                }}
+              >
+                <CheckCircle className="w-4 h-4" />
+                {updating === task.id ? "..." : "Complete"}
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Description */}
+        {task.description && (
+          <p style={{ color: "#6b7280", fontSize: "0.875rem", margin: "0 0 0.75rem", lineHeight: 1.5 }}>{task.description}</p>
+        )}
+
+        {/* Meta */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", fontSize: "0.813rem", color: "#9ca3af" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+            <Calendar className="w-4 h-4" />
+            Due: {formatDate(task.due_date, task.due_time)}
+          </span>
+          {task.assigning_admin && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+              <User className="w-4 h-4" />
+              Assigned by: {task.assigning_admin.name || task.assigning_admin.email}
+            </span>
+          )}
+          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+            <Clock className="w-4 h-4" />
+            Created: {formatDate(task.created_at)}
+          </span>
+        </div>
+      </motion.div>
+    );
+  };
+
+  return (
+    <div className="staff-tasks-page" style={{ padding: 0 }}>
+      {/* Header */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", margin: "0 0 0.25rem" }}>My Tasks</h1>
+        <p style={{ color: "#6b7280", fontSize: "0.875rem", margin: 0 }}>Tasks assigned to you by the admin</p>
       </div>
 
       {/* Success Message */}
       <AnimatePresence>
         {success && (
           <motion.div
-            className="staff-success-banner"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              padding: "0.875rem 1rem",
+              background: "#d1fae5",
+              color: "#065f46",
+              borderRadius: "8px",
+              marginBottom: "1.25rem",
+              fontWeight: 500,
+              fontSize: "0.875rem",
+            }}
           >
             <CheckCircle className="w-5 h-5" />
             {success}
@@ -213,7 +326,7 @@ export default function StaffTasksPage() {
       <div className="staff-stats-row">
         <div className="staff-stat-card">
           <div className="staff-stat-content">
-            <div className="staff-stat-icon" style={{ background: 'rgba(107, 114, 128, 0.1)', color: '#6b7280' }}>
+            <div className="staff-stat-icon" style={{ background: "rgba(107, 114, 128, 0.1)", color: "#6b7280" }}>
               <Clock className="w-5 h-5" />
             </div>
             <div className="staff-stat-info">
@@ -245,7 +358,7 @@ export default function StaffTasksPage() {
           </div>
         </div>
         {overdueCount > 0 && (
-          <div className="staff-stat-card" style={{ borderColor: 'var(--error)', background: 'rgba(239, 68, 68, 0.03)' }}>
+          <div className="staff-stat-card" style={{ borderColor: "var(--error)", background: "rgba(239, 68, 68, 0.03)" }}>
             <div className="staff-stat-content">
               <div className="staff-stat-icon danger">
                 <AlertCircle className="w-5 h-5" />
@@ -260,14 +373,14 @@ export default function StaffTasksPage() {
       </div>
 
       {/* Filter */}
-      <div className="staff-filters-card" style={{ marginBottom: '1rem' }}>
+      <div className="staff-filters-card" style={{ marginBottom: "1rem" }}>
         <div className="staff-form-group" style={{ marginBottom: 0 }}>
           <label className="staff-form-label">Filter by Status</label>
-          <select 
-            value={filterStatus} 
+          <select
+            value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="staff-filter-select"
-            style={{ maxWidth: '200px' }}
+            style={{ maxWidth: "200px" }}
           >
             <option value="">All Tasks</option>
             {STATUS_OPTIONS.map((s) => (
@@ -285,321 +398,11 @@ export default function StaffTasksPage() {
             <p>No tasks found. You&apos;re all caught up!</p>
           </div>
         ) : (
-          <div className="tasks-list">
-            {tasks.map((task) => (
-              <motion.div
-                key={task.id}
-                className={`task-card ${isOverdue(task) ? "overdue" : ""} ${task.status === "completed" ? "completed" : ""}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                layout
-              >
-                <div className="task-header">
-                  <div className="task-title-section">
-                    <h3>{task.title}</h3>
-                    <div className="task-badges">
-                      {getPriorityBadge(task.priority)}
-                      {getStatusBadge(task.status)}
-                      {isOverdue(task) && (
-                        <span className="task-badge overdue-badge">
-                          <AlertCircle className="w-3 h-3" />
-                          Overdue
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {task.status !== "completed" && (
-                    <div className="task-actions">
-                      {task.status === "pending" && (
-                        <button
-                          className="action-btn start"
-                          onClick={() => handleStatusChange(task.id, "in_progress")}
-                          disabled={updating === task.id}
-                        >
-                          <PlayCircle className="w-4 h-4" />
-                          {updating === task.id ? "Updating..." : "Start"}
-                        </button>
-                      )}
-                      <button
-                        className="action-btn complete"
-                        onClick={() => handleStatusChange(task.id, "completed")}
-                        disabled={updating === task.id}
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        {updating === task.id ? "Updating..." : "Complete"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                {task.description && (
-                  <p className="task-description">{task.description}</p>
-                )}
-                
-                <div className="task-meta">
-                  <span>
-                    <Calendar className="w-4 h-4" />
-                    Due: {formatDate(task.due_date, task.due_time)}
-                  </span>
-                  {task.assigning_admin && (
-                    <span>
-                      <User className="w-4 h-4" />
-                      Assigned by: {task.assigning_admin.name}
-                    </span>
-                  )}
-                  <span>
-                    <Clock className="w-4 h-4" />
-                    Created: {formatDate(task.created_at)}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {tasks.map(renderTaskCard)}
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .staff-tasks-page {
-          padding: 0;
-        }
-        .loading-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 4rem 2rem;
-          color: var(--text-secondary, #6b7280);
-        }
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e5e7eb;
-          border-top-color: #6366f1;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        .page-header {
-          margin-bottom: 1.5rem;
-        }
-        .page-header h1 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #111827;
-          margin: 0 0 0.25rem;
-        }
-        .page-header p {
-          color: #6b7280;
-          font-size: 0.875rem;
-          margin: 0;
-        }
-        .success-banner {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.875rem 1rem;
-          background: #d1fae5;
-          color: #065f46;
-          border-radius: 0.5rem;
-          margin-bottom: 1.25rem;
-          font-weight: 500;
-          font-size: 0.875rem;
-        }
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 0.75rem;
-          margin-bottom: 1.5rem;
-        }
-        .stat-card {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1rem;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-        .stat-card.overdue {
-          border: 1px solid #fecaca;
-          background: #fef2f2;
-        }
-        .stat-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-        }
-        .stat-icon.pending { background: linear-gradient(135deg, #6b7280, #4b5563); }
-        .stat-icon.in-progress { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-        .stat-icon.completed { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .stat-icon.overdue { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .stat-info {
-          display: flex;
-          flex-direction: column;
-        }
-        .stat-value {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #111827;
-        }
-        .stat-label {
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-        .filter-section {
-          margin-bottom: 1.5rem;
-        }
-        .filter-section label {
-          display: block;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #374151;
-          margin-bottom: 0.5rem;
-        }
-        .filter-section select {
-          padding: 0.5rem 1rem;
-          border-radius: 0.5rem;
-          border: 1px solid #d1d5db;
-          font-size: 0.875rem;
-          min-width: 200px;
-        }
-        .tasks-container {
-          background: white;
-          border-radius: 0.75rem;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          padding: 1rem;
-        }
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 3rem;
-          color: #9ca3af;
-          text-align: center;
-        }
-        .empty-state p {
-          margin-top: 1rem;
-          font-size: 0.938rem;
-        }
-        .tasks-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        .task-card {
-          background: #f9fafb;
-          border-radius: 0.75rem;
-          padding: 1.25rem;
-          border: 1px solid #e5e7eb;
-          transition: all 0.2s;
-        }
-        .task-card:hover {
-          border-color: #d1d5db;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .task-card.overdue {
-          border-color: #fecaca;
-          background: #fef2f2;
-        }
-        .task-card.completed {
-          opacity: 0.7;
-          background: #f0fdf4;
-          border-color: #bbf7d0;
-        }
-        .task-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 1rem;
-          margin-bottom: 0.75rem;
-          flex-wrap: wrap;
-        }
-        .task-title-section h3 {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #111827;
-          margin: 0 0 0.5rem;
-        }
-        .task-badges {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-        .task-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-          padding: 0.25rem 0.625rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-        .overdue-badge {
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #ef4444 !important;
-        }
-        .task-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-        .action-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.375rem;
-          padding: 0.5rem 0.875rem;
-          border-radius: 0.5rem;
-          font-size: 0.813rem;
-          font-weight: 500;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .action-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-        .action-btn.start {
-          background: #dbeafe;
-          color: #1d4ed8;
-        }
-        .action-btn.start:hover:not(:disabled) {
-          background: #bfdbfe;
-        }
-        .action-btn.complete {
-          background: #22c55e;
-          color: white;
-        }
-        .action-btn.complete:hover:not(:disabled) {
-          background: #16a34a;
-        }
-        .task-description {
-          color: #6b7280;
-          font-size: 0.875rem;
-          margin: 0 0 0.75rem;
-          line-height: 1.5;
-        }
-        .task-meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          font-size: 0.813rem;
-          color: #9ca3af;
-        }
-        .task-meta span {
-          display: flex;
-          align-items: center;
-          gap: 0.375rem;
-        }
-      `}</style>
     </div>
   );
 }

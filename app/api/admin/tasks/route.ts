@@ -75,14 +75,22 @@ export async function GET(request: NextRequest) {
 
       const [staffRes, adminRes] = await Promise.all([
         supabaseAdmin.from("crm_staff").select("id, name, email").in("id", assigneeIds),
-        supabaseAdmin.from("admins").select("id, name, email").in("id", assigneeIds),
+        supabaseAdmin.from("admins").select("*").in("id", assigneeIds),
       ]);
+
+      if (staffRes.error) console.error("Error resolving staff names:", staffRes.error);
+      if (adminRes.error) console.error("Error resolving admin names:", adminRes.error);
 
       const assigneeMap = new Map<string, { id: string; name: string; email: string }>();
       (staffRes.data || []).forEach((s: { id: string; name: string; email: string }) => assigneeMap.set(s.id, s));
-      (adminRes.data || []).forEach((a: { id: string; name: string; email: string }) => {
-        if (!assigneeMap.has(a.id)) assigneeMap.set(a.id, a);
+      (adminRes.data || []).forEach((a: Record<string, unknown>) => {
+        const id = (a.id || a.user_id || "") as string;
+        const name = (a.name || a.full_name || a.email || "") as string;
+        const email = (a.email || "") as string;
+        if (id && !assigneeMap.has(id)) assigneeMap.set(id, { id, name, email });
       });
+
+      console.log("Task assignee resolution - assigneeIds:", assigneeIds, "resolved:", [...assigneeMap.keys()]);
 
       for (const task of data) {
         (task as Record<string, unknown>).assigned_staff = assigneeMap.get(task.assigned_to) || null;

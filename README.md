@@ -43,6 +43,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Downloads & Resources** - Dedicated page for users to download property brochures and guides
 - **User Authentication** - Email/password auth with phone stored in profile; users can sign in with email or phone
 - **Password Recovery** - Forgot password and reset password functionality
+- **Profile Pictures** - Admins and staff can upload and manage their own profile pictures
 - **Google Sheets Logging** - Server-side logging of signups and property submissions (optional)
 - **Social Media Links** - Connect via Instagram, Facebook, and YouTube
 
@@ -121,7 +122,8 @@ ghardaar24-web/
 │   │   │   ├── staff/             # Admin staff management
 │   │   │   └── tasks/             # Admin task management
 │   │   └── staff/
-│   │       └── tasks/             # Staff CRM task management
+│   │       ├── tasks/             # Staff CRM task management
+│   │       └── create-sheet/      # Staff: Create new CRM sheet
 │   ├── properties/
 │   │   ├── page.tsx              # Property listings
 │   │   ├── submit/page.tsx       # User property submission

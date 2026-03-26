@@ -18,6 +18,8 @@ import {
   Flag,
   Loader2,
   PlayCircle,
+  Shield,
+  Users,
 } from "lucide-react";
 
 interface Staff {
@@ -55,9 +57,10 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AdminTasksPage() {
-  const { user, session, loading: authLoading } = useAdminAuth();
+  const { user, session, adminProfile, loading: authLoading } = useAdminAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [admins, setAdmins] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -88,24 +91,31 @@ export default function AdminTasksPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch staff members via API (uses service role key)
+      // Fetch staff and admins via API (uses service role key, bypasses RLS)
       const staffResponse = await fetch("/api/admin/staff", {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
       });
-      
-      if (!staffResponse.ok) {
-        console.error("Failed to fetch staff");
-        // Don't block task fetching, but maybe set empty staff
-      } else {
+
+      if (staffResponse.ok) {
         const staffResult = await staffResponse.json();
-        if (staffResult.staff) {
-          setStaff(staffResult.staff);
+        if (staffResult.staff) setStaff(staffResult.staff);
+
+        // Use admins from API if available
+        if (staffResult.admins && staffResult.admins.length > 0) {
+          setAdmins(staffResult.admins);
+        } else {
+          // Fallback: use current admin profile from auth context
+          if (adminProfile) {
+            setAdmins([{ id: adminProfile.id, name: adminProfile.name || adminProfile.email, email: adminProfile.email }]);
+          }
         }
+      } else if (adminProfile) {
+        // API failed, at least add current admin
+        setAdmins([{ id: adminProfile.id, name: adminProfile.name || adminProfile.email, email: adminProfile.email }]);
       }
 
-      // Fetch tasks via API
       await fetchTasks();
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -113,8 +123,6 @@ export default function AdminTasksPage() {
       setLoading(false);
     }
   };
-
-
 
   const fetchTasks = async () => {
     try {
@@ -137,12 +145,11 @@ export default function AdminTasksPage() {
     }
   };
 
-  // Re-fetch when filters change
   useEffect(() => {
     if (session) {
       fetchTasks();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStaff, filterStatus, session]);
 
   const resetForm = () => {
@@ -179,7 +186,7 @@ export default function AdminTasksPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.assigned_to) {
-      setError("Title and staff member are required");
+      setError("Title and assignee are required");
       return;
     }
 
@@ -266,33 +273,6 @@ export default function AdminTasksPage() {
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const option = PRIORITY_OPTIONS.find((p) => p.value === priority);
-    return (
-      <span
-        className="task-badge"
-        style={{ background: `${option?.color}20`, color: option?.color }}
-      >
-        <Flag className="w-3 h-3" />
-        {option?.label}
-      </span>
-    );
-  };
-
-  const getStatusBadge = (status: string) => {
-    const option = STATUS_OPTIONS.find((s) => s.value === status);
-    const Icon = option?.icon || Clock;
-    return (
-      <span
-        className="task-badge"
-        style={{ background: `${option?.color}20`, color: option?.color }}
-      >
-        <Icon className="w-3 h-3" />
-        {option?.label}
-      </span>
-    );
-  };
-
   const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return "No due date";
     const date = new Date(dateString);
@@ -302,13 +282,13 @@ export default function AdminTasksPage() {
       year: "numeric",
     });
     if (timeString) {
-      const [hours, minutes] = timeString.split(':');
+      const [hours, minutes] = timeString.split(":");
       const timeDate = new Date();
       timeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10));
       const timeStr = timeDate.toLocaleTimeString("en-IN", {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
       });
       return `${dateStr} at ${timeStr}`;
     }
@@ -319,6 +299,21 @@ export default function AdminTasksPage() {
     if (!task.due_date || task.status === "completed") return false;
     return new Date(task.due_date) < new Date();
   };
+
+  // Build a local name lookup from admins + staff for fallback
+  const nameMap = new Map<string, string>();
+  admins.forEach((a) => nameMap.set(a.id, a.name || a.email));
+  staff.forEach((s) => nameMap.set(s.id, s.name || s.email));
+
+  const getAssigneeName = (task: Task): string => {
+    if (task.assigned_staff?.name) return task.assigned_staff.name;
+    return nameMap.get(task.assigned_to) || "Unassigned";
+  };
+
+  // Separate tasks
+  const adminIds = new Set(admins.map((a) => a.id));
+  const adminTasks = tasks.filter((t) => adminIds.has(t.assigned_to));
+  const staffTasks = tasks.filter((t) => !adminIds.has(t.assigned_to));
 
   // Stats
   const pendingCount = tasks.filter((t) => t.status === "pending").length;
@@ -345,6 +340,98 @@ export default function AdminTasksPage() {
     return null;
   }
 
+  const renderTaskCard = (task: Task) => {
+    const priorityOpt = PRIORITY_OPTIONS.find((p) => p.value === task.priority);
+    const statusOpt = STATUS_OPTIONS.find((s) => s.value === task.status);
+    const StatusIcon = statusOpt?.icon || Clock;
+    const overdue = isOverdue(task);
+
+    return (
+      <motion.div
+        key={task.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        layout
+        style={{
+          background: overdue ? "rgba(239, 68, 68, 0.03)" : "var(--surface-soft, #fafafa)",
+          borderRadius: "12px",
+          padding: "1.25rem",
+          border: overdue ? "1px solid var(--error, #ef4444)" : "1px solid var(--border, #e5e7eb)",
+          transition: "all 0.2s",
+        }}
+      >
+        {/* Header: title + badges on left, actions on right */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "0.75rem" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--foreground, #1f2937)", margin: "0 0 0.5rem" }}>{task.title}</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.625rem", borderRadius: "100px", fontSize: "0.75rem", fontWeight: 500, background: `${priorityOpt?.color}20`, color: priorityOpt?.color }}>
+                <Flag className="w-3 h-3" />
+                {priorityOpt?.label}
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.625rem", borderRadius: "100px", fontSize: "0.75rem", fontWeight: 500, background: `${statusOpt?.color}20`, color: statusOpt?.color }}>
+                <StatusIcon className="w-3 h-3" />
+                {statusOpt?.label}
+              </span>
+              {overdue && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.625rem", borderRadius: "100px", fontSize: "0.75rem", fontWeight: 500, background: "rgba(239, 68, 68, 0.15)", color: "#ef4444" }}>
+                  <AlertCircle className="w-3 h-3" />
+                  Overdue
+                </span>
+              )}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+            <select
+              value={task.status}
+              onChange={(e) => handleStatusChange(task.id, e.target.value)}
+              style={{ padding: "0.375rem 0.75rem", fontSize: "0.813rem", borderRadius: "8px", minWidth: "120px", border: "2px solid #e5e7eb", background: "#fafafa", color: "#1f2937", cursor: "pointer" }}
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => openEditModal(task)}
+              title="Edit"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, #9ca3af)", borderRadius: "8px", cursor: "pointer" }}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleDelete(task.id)}
+              title="Delete"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, #9ca3af)", borderRadius: "8px", cursor: "pointer" }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Description */}
+        {task.description && (
+          <p style={{ color: "var(--text-secondary, #6b7280)", fontSize: "0.875rem", margin: "0 0 0.75rem", lineHeight: 1.5 }}>{task.description}</p>
+        )}
+
+        {/* Meta */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", fontSize: "0.813rem", color: "var(--text-muted, #9ca3af)" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+            <User className="w-4 h-4" />
+            {getAssigneeName(task)}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+            <Calendar className="w-4 h-4" />
+            {formatDate(task.due_date, task.due_time)}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+            <Clock className="w-4 h-4" />
+            Created {formatDate(task.created_at)}
+          </span>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="admin-page">
       {/* Header */}
@@ -354,8 +441,8 @@ export default function AdminTasksPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Link>
-          <h1>Staff Tasks</h1>
-          <p>Assign and manage tasks for your staff members</p>
+          <h1>Task Management</h1>
+          <p>Assign and manage tasks for admins and staff members</p>
         </div>
         <motion.button
           className="btn-core btn-primary"
@@ -372,10 +459,10 @@ export default function AdminTasksPage() {
       <AnimatePresence>
         {success && (
           <motion.div
-            className="admin-alert success"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1rem", borderRadius: "8px", marginBottom: "1.25rem", fontSize: "0.875rem", fontWeight: 500, background: "#d1fae5", color: "#065f46" }}
           >
             <CheckCircle className="w-5 h-5" />
             {success}
@@ -383,10 +470,10 @@ export default function AdminTasksPage() {
         )}
         {error && !showModal && (
           <motion.div
-            className="admin-alert error"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1rem", borderRadius: "8px", marginBottom: "1.25rem", fontSize: "0.875rem", fontWeight: 500, background: "#fee2e2", color: "#991b1b" }}
           >
             <AlertCircle className="w-5 h-5" />
             {error}
@@ -428,24 +515,37 @@ export default function AdminTasksPage() {
 
       {/* Filters */}
       <div className="admin-section-card">
-        <div className="filter-row" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 200px" }}>
-            <label>Filter by Staff</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Filter by Assignee</label>
             <select
               value={filterStaff}
               onChange={(e) => setFilterStaff(e.target.value)}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
             >
-              <option value="">All Staff</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
+              <option value="">All Assignees</option>
+              {admins.length > 0 && (
+                <optgroup label="Admins">
+                  {admins.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </optgroup>
+              )}
+              {staff.length > 0 && (
+                <optgroup label="Staff">
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
           <div style={{ flex: "1 1 200px" }}>
-            <label>Filter by Status</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Filter by Status</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
             >
               <option value="">All Statuses</option>
               {STATUS_OPTIONS.map((s) => (
@@ -457,286 +557,442 @@ export default function AdminTasksPage() {
       </div>
 
       {/* Tasks List */}
-      <div className="admin-section-card">
-        {tasks.length === 0 ? (
-          <div className="empty-state" style={{ padding: "3rem", textAlign: "center" }}>
-            <Clock className="w-12 h-12" style={{ color: "var(--text-muted)", marginBottom: "1rem" }} />
-            <p style={{ color: "var(--text-secondary)" }}>No tasks found. Create one to get started!</p>
+      {tasks.length === 0 ? (
+        <div className="admin-section-card">
+          <div style={{ padding: "3rem", textAlign: "center" }}>
+            <Clock className="w-12 h-12" style={{ color: "var(--text-muted)", marginBottom: "1rem", margin: "0 auto 1rem" }} />
+            <p style={{ color: "var(--text-secondary)", margin: 0 }}>No tasks found. Create one to get started!</p>
           </div>
-        ) : (
-          <div className="tasks-list">
-            {tasks.map((task) => (
-              <motion.div
-                key={task.id}
-                className={`task-card ${isOverdue(task) ? "overdue" : ""}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                layout
-              >
-                <div className="task-card-header">
-                  <div className="task-card-title">
-                    <h3>{task.title}</h3>
-                    <div className="task-badges">
-                      {getPriorityBadge(task.priority)}
-                      {getStatusBadge(task.status)}
-                      {isOverdue(task) && (
-                        <span className="task-badge overdue-badge">
-                          <AlertCircle className="w-3 h-3" />
-                          Overdue
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="task-card-actions">
-                    <select
-                      value={task.status}
-                      onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                      className="status-select"
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s.value} value={s.value}>{s.label}</option>
-                      ))}
-                    </select>
-                    <button
-                      className="icon-btn"
-                      onClick={() => openEditModal(task)}
-                      title="Edit"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="icon-btn danger"
-                      onClick={() => handleDelete(task.id)}
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+        </div>
+      ) : (
+        <>
+          {/* Admin Tasks Section */}
+          {adminTasks.length > 0 && (
+            <div className="admin-section-card">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid #f3f4f6" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+                  <Shield className="w-4 h-4" />
                 </div>
-                {task.description && (
-                  <p className="task-description">{task.description}</p>
-                )}
-                <div className="task-card-meta">
-                  <span>
-                    <User className="w-4 h-4" />
-                    {task.assigned_staff?.name || "Unknown"}
-                  </span>
-                  <span>
-                    <Calendar className="w-4 h-4" />
-                    {formatDate(task.due_date, task.due_time)}
-                  </span>
-                  <span>
-                    <Clock className="w-4 h-4" />
-                    Created {formatDate(task.created_at)}
-                  </span>
+                <div>
+                  <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--foreground)", margin: 0 }}>Admin Tasks</h2>
+                  <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", margin: 0 }}>{adminTasks.length} task{adminTasks.length !== 1 ? "s" : ""}</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {adminTasks.map(renderTaskCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Staff Tasks Section */}
+          {staffTasks.length > 0 && (
+            <div className="admin-section-card">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid #f3f4f6" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--foreground)", margin: 0 }}>Staff Tasks</h2>
+                  <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", margin: 0 }}>{staffTasks.length} task{staffTasks.length !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {staffTasks.map(renderTaskCard)}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Add/Edit Modal */}
       <AnimatePresence>
         {showModal && (
           <motion.div
-            className="task-modal-overlay"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              padding: "1rem",
+            }}
           >
             <motion.div
-              className="task-modal"
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#ffffff",
+                borderRadius: "20px",
+                width: "100%",
+                maxWidth: "520px",
+                maxHeight: "90vh",
+                overflow: "hidden",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                display: "flex",
+                flexDirection: "column",
+              }}
             >
-              {/* Modal Header with Gradient */}
-              <div className="task-modal-header">
-                <div className="task-modal-header-content">
-                  <div className="task-modal-icon">
+              {/* Modal Header */}
+              <div
+                style={{
+                  background: "linear-gradient(135deg, var(--primary, #f36a2a) 0%, var(--primary-dark, #d4551a) 100%)",
+                  padding: "1.5rem",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: "1rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+                  <div
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      background: "rgba(255, 255, 255, 0.2)",
+                      borderRadius: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      flexShrink: 0,
+                    }}
+                  >
                     {editingTask ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
-                  <div className="task-modal-title-area">
-                    <h2>{editingTask ? "Edit Task" : "Assign New Task"}</h2>
-                    <p>{editingTask ? "Update the task details below" : "Fill in the details to create a new task"}</p>
+                  <div>
+                    <h2 style={{ fontSize: "1.375rem", fontWeight: 700, color: "white", margin: "0 0 0.25rem", letterSpacing: "-0.01em" }}>
+                      {editingTask ? "Edit Task" : "Assign New Task"}
+                    </h2>
+                    <p style={{ fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
+                      {editingTask ? "Update the task details below" : "Fill in the details to create a new task"}
+                    </p>
                   </div>
                 </div>
-                <button className="task-modal-close" onClick={() => setShowModal(false)}>
+                <button
+                  onClick={() => setShowModal(false)}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    border: "none",
+                    background: "rgba(255, 255, 255, 0.2)",
+                    color: "white",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="task-modal-form">
+              {/* Modal Form */}
+              <form
+                onSubmit={handleSubmit}
+                style={{
+                  padding: "1.75rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1.25rem",
+                  overflowY: "auto",
+                  flex: 1,
+                }}
+              >
                 {error && (
-                  <motion.div 
-                    className="task-form-error"
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      padding: "1rem",
+                      background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                      color: "#dc2626",
+                      borderRadius: "12px",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      border: "1px solid #fca5a5",
+                    }}
                   >
                     <AlertCircle className="w-4 h-4" />
                     {error}
                   </motion.div>
                 )}
 
-                {/* Title Field */}
-                <div className="task-form-group">
-                  <label className="task-form-label">
-                    <Flag className="w-4 h-4" />
+                {/* Title */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <Flag className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Task Title
-                    <span className="required-star">*</span>
+                    <span style={{ color: "#ef4444", fontWeight: 700 }}>*</span>
                   </label>
-                  <div className="task-input-wrapper">
-                    <input
-                      type="text"
-                      className="task-form-input"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="What needs to be done?"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="What needs to be done?"
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      border: "2px solid #e5e7eb",
+                      borderRadius: "12px",
+                      background: "#fafafa",
+                      color: "#1f2937",
+                      fontSize: "0.9375rem",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
                 </div>
 
-                {/* Description Field */}
-                <div className="task-form-group">
-                  <label className="task-form-label">
-                    <Edit2 className="w-4 h-4" />
+                {/* Description */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <Edit2 className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Description
-                    <span className="optional-tag">Optional</span>
+                    <span style={{ fontSize: "0.6875rem", fontWeight: 500, color: "#9ca3af", background: "#f3f4f6", padding: "0.125rem 0.5rem", borderRadius: "100px", textTransform: "lowercase", letterSpacing: 0, marginLeft: "auto" }}>Optional</span>
                   </label>
                   <textarea
-                    className="task-form-textarea"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Add detailed instructions or notes..."
                     rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      border: "2px solid #e5e7eb",
+                      borderRadius: "12px",
+                      background: "#fafafa",
+                      color: "#1f2937",
+                      fontSize: "0.9375rem",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      resize: "vertical",
+                      minHeight: "80px",
+                      boxSizing: "border-box",
+                    }}
                   />
                 </div>
 
-                {/* Assign To Field */}
-                <div className="task-form-group">
-                  <label className="task-form-label">
-                    <User className="w-4 h-4" />
+                {/* Assign To */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <User className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Assign To
-                    <span className="required-star">*</span>
+                    <span style={{ color: "#ef4444", fontWeight: 700 }}>*</span>
                   </label>
-                  <div className="task-select-wrapper">
-                    <select
-                      className="task-form-select"
-                      value={formData.assigned_to}
-                      onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                      required
-                    >
-                      <option value="">Choose a staff member...</option>
-                      {staff.length === 0 && (
-                        <option value="" disabled>No active staff members found</option>
-                      )}
-                      {staff.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name} • {s.email}</option>
-                      ))}
-                    </select>
-                    <User className="select-icon w-4 h-4" />
+                  <select
+                    value={formData.assigned_to}
+                    onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      border: "2px solid #e5e7eb",
+                      borderRadius: "12px",
+                      background: "#fafafa",
+                      color: "#1f2937",
+                      fontSize: "0.9375rem",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="">Choose a person...</option>
+                    {admins.length > 0 && (
+                      <optgroup label="Admins">
+                        {admins.map((a) => (
+                          <option key={a.id} value={a.id}>{a.name} &bull; {a.email}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {staff.length > 0 ? (
+                      <optgroup label="Staff">
+                        {staff.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name} &bull; {s.email}</option>
+                        ))}
+                      </optgroup>
+                    ) : (
+                      <option value="" disabled>No active staff members found</option>
+                    )}
+                  </select>
+                </div>
+
+                {/* Priority */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <Flag className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
+                    Priority Level
+                  </label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {PRIORITY_OPTIONS.map((p) => (
+                      <label
+                        key={p.value}
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "0.5rem",
+                          padding: "0.75rem 0.5rem",
+                          border: `2px solid ${formData.priority === p.value ? p.color : "#e5e7eb"}`,
+                          borderRadius: "10px",
+                          background: formData.priority === p.value ? `${p.color}20` : `${p.color}08`,
+                          color: formData.priority === p.value ? p.color : "#6b7280",
+                          fontSize: "0.8125rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="priority"
+                          value={p.value}
+                          checked={formData.priority === p.value}
+                          onChange={(e) => setFormData({ ...formData, priority: e.target.value as "low" | "medium" | "high" })}
+                          style={{ display: "none" }}
+                        />
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: p.color }} />
+                        {p.label}
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                {/* Priority & Due Date Row */}
-                <div className="task-form-row" style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-                  <div className="task-form-group">
-                    <label className="task-form-label">
-                      <Flag className="w-4 h-4" />
-                      Priority Level
-                    </label>
-                    <div className="priority-options">
-                      {PRIORITY_OPTIONS.map((p) => (
-                        <label
-                          key={p.value}
-                          className={`priority-option ${formData.priority === p.value ? "selected" : ""}`}
-                          style={{ 
-                            "--priority-color": p.color,
-                            "--priority-bg": `${p.color}15`,
-                            "--priority-bg-selected": `${p.color}25`
-                          } as React.CSSProperties}
-                        >
-                          <input
-                            type="radio"
-                            name="priority"
-                            value={p.value}
-                            checked={formData.priority === p.value}
-                            onChange={(e) => setFormData({ ...formData, priority: e.target.value as "low" | "medium" | "high" })}
-                          />
-                          <span className="priority-dot" />
-                          {p.label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="task-form-group flex-1 min-w-[140px]">
-                    <label className="task-form-label">
-                      <Calendar className="w-4 h-4" />
+                {/* Due Date & Time */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 140px" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                      <Calendar className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                       Due Date
                     </label>
-                    <div className="task-date-wrapper">
-                      <input
-                        type="date"
-                        className="task-form-date"
-                        value={formData.due_date}
-                        onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                      />
-                      <Calendar className="date-icon w-4 h-4" />
-                    </div>
+                    <input
+                      type="date"
+                      value={formData.due_date}
+                      onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.875rem 1rem",
+                        border: "2px solid #e5e7eb",
+                        borderRadius: "12px",
+                        background: "#fafafa",
+                        color: "#1f2937",
+                        fontSize: "0.9375rem",
+                        fontFamily: "inherit",
+                        outline: "none",
+                        cursor: "pointer",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
-
-                  <div className="task-form-group flex-1 min-w-[140px]">
-                    <label className="task-form-label">
-                      <Clock className="w-4 h-4" />
+                  <div style={{ flex: "1 1 140px" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                      <Clock className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                       Due Time
                     </label>
-                    <div className="task-date-wrapper">
-                      <input
-                        type="time"
-                        className="task-form-date"
-                        value={formData.due_time}
-                        onChange={(e) => setFormData({ ...formData, due_time: e.target.value })}
-                      />
-                      <Clock className="date-icon w-4 h-4" />
-                    </div>
+                    <input
+                      type="time"
+                      value={formData.due_time}
+                      onChange={(e) => setFormData({ ...formData, due_time: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.875rem 1rem",
+                        border: "2px solid #e5e7eb",
+                        borderRadius: "12px",
+                        background: "#fafafa",
+                        color: "#1f2937",
+                        fontSize: "0.9375rem",
+                        fontFamily: "inherit",
+                        outline: "none",
+                        cursor: "pointer",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
                 </div>
-
-                {/* Modal Actions */}
-                <div className="task-modal-actions">
-                  <button
-                    type="button"
-                    className="task-btn-cancel"
-                    onClick={() => setShowModal(false)}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="task-btn-submit"
-                    disabled={saving}
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        {editingTask ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                        {editingTask ? "Update Task" : "Create Task"}
-                      </>
-                    )}
-                  </button>
-                </div>
               </form>
+
+              {/* Modal Actions */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "0.75rem",
+                  padding: "1.25rem 1.75rem",
+                  borderTop: "1px solid #f3f4f6",
+                  background: "#fafafa",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  disabled={saving}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "10px",
+                    background: "#ffffff",
+                    color: "#6b7280",
+                    fontSize: "0.9375rem",
+                    fontWeight: 600,
+                    cursor: saving ? "not-allowed" : "pointer",
+                    opacity: saving ? 0.5 : 1,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.75rem 1.75rem",
+                    border: "none",
+                    borderRadius: "10px",
+                    background: "linear-gradient(135deg, var(--primary, #f36a2a) 0%, var(--primary-dark, #d4551a) 100%)",
+                    color: "white",
+                    fontSize: "0.9375rem",
+                    fontWeight: 600,
+                    cursor: saving ? "not-allowed" : "pointer",
+                    opacity: saving ? 0.7 : 1,
+                    boxShadow: "0 4px 14px 0 rgba(243, 106, 42, 0.4)",
+                  }}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4" style={{ animation: "spin 1s linear infinite" }} />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      {editingTask ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                      {editingTask ? "Update Task" : "Create Task"}
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -756,483 +1012,8 @@ export default function AdminTasksPage() {
         .back-link:hover {
           color: var(--primary);
         }
-        .tasks-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        .task-card {
-          background: var(--surface-soft);
-          border-radius: var(--radius-lg);
-          padding: 1.25rem;
-          border: 1px solid var(--border);
-          transition: all 0.2s;
-        }
-        .task-card:hover {
-          border-color: var(--border-hover);
-          box-shadow: var(--shadow-sm);
-        }
-        .task-card.overdue {
-          border-color: var(--error);
-          background: rgba(239, 68, 68, 0.03);
-        }
-        .task-card-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 1rem;
-          margin-bottom: 0.75rem;
-        }
-        .task-card-title h3 {
-          font-size: 1rem;
-          font-weight: 600;
-          color: var(--foreground);
-          margin: 0 0 0.5rem;
-        }
-        .task-badges {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-        .task-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-          padding: 0.25rem 0.625rem;
-          border-radius: var(--radius-full);
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-        .overdue-badge {
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #ef4444 !important;
-        }
-        .task-card-actions {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .status-select {
-          padding: 0.375rem 0.75rem;
-          font-size: 0.813rem;
-          border-radius: var(--radius);
-          min-width: 120px;
-        }
-        .icon-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          border: none;
-          background: transparent;
-          color: var(--text-muted);
-          border-radius: var(--radius);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .icon-btn:hover {
-          background: var(--surface-hover);
-          color: var(--primary);
-        }
-        .icon-btn.danger:hover {
-          background: rgba(239, 68, 68, 0.1);
-          color: var(--error);
-        }
-        .task-description {
-          color: var(--text-secondary);
-          font-size: 0.875rem;
-          margin: 0 0 0.75rem;
-          line-height: 1.5;
-        }
-        .task-card-meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          font-size: 0.813rem;
-          color: var(--text-muted);
-        }
-        .task-card-meta span {
-          display: flex;
-          align-items: center;
-          gap: 0.375rem;
-        }
-        .admin-alert {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.875rem 1rem;
-          border-radius: var(--radius);
-          margin-bottom: 1.25rem;
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-        .admin-alert.success {
-          background: var(--success-light);
-          color: #065f46;
-        }
-        .admin-alert.error {
-          background: var(--error-light);
-          color: #991b1b;
-        }
-
-        /* ========== PREMIUM MODAL STYLES ========== */
-        .task-modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 1rem;
-        }
-
-        .task-modal {
-          background: #ffffff;
-          border-radius: 20px;
-          width: 100%;
-          max-width: 520px;
-          max-height: 90vh;
-          overflow: hidden;
-          box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(0, 0, 0, 0.05);
-          display: flex;
-          flex-direction: column;
-        }
-
-        /* Modal Header with Gradient */
-        .task-modal-header {
-          background: linear-gradient(135deg, var(--primary, #f36a2a) 0%, var(--primary-dark, #d4551a) 100%);
-          padding: 1.5rem;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 1rem;
-        }
-
-        .task-modal-header-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 1rem;
-        }
-
-        .task-modal-icon {
-          width: 48px;
-          height: 48px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          flex-shrink: 0;
-        }
-
-        .task-modal-title-area h2 {
-          font-size: 1.375rem;
-          font-weight: 700;
-          color: white;
-          margin: 0 0 0.25rem;
-          letter-spacing: -0.01em;
-        }
-
-        .task-modal-title-area p {
-          font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.8);
-          margin: 0;
-        }
-
-        .task-modal-close {
-          width: 36px;
-          height: 36px;
-          border: none;
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-          border-radius: 10px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-          flex-shrink: 0;
-        }
-
-        .task-modal-close:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: rotate(90deg);
-        }
-
-        /* Modal Form */
-        .task-modal-form {
-          padding: 1.75rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-          overflow-y: auto;
-          flex: 1;
-        }
-
-        .task-form-error {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 1rem;
-          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-          color: #dc2626;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border: 1px solid #fca5a5;
-        }
-
-        .task-form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.625rem;
-        }
-
-        .task-form-label {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.8125rem;
-          font-weight: 600;
-          color: #374151;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .task-form-label :global(svg) {
-          color: var(--primary, #f36a2a);
-        }
-
-        .required-star {
-          color: #ef4444;
-          font-weight: 700;
-        }
-
-        .optional-tag {
-          font-size: 0.6875rem;
-          font-weight: 500;
-          color: #9ca3af;
-          background: #f3f4f6;
-          padding: 0.125rem 0.5rem;
-          border-radius: 100px;
-          text-transform: lowercase;
-          letter-spacing: 0;
-          margin-left: auto;
-        }
-
-        .task-input-wrapper {
-          position: relative;
-        }
-
-        .task-form-input,
-        .task-form-textarea,
-        .task-form-select,
-        .task-form-date {
-          width: 100%;
-          padding: 0.875rem 1rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 12px;
-          background: #fafafa;
-          color: #1f2937;
-          font-size: 0.9375rem;
-          font-family: inherit;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .task-form-input::placeholder,
-        .task-form-textarea::placeholder {
-          color: #9ca3af;
-        }
-
-        .task-form-input:hover,
-        .task-form-textarea:hover,
-        .task-form-select:hover,
-        .task-form-date:hover {
-          border-color: rgba(243, 106, 42, 0.3);
-          background: #ffffff;
-        }
-
-        .task-form-input:focus,
-        .task-form-textarea:focus,
-        .task-form-select:focus,
-        .task-form-date:focus {
-          outline: none;
-          border-color: var(--primary, #f36a2a);
-          background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(243, 106, 42, 0.1);
-        }
-
-        .task-form-textarea {
-          resize: vertical;
-          min-height: 100px;
-          line-height: 1.6;
-        }
-
-        .task-select-wrapper,
-        .task-date-wrapper {
-          position: relative;
-        }
-
-        .task-select-wrapper :global(.select-icon),
-        .task-date-wrapper :global(.date-icon) {
-          position: absolute;
-          right: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #9ca3af;
-          pointer-events: none;
-        }
-
-        .task-form-select {
-          appearance: none;
-          padding-right: 2.75rem;
-          cursor: pointer;
-        }
-
-        .task-form-date {
-          cursor: pointer;
-        }
-
-        /* Priority Options */
-        .priority-options {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .priority-option {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          padding: 0.75rem 0.5rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 10px;
-          background: var(--priority-bg);
-          color: #6b7280;
-          font-size: 0.8125rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .priority-option input {
-          display: none;
-        }
-
-        .priority-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--priority-color);
-          transition: transform 0.2s;
-        }
-
-        .priority-option:hover {
-          border-color: var(--priority-color);
-          background: var(--priority-bg);
-        }
-
-        .priority-option.selected {
-          border-color: var(--priority-color);
-          background: var(--priority-bg-selected);
-          color: var(--priority-color);
-        }
-
-        .priority-option.selected .priority-dot {
-          transform: scale(1.25);
-          box-shadow: 0 0 0 3px var(--priority-bg);
-        }
-
-        /* Form Row */
-        .task-form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
-        }
-
-        @media (max-width: 480px) {
-          .task-form-row {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        /* Modal Actions */
-        .task-modal-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 0.75rem;
-          padding: 1.25rem 1.75rem;
-          border-top: 1px solid #f3f4f6;
-          background: #fafafa;
-        }
-
-        .task-btn-cancel {
-          padding: 0.75rem 1.5rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 10px;
-          background: #ffffff;
-          color: #6b7280;
-          font-size: 0.9375rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .task-btn-cancel:hover:not(:disabled) {
-          border-color: #d1d5db;
-          background: #f9fafb;
-          color: #374151;
-        }
-
-        .task-btn-cancel:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .task-btn-submit {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.75rem;
-          border: none;
-          border-radius: 10px;
-          background: linear-gradient(135deg, var(--primary, #f36a2a) 0%, var(--primary-dark, #d4551a) 100%);
-          color: white;
-          font-size: 0.9375rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 4px 14px 0 rgba(243, 106, 42, 0.4);
-        }
-
-        .task-btn-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px 0 rgba(243, 106, 42, 0.5);
-        }
-
-        .task-btn-submit:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .task-btn-submit:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-          transform: none;
-        }
-
         @keyframes spin {
           to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-          animation: spin 1s linear infinite;
         }
       `}</style>
     </div>

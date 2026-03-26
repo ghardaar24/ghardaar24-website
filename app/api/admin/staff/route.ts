@@ -52,7 +52,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: staffError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ staff: staffData || [] });
+    // Fetch all admins using select("*") to avoid column name issues
+    const { data: adminData, error: adminError } = await supabaseAdmin
+      .from("admins")
+      .select("*");
+
+    if (adminError) {
+      console.error("Error fetching admins:", adminError.message, adminError);
+    }
+
+    // Map admin data to consistent shape
+    const admins = (adminData || []).map((a: Record<string, unknown>) => ({
+      id: a.id || a.user_id || "",
+      name: a.name || a.full_name || a.email || "",
+      email: a.email || "",
+    }));
+
+    console.log("Staff API - admins found:", admins.length, admins);
+
+    return NextResponse.json({ staff: staffData || [], admins });
   } catch (error) {
     console.error("Error in GET /api/admin/staff:", error instanceof Error ? error.message : String(error));
     return NextResponse.json(

@@ -140,10 +140,11 @@ Stores admin login credentials (separate from user auth).
 
 | Column       | Type        | Description        |
 | ------------ | ----------- | ------------------ |
-| `id`         | UUID        | Primary key        |
-| `email`      | TEXT        | Admin email        |
-| `name`       | TEXT        | Admin name         |
-| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `id`         | UUID        | Primary key (matches auth) |
+| `email`      | TEXT        | Admin email                |
+| `name`       | TEXT        | Admin name                 |
+| `profile_picture_url` | TEXT | URL to profile picture    |
+| `created_at` | TIMESTAMPTZ | Creation timestamp         |
 
 ### Staff Table (crm_staff)
 
@@ -157,6 +158,20 @@ Stores staff details for the CRM portal.
 | `is_active`               | BOOLEAN | Access control flag                      |
 | `can_manage_properties`   | BOOLEAN | Permission to manage properties          |
 | `can_generate_invoices`   | BOOLEAN | Permission to generate invoices          |
+| `can_add_sheets`          | BOOLEAN | Permission to create new CRM sheets      |
+| `profile_picture_url`     | TEXT    | URL to profile picture                   |
+
+### CRM Sheets (crm_sheets)
+
+Stores sheet metadata for organizing imported client data.
+
+| Column       | Type        | Description                   |
+| ------------ | ----------- | ----------------------------- |
+| `id`         | UUID        | Primary key                   |
+| `name`       | TEXT        | Sheet name (unique)           |
+| `description`| TEXT        | Optional sheet description    |
+| `created_at` | TIMESTAMPTZ | Creation timestamp            |
+| `created_by` | UUID        | Admin who created the sheet   |
 
 ### CRM Sheets Access (crm_sheet_access)
 
@@ -178,15 +193,17 @@ Stores client information for the CRM system.
 | `client_name`       | TEXT        | Client's full name                  |
 | `phone`             | TEXT        | Client's phone number               |
 | `email`             | TEXT        | Client's email address              |
-| `lead_stage`        | TEXT        | Lead stage (new, contacted, etc.)   |
+| `lead_stage`        | TEXT        | follow_up_req, dnp, disqualified, callback_required, natc, visit_booked, call_after_1_2_months, vdnb |
 | `lead_type`         | TEXT        | Type of lead (hot, warm, cold)      |
 | `lead_source`       | TEXT        | Source of the lead                  |
 | `property_type`     | TEXT        | Interested property type            |
 | `budget`            | TEXT        | Client's budget                     |
 | `location`          | TEXT        | Preferred location                  |
+| `facing`            | TEXT        | Property facing preference          |
 | `calling_comment`   | TEXT        | Notes from calls                    |
 | `expected_visit`    | DATE        | Expected visit date                 |
 | `assigned_to`       | UUID        | Staff member assigned               |
+| `added_by`          | UUID        | User/Staff who added the lead       |
 | `sheet_id`          | UUID        | Reference to CRM sheet              |
 | `created_at`        | TIMESTAMPTZ | Creation timestamp                  |
 | `updated_at`        | TIMESTAMPTZ | Last update timestamp               |
@@ -234,8 +251,46 @@ Stores staff site visit records with photo proof.
 | `location`       | TEXT        | Visit location               |
 | `visit_date`     | DATE        | Date of visit                |
 | `notes`          | TEXT        | Optional visit notes         |
+| `visit_time`     | TIME        | Time of the site visit       |
 | `photo_url`      | TEXT        | Photo proof URL              |
 | `created_at`     | TIMESTAMPTZ | Creation timestamp           |
+
+### Staff Tasks (staff_tasks)
+
+Tasks assigned by admins to staff members.
+
+| Column       | Type        | Description                                      |
+| ------------ | ----------- | ------------------------------------------------ |
+| `id`         | UUID        | Primary key                                      |
+| `title`      | TEXT        | Task title                                       |
+| `description`| TEXT        | Task details                                     |
+| `assigned_to`| UUID        | Staff member assigned (auth.users)               |
+| `assigned_by`| UUID        | Admin who assigned the task                      |
+| `priority`   | TEXT        | low, medium, high                                |
+| `status`     | TEXT        | pending, in_progress, completed                  |
+| `due_date`   | DATE        | Date task is due                                 |
+| `due_time`   | TIME        | Time task is due                                 |
+| `completed_at`| TIMESTAMPTZ | When the task was marked completed              |
+| `created_at` | TIMESTAMPTZ | Creation timestamp                               |
+
+### CRM Activity Logs (crm_activity_logs)
+
+Audit log of all staff actions on CRM clients.
+
+| Column       | Type        | Description                               |
+| ------------ | ----------- | ----------------------------------------- |
+| `id`         | UUID        | Primary key                               |
+| `staff_id`   | UUID        | Staff who made the change                 |
+| `staff_name` | TEXT        | Staff name at time of action              |
+| `client_id`  | UUID        | Client that was modified                  |
+| `client_name`| TEXT        | Client name at time of action             |
+| `sheet_id`   | UUID        | Optional sheet context                    |
+| `sheet_name` | TEXT        | Optional sheet name                       |
+| `action_type`| TEXT        | 'update_field', 'add_comment' etc.        |
+| `field_changed`| TEXT      | Field modified (e.g., 'lead_stage')       |
+| `old_value`  | TEXT        | Value before change                       |
+| `new_value`  | TEXT        | Value after change                        |
+| `created_at` | TIMESTAMPTZ | When action occurred                      |
 
 ---
 
@@ -457,6 +512,7 @@ const { data, error } = await query;
 | Admin Tasks          | `app/api/admin/tasks/route.ts`           | Admin task management endpoint     |
 | Lookup User          | `app/api/lookup-user/route.ts`           | Look up user for auth override     |
 | Staff Tasks          | `app/api/staff/tasks/route.ts`           | Staff CRM task management          |
+| Create Sheet         | `app/api/staff/create-sheet/route.ts`    | Staff: Create new CRM sheet        |
 
 ### CRM Capabilities
 
@@ -607,6 +663,20 @@ For additional support:
 
 ### v1.5.0 (March 2026)
 
+- **Profile Pictures**: Added support for profile picture uploads for Admins and Staff.
+- **Staff Sheet Creation**: Staff members can now be granted permission to create new CRM sheets.
+- **CRM Enhancements**:
+  - Added "Facing" preference to CRM leads.
+  - Added "VDNB" (Video Done, Need Booking) stage to lead tracking.
+  - Added "Added By" tracking for leads.
+- **Task Management**:
+  - Added time tracking to tasks and site visits.
+  - Simplified task assignment (now using `auth.users` references).
+  - Admins can now assign tasks to other admins or themselves.
+- **Storage**: Implemented RLS policies for `profile-pictures` bucket.
+- **Security Check**: Removed bedrooms and bathrooms from CRM lead tracking.
+
+### v1.4.0 (January 2026)
 - Site Visits feature for staff (record visits with photo proof) and admin (view/filter all visits)
 - Invoice history with `invoices` table and full JSONB data storage
 - Granular staff permissions (`can_manage_properties`, `can_generate_invoices`)

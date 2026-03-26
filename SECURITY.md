@@ -191,6 +191,14 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | `Staff can upload site visit photos` | INSERT | Active staff can upload |
 | `Admins can delete site visit photos` | DELETE | Only admins can delete |
 
+### Profile Pictures Storage Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Anyone can view profile pictures` | SELECT | Public can view profile photos |
+| `Admins can manage own profile picture` | ALL | Admins can upload/update/delete their own |
+| `Staff can manage own profile picture` | ALL | Staff can upload/update/delete their own |
+
 ---
 
 ## Environment Variables
@@ -403,8 +411,8 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
-| 1.5.0   | March 2026    | Site visits, invoices, staff permissions, floor plans|
-| 1.4.0   | February 2026 | Added Downloads, CRM Tasks, and Invoice Generator  |
+| 1.5.0   | March 2026    | Profile pictures, Staff sheet creation, CRM enhancements, Task timing |
+| 1.4.0   | February 2026 | Site visits, Invoices, Staff permissions, Floor plans |
 | 1.3.1   | January 2026  | Secured API routes with auth checks, CSP updates   |
 | 1.3.0   | January 2026  | Staff auth context, CRM security                   |
 | 1.0.0   | December 2025 | Initial security policy                            |
