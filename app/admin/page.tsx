@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { useAdminAuth } from "@/lib/admin-auth";
 import {
   Building,
   MessageSquare,
@@ -10,8 +11,13 @@ import {
   ArrowRight,
   Star,
   Clock,
+  Camera,
+  User,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 
 interface Stats {
@@ -55,6 +61,7 @@ const statCards = [
 ];
 
 export default function AdminDashboard() {
+  const { adminProfile, refreshProfile } = useAdminAuth();
   const [stats, setStats] = useState<Stats>({
     totalProperties: 0,
     featuredProperties: 0,
@@ -62,6 +69,55 @@ export default function AdminDashboard() {
   });
   const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !adminProfile) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be less than 5MB.");
+      return;
+    }
+
+    setUploadingPicture(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `admin/${adminProfile.id}/profile.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("profile-pictures")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("profile-pictures")
+        .getPublicUrl(filePath);
+
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("admins")
+        .update({ profile_picture_url: urlWithCacheBust })
+        .eq("id", adminProfile.id);
+
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      alert("Failed to upload profile picture. Please try again.");
+    } finally {
+      setUploadingPicture(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -139,24 +195,64 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page">
-      {/* Welcome Header */}
-      <motion.div
-        className="dashboard-welcome"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="dashboard-welcome-content">
-          <h1>Welcome Back! 👋</h1>
-          <p>Here&apos;s what&apos;s happening with your properties today.</p>
-        </div>
-        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-          <Link href="/admin/properties/new" className="dashboard-cta-btn">
-            <Plus className="w-5 h-5" />
-            Add New Property
-          </Link>
+      {/* Profile Card */}
+      {adminProfile && (
+        <motion.div
+          className="profile-card"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="profile-card-left">
+            <div
+              className="profile-avatar-wrapper"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {adminProfile.profile_picture_url ? (
+                <Image
+                  src={adminProfile.profile_picture_url}
+                  alt={adminProfile.name || "Admin"}
+                  width={80}
+                  height={80}
+                  className="profile-avatar-img"
+                  unoptimized
+                />
+              ) : (
+                <div className="profile-avatar-placeholder">
+                  <User className="w-8 h-8" />
+                </div>
+              )}
+              <div className="profile-avatar-overlay">
+                {uploadingPicture ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5" />
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureUpload}
+                style={{ display: "none" }}
+              />
+            </div>
+            <div className="profile-info">
+              <h2 className="profile-name">{adminProfile.name || "Admin"}</h2>
+              <div className="profile-detail">
+                <Mail className="w-4 h-4" />
+                <span>{adminProfile.email}</span>
+              </div>
+            </div>
+          </div>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            <Link href="/admin/properties/new" className="dashboard-cta-btn">
+              <Plus className="w-5 h-5" />
+              Add New Property
+            </Link>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
 
       {/* Stats Grid */}
       <motion.div

@@ -31,6 +31,7 @@ export interface StaffProfile {
   can_manage_properties: boolean;
   can_generate_invoices: boolean;
   can_add_sheets: boolean;
+  profile_picture_url?: string;
   created_at?: string;
 }
 
@@ -54,6 +55,7 @@ interface StaffAuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const StaffAuthContext = createContext<StaffAuthContextType | undefined>(
@@ -276,6 +278,12 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchStaffProfile(user.id);
+    }
+  };
+
   const signOut = async () => {
     await supabaseStaff.auth.signOut();
     setStaffProfile(null);
@@ -295,6 +303,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
         loading,
         signIn,
         signOut,
+        refreshProfile,
       }}
     >
       {children}

@@ -216,7 +216,18 @@ export default function AdminLayout({
               transition={{ delay: 0.25 }}
             >
               <div className="sidebar-admin-avatar">
-                <User className="w-5 h-5" />
+                {adminProfile.profile_picture_url ? (
+                  <Image
+                    src={adminProfile.profile_picture_url}
+                    alt={adminProfile.name || "Admin"}
+                    width={36}
+                    height={36}
+                    className="sidebar-admin-avatar-img"
+                    unoptimized
+                  />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
               </div>
               <div className="sidebar-admin-details">
                 <span className="sidebar-admin-name">

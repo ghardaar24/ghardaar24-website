@@ -163,6 +163,21 @@ export default function StaffCRMPage() {
         setClients((prev) => [data, ...prev]);
       }
       setShowAddModal(false);
+
+      // TRIGGER TASK MODAL IF EXPECTED VISIT DATE IS SET ON NEW LEAD
+      if (addFormData.expected_visit_date) {
+        setTaskData({
+          clientId: data?.id || "",
+          clientName: addFormData.client_name,
+          title: `Site visit for ${addFormData.client_name}`,
+          description: `Automatically created from CRM — expected visit scheduled for ${new Date(addFormData.expected_visit_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+          priority: "high",
+          due_date: addFormData.expected_visit_date,
+          due_time: addFormData.expected_visit_time || "",
+        });
+        setShowTaskModal(true);
+      }
+
       setAddFormData({
         client_name: "",
         customer_number: "",
@@ -610,6 +625,21 @@ export default function StaffCRMPage() {
         });
         setShowTaskModal(true);
       }
+
+      // TRIGGER TASK MODAL WHEN EXPECTED VISIT DATE IS SET
+      if (field === "expected_visit_date" && value) {
+        const clientObj = clients.find(c => c.id === clientId);
+        setTaskData({
+          clientId,
+          clientName: clientObj?.client_name || "",
+          title: `Site visit for ${clientObj?.client_name || "Client"}`,
+          description: `Automatically created from CRM — expected visit scheduled for ${new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+          priority: "high",
+          due_date: value,
+          due_time: clientObj?.expected_visit_time || "",
+        });
+        setShowTaskModal(true);
+      }
     } catch (error) {
       console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
@@ -771,10 +801,9 @@ export default function StaffCRMPage() {
       setShowEditModal(false);
 
       // TRIGGER TASK MODAL IF STAGE CHANGED
-      if (
-        formData.lead_stage !== editingClient.lead_stage &&
-        (formData.lead_stage === "visit_booked" || formData.lead_stage === "follow_up_req")
-      ) {
+      const isNewStage = formData.lead_stage !== editingClient.lead_stage &&
+        (formData.lead_stage === "visit_booked" || formData.lead_stage === "follow_up_req");
+      if (isNewStage) {
         setTaskData({
           clientId: editingClient.id,
           clientName: editingClient.client_name,
@@ -783,6 +812,21 @@ export default function StaffCRMPage() {
           priority: formData.lead_stage === "visit_booked" ? "high" : "medium",
           due_date: "",
           due_time: "",
+        });
+        setShowTaskModal(true);
+      }
+
+      // TRIGGER TASK MODAL IF EXPECTED VISIT DATE IS SET/CHANGED
+      const isNewVisitDate = formData.expected_visit_date && formData.expected_visit_date !== editingClient.expected_visit_date;
+      if (isNewVisitDate && !isNewStage) {
+        setTaskData({
+          clientId: editingClient.id,
+          clientName: editingClient.client_name,
+          title: `Site visit for ${editingClient.client_name}`,
+          description: `Automatically created from CRM — expected visit scheduled for ${new Date(formData.expected_visit_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+          priority: "high",
+          due_date: formData.expected_visit_date,
+          due_time: formData.expected_visit_time || "",
         });
         setShowTaskModal(true);
       }

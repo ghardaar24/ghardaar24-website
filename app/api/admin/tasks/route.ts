@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
       .from("staff_tasks")
       .select(`
         *,
-        assigned_staff:crm_staff!assigned_to(id, name, email),
         assigning_admin:admins!assigned_by(id, name, email)
       `)
       .order("created_at", { ascending: false });
@@ -68,6 +67,26 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("Error fetching tasks:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Resolve assignee names from both crm_staff and admins
+    if (data && data.length > 0) {
+      const assigneeIds = [...new Set(data.map((t: { assigned_to: string }) => t.assigned_to))];
+
+      const [staffRes, adminRes] = await Promise.all([
+        supabaseAdmin.from("crm_staff").select("id, name, email").in("id", assigneeIds),
+        supabaseAdmin.from("admins").select("id, name, email").in("id", assigneeIds),
+      ]);
+
+      const assigneeMap = new Map<string, { id: string; name: string; email: string }>();
+      (staffRes.data || []).forEach((s: { id: string; name: string; email: string }) => assigneeMap.set(s.id, s));
+      (adminRes.data || []).forEach((a: { id: string; name: string; email: string }) => {
+        if (!assigneeMap.has(a.id)) assigneeMap.set(a.id, a);
+      });
+
+      for (const task of data) {
+        (task as Record<string, unknown>).assigned_staff = assigneeMap.get(task.assigned_to) || null;
+      }
     }
 
     return NextResponse.json({ tasks: data });
@@ -99,7 +118,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify staff exists
+    // Verify assignee exists (staff or admin)
     const { data: staff } = await supabaseAdmin
       .from("crm_staff")
       .select("id")
@@ -108,10 +127,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!staff) {
-      return NextResponse.json(
-        { error: "Invalid staff member" },
-        { status: 400 }
-      );
+      // Check if assigned_to is an admin
+      const { data: admin } = await supabaseAdmin
+        .from("admins")
+        .select("id")
+        .eq("id", assigned_to)
+        .single();
+
+      if (!admin) {
+        return NextResponse.json(
+          { error: "Invalid assignee" },
+          { status: 400 }
+        );
+      }
     }
 
     const { data, error } = await supabaseAdmin
@@ -125,10 +153,7 @@ export async function POST(request: NextRequest) {
         due_date: due_date || null,
         due_time: due_time || null,
       })
-      .select(`
-        *,
-        assigned_staff:crm_staff!assigned_to(id, name, email)
-      `)
+      .select(`*`)
       .single();
 
     if (error) {
@@ -136,7 +161,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ task: data });
+    // Resolve assignee info
+    const { data: staffInfo } = await supabaseAdmin
+      .from("crm_staff")
+      .select("id, name, email")
+      .eq("id", assigned_to)
+      .single();
+
+    const assignedStaff = staffInfo || (await supabaseAdmin
+      .from("admins")
+      .select("id, name, email")
+      .eq("id", assigned_to)
+      .single()).data;
+
+    return NextResponse.json({ task: { ...data, assigned_staff: assignedStaff } });
   } catch (error: unknown) {
     console.error("Error in POST /api/admin/tasks:", error);
     return NextResponse.json(
@@ -180,15 +218,29 @@ export async function PUT(request: NextRequest) {
       .from("staff_tasks")
       .update(updateData)
       .eq("id", id)
-      .select(`
-        *,
-        assigned_staff:crm_staff!assigned_to(id, name, email)
-      `)
+      .select(`*`)
       .single();
 
     if (error) {
       console.error("Error updating task:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Resolve assignee info
+    if (data) {
+      const { data: staffInfo } = await supabaseAdmin
+        .from("crm_staff")
+        .select("id, name, email")
+        .eq("id", data.assigned_to)
+        .single();
+
+      const assignedStaff = staffInfo || (await supabaseAdmin
+        .from("admins")
+        .select("id, name, email")
+        .eq("id", data.assigned_to)
+        .single()).data;
+
+      return NextResponse.json({ task: { ...data, assigned_staff: assignedStaff } });
     }
 
     return NextResponse.json({ task: data });

@@ -193,14 +193,20 @@ export default function CRMPage() {
   
   const fetchStaffForTasks = async () => {
     try {
-      const { data, error } = await supabase
-        .from("crm_staff")
-        .select("id, name, email")
-        .eq("is_active", true)
-        .order("name");
-      if (!error && data) {
-        setStaffOptions(data);
-      }
+      const [staffRes, adminRes] = await Promise.all([
+        supabase
+          .from("crm_staff")
+          .select("id, name, email")
+          .eq("is_active", true)
+          .order("name"),
+        supabase
+          .from("admins")
+          .select("id, name, email")
+          .order("name"),
+      ]);
+      const staffList = (staffRes.data || []).map((s: { id: string; name: string; email: string }) => ({ ...s, role: "staff" as const }));
+      const adminList = (adminRes.data || []).map((a: { id: string; name: string; email: string }) => ({ ...a, role: "admin" as const }));
+      setStaffOptions([...adminList, ...staffList]);
     } catch (e) {
       console.error(e);
     }
@@ -881,6 +887,23 @@ export default function CRMPage() {
         fetchStaffForTasks();
         setShowTaskModal(true);
       }
+
+      // TRIGGER TASK MODAL IF EXPECTED VISIT DATE IS SET/CHANGED
+      const isNewVisitDate = formData.expected_visit_date && (!editingClient || editingClient.expected_visit_date !== formData.expected_visit_date);
+      if (isNewVisitDate && !isNewStage) {
+        setTaskData({
+          clientId: editingClient?.id || "",
+          clientName: formData.client_name,
+          assigned_to: "",
+          title: `Site visit for ${formData.client_name}`,
+          description: `Automatically created from CRM — expected visit scheduled for ${new Date(formData.expected_visit_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+          priority: "high",
+          due_date: formData.expected_visit_date,
+          due_time: "",
+        });
+        fetchStaffForTasks();
+        setShowTaskModal(true);
+      }
     } catch (error) {
       console.error("Error saving client:", error);
       alert("Failed to save client. Please try again.");
@@ -992,6 +1015,23 @@ export default function CRMPage() {
           priority: value === "visit_booked" ? "high" : "medium",
           due_date: "",
           due_time: "",
+        });
+        fetchStaffForTasks();
+        setShowTaskModal(true);
+      }
+
+      // TRIGGER TASK MODAL WHEN EXPECTED VISIT DATE IS SET
+      if (field === "expected_visit_date" && value) {
+        const client = clients.find(c => c.id === clientId);
+        setTaskData({
+          clientId,
+          clientName: client?.client_name || "",
+          assigned_to: "",
+          title: `Site visit for ${client?.client_name || "Client"}`,
+          description: `Automatically created from CRM — expected visit scheduled for ${new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+          priority: "high",
+          due_date: value,
+          due_time: client?.expected_visit_time || "",
         });
         fetchStaffForTasks();
         setShowTaskModal(true);
@@ -3205,12 +3245,25 @@ export default function CRMPage() {
                       value={taskData.assigned_to}
                       onChange={(e) => setTaskData({ ...taskData, assigned_to: e.target.value })}
                     >
-                      <option value="">Select Staff Member</option>
-                      {staffOptions.map((staff) => (
-                        <option key={staff.id} value={staff.id}>
-                          {staff.name}
-                        </option>
-                      ))}
+                      <option value="">Select Assignee</option>
+                      {staffOptions.filter((s: { role?: string }) => s.role === "admin").length > 0 && (
+                        <optgroup label="Admins">
+                          {staffOptions.filter((s: { role?: string }) => s.role === "admin").map((admin: { id: string; name: string; email: string }) => (
+                            <option key={admin.id} value={admin.id}>
+                              {admin.name || admin.email}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {staffOptions.filter((s: { role?: string }) => s.role === "staff").length > 0 && (
+                        <optgroup label="Staff">
+                          {staffOptions.filter((s: { role?: string }) => s.role === "staff").map((staff: { id: string; name: string; email: string }) => (
+                            <option key={staff.id} value={staff.id}>
+                              {staff.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
 

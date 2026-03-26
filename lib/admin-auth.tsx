@@ -15,6 +15,7 @@ export interface AdminProfile {
   id: string;
   email: string;
   name?: string;
+  profile_picture_url?: string;
   created_at?: string;
 }
 
@@ -27,6 +28,7 @@ interface AdminAuthContextType {
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
@@ -208,6 +210,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchAdminProfile(user.id);
+    }
+  };
+
   // Update password directly (requires active session)
   const updatePassword = async (newPassword: string) => {
     try {
@@ -234,6 +242,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         signOut,
         requestPasswordReset,
         updatePassword,
+        refreshProfile,
       }}
     >
       {children}
