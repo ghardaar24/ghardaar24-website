@@ -21,6 +21,7 @@ import {
   MapPin,
   MessageSquare,
   Users,
+  User,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -69,6 +70,24 @@ interface CRMClient {
   crm_staff?: { name: string } | null;
   created_at: string;
   updated_at: string;
+}
+
+interface SiteVisit {
+  id: string;
+  staff_id: string;
+  property_title: string;
+  location: string;
+  visit_date: string;
+  visit_time: string | null;
+  notes: string | null;
+  photo_url: string;
+  created_at: string;
+  client_name: string | null;
+  client_mobile: string | null;
+  crm_staff: {
+    name: string;
+    email: string;
+  } | null;
 }
 
 type FilterState = {
@@ -165,6 +184,10 @@ export default function CRMPage() {
   const [staffOptions, setStaffOptions] = useState<any[]>([]);
   const [taskSaving, setTaskSaving] = useState(false);
 
+  // Visit History State
+  const [visitHistory, setVisitHistory] = useState<SiteVisit[]>([]);
+  const [isVisitsLoading, setIsVisitsLoading] = useState(false);
+
   // Client-side mounting state for Portal
   const [isMounted, setIsMounted] = useState(false);
   
@@ -180,6 +203,41 @@ export default function CRMPage() {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const fetchVisitHistory = async (client: CRMClient) => {
+    setIsVisitsLoading(true);
+    try {
+      let query = supabase
+        .from("site_visits")
+        .select(`
+          *,
+          crm_staff (
+            name,
+            email
+          )
+        `)
+        .order("visit_date", { ascending: false });
+
+      // Build OR filter for mobile and name
+      const filterParts = [];
+      if (client.customer_number) filterParts.push(`client_mobile.eq.${client.customer_number}`);
+      if (client.client_name) filterParts.push(`client_name.eq.${client.client_name}`);
+
+      if (filterParts.length > 0) {
+        query = query.or(filterParts.join(','));
+        const { data, error } = await query;
+        if (!error) {
+          setVisitHistory(data as unknown as SiteVisit[] || []);
+        }
+      } else {
+        setVisitHistory([]);
+      }
+    } catch (e) {
+      console.error("Error fetching visit history:", e);
+    } finally {
+      setIsVisitsLoading(false);
     }
   };
 
@@ -1647,6 +1705,7 @@ export default function CRMPage() {
                       onClick={() => {
                         setSelectedClient(client);
                         setShowDetailsModal(true);
+                        fetchVisitHistory(client);
                       }}
                       className="hover:bg-gray-50 cursor-pointer"
                     >
@@ -2818,6 +2877,61 @@ export default function CRMPage() {
 
                     {/* Notes Section with improved styling */}
                     <div className="grid grid-cols-1 gap-6 pt-4">
+                      {/* Visit History Section */}
+                      <div className="relative group">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-l-lg"></div>
+                        <div className="bg-green-50/50 rounded-r-xl p-6 border border-green-100">
+                          <label className="flex items-center gap-2 text-sm font-bold text-green-900 uppercase tracking-wider mb-4">
+                            <MapPin className="w-4 h-4 text-green-500" />
+                            Visit History
+                          </label>
+                          
+                          {isVisitsLoading ? (
+                            <div className="flex items-center gap-2 text-gray-500 italic">
+                              <div className="w-4 h-4 border-2 border-green-200 border-t-green-500 rounded-full animate-spin"></div>
+                              Loading visit records...
+                            </div>
+                          ) : visitHistory.length > 0 ? (
+                            <div className="space-y-4">
+                              {visitHistory.map((visit) => (
+                                <div key={visit.id} className="bg-white/60 p-4 rounded-lg border border-green-100 shadow-sm space-y-2">
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                                    <div className="font-bold text-gray-900 flex items-center gap-2">
+                                      <Activity className="w-4 h-4 text-green-600" />
+                                      {visit.property_title}
+                                    </div>
+                                    <div className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                      {new Date(visit.visit_date).toLocaleDateString("en-IN", {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                                    <div className="flex items-center gap-1.5">
+                                      <User className="w-3.5 h-3.5 text-gray-400" />
+                                      <span>Staff: <strong>{visit.crm_staff?.name || 'Unknown'}</strong></span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                                      <span>{visit.location}</span>
+                                    </div>
+                                  </div>
+                                  {visit.notes && (
+                                    <p className="text-gray-700 text-sm italic pl-4 border-l-2 border-gray-100 mt-2">
+                                      &quot;{visit.notes}&quot;
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic">No property visits recorded yet.</p>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Calling Notes History */}
                       <div className="relative group">
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-lg"></div>
