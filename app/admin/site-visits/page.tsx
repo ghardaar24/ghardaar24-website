@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
+import { useAdminAuth } from "@/lib/admin-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
   MapPin,
@@ -17,6 +18,15 @@ import {
   Eye,
   User,
   Phone,
+  Plus,
+  Camera,
+  Building,
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  History,
+  Shield,
 } from "lucide-react";
 
 interface StaffMember {
@@ -27,7 +37,8 @@ interface StaffMember {
 
 interface SiteVisit {
   id: string;
-  staff_id: string;
+  staff_id: string | null;
+  admin_id: string | null;
   property_title: string;
   location: string;
   visit_date: string;
@@ -40,15 +51,45 @@ interface SiteVisit {
   crm_staff: {
     name: string;
     email: string;
-  };
+  } | null;
+  admins: {
+    name: string;
+    email: string;
+  } | null;
+}
+
+interface ClientVisitHistory {
+  property_title: string;
+  location: string;
+  visit_date: string;
+  staff_name?: string;
 }
 
 export default function AdminSiteVisitsPage() {
+  const { adminProfile } = useAdminAuth();
   const [visits, setVisits] = useState<SiteVisit[]>([]);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Form state
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [propertyTitle, setPropertyTitle] = useState("");
+  const [formLocation, setFormLocation] = useState("");
+  const [visitDate, setVisitDate] = useState(new Date().toISOString().split("T")[0]);
+  const [visitTime, setVisitTime] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientMobile, setClientMobile] = useState("");
+  const [notes, setNotes] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [clientVisitHistory, setClientVisitHistory] = useState<ClientVisitHistory[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mobileDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,6 +120,10 @@ export default function AdminSiteVisitsPage() {
             crm_staff (
               name,
               email
+            ),
+            admins (
+              name,
+              email
             )
           `
           )
@@ -100,7 +145,7 @@ export default function AdminSiteVisitsPage() {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const uniqueStaffIds = new Set(allVisits.map((v) => v.staff_id));
+      const uniqueStaffIds = new Set(allVisits.filter((v) => v.staff_id).map((v) => v.staff_id));
 
       setStats({
         totalVisits: allVisits.length,
@@ -119,15 +164,155 @@ export default function AdminSiteVisitsPage() {
     }
   };
 
+  // Form handlers
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: "error", text: "Photo must be less than 5MB" });
+        return;
+      }
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetForm = () => {
+    setPropertyTitle("");
+    setFormLocation("");
+    setVisitDate(new Date().toISOString().split("T")[0]);
+    setVisitTime("");
+    setClientName("");
+    setClientMobile("");
+    setNotes("");
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setClientVisitHistory([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const lookupClientHistory = async (mobile: string) => {
+    const cleaned = mobile.replace(/\D/g, "");
+    if (cleaned.length < 10) {
+      setClientVisitHistory([]);
+      return;
+    }
+
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from("site_visits")
+        .select("property_title, location, visit_date, crm_staff(name)")
+        .eq("client_mobile", cleaned)
+        .order("visit_date", { ascending: false });
+
+      if (error) throw error;
+
+      setClientVisitHistory(
+        (data || []).map((v: Record<string, unknown>) => ({
+          property_title: v.property_title as string,
+          location: v.location as string,
+          visit_date: v.visit_date as string,
+          staff_name: (v.crm_staff as Record<string, string> | null)?.name,
+        }))
+      );
+    } catch (err) {
+      console.error("Error looking up client history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleMobileChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, "").slice(0, 10);
+    setClientMobile(cleaned);
+
+    if (mobileDebounceRef.current) clearTimeout(mobileDebounceRef.current);
+    mobileDebounceRef.current = setTimeout(() => {
+      lookupClientHistory(cleaned);
+    }, 500);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminProfile || !photoFile) return;
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      // Upload photo
+      const fileExt = photoFile.name.split(".").pop();
+      const fileName = `admin-${adminProfile.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("site-visit-photos")
+        .upload(fileName, photoFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage
+        .from("site-visit-photos")
+        .getPublicUrl(fileName);
+
+      // Insert visit record
+      const { error: insertError } = await supabase
+        .from("site_visits")
+        .insert({
+          admin_id: adminProfile.id,
+          property_title: propertyTitle.trim(),
+          location: formLocation.trim(),
+          visit_date: visitDate,
+          visit_time: visitTime || null,
+          client_name: clientName.trim() || null,
+          client_mobile: clientMobile || null,
+          notes: notes.trim() || null,
+          photo_url: publicUrl,
+        });
+
+      if (insertError) throw insertError;
+
+      setMessage({ type: "success", text: "Site visit recorded successfully!" });
+      resetForm();
+      setShowForm(false);
+      fetchData();
+    } catch (err) {
+      console.error("Error recording visit:", err);
+      setMessage({
+        type: "error",
+        text: "Failed to record visit. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getVisitorName = (visit: SiteVisit) => {
+    if (visit.admin_id && visit.admins) return visit.admins.name || visit.admins.email;
+    if (visit.crm_staff) return visit.crm_staff.name;
+    return "Unknown";
+  };
+
+  const isAdminVisit = (visit: SiteVisit) => !!visit.admin_id;
+
   // Filter visits
   const filteredVisits = visits.filter((visit) => {
     // Search filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
+      const visitorName = getVisitorName(visit).toLowerCase();
       const matchesSearch =
         visit.property_title.toLowerCase().includes(q) ||
         visit.location.toLowerCase().includes(q) ||
-        visit.crm_staff?.name?.toLowerCase().includes(q) ||
+        visitorName.includes(q) ||
         (visit.client_name && visit.client_name.toLowerCase().includes(q)) ||
         (visit.client_mobile && visit.client_mobile.includes(q)) ||
         (visit.notes && visit.notes.toLowerCase().includes(q));
@@ -144,10 +329,10 @@ export default function AdminSiteVisitsPage() {
     return true;
   });
 
-  // Group visits by staff for analysis
+  // Group visits by visitor for analysis
   const staffVisitCounts = visits.reduce(
     (acc, visit) => {
-      const name = visit.crm_staff?.name || "Unknown";
+      const name = getVisitorName(visit);
       acc[name] = (acc[name] || 0) + 1;
       return acc;
     },
@@ -235,11 +420,289 @@ export default function AdminSiteVisitsPage() {
         <div>
           <h1>
             <MapPin className="w-7 h-7" />
-            Staff Site Visits
+            Site Visits
           </h1>
-          <p>Monitor and analyze all staff property visits</p>
+          <p>Monitor all property visits & record your own</p>
         </div>
+        <motion.button
+          className={`sv-add-btn ${showForm ? "active" : ""}`}
+          onClick={() => {
+            setShowForm(!showForm);
+            if (showForm) resetForm();
+          }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          {showForm ? (
+            <>
+              <X className="w-5 h-5" /> Cancel
+            </>
+          ) : (
+            <>
+              <Plus className="w-5 h-5" /> New Visit
+            </>
+          )}
+        </motion.button>
       </motion.div>
+
+      {/* Message */}
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            className={`sv-message ${message.type}`}
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+          >
+            {message.type === "success" ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : (
+              <AlertCircle className="w-5 h-5" />
+            )}
+            {message.text}
+            <button onClick={() => setMessage(null)}>
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Admin Visit Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.form
+            className="sv-form"
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="sv-form-inner">
+              <h2>Record Your Site Visit</h2>
+
+              <div className="sv-form-grid">
+                <div className="sv-form-group">
+                  <label>
+                    <Building className="w-4 h-4" />
+                    Property / Project Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={propertyTitle}
+                    onChange={(e) => setPropertyTitle(e.target.value)}
+                    placeholder="e.g., Prestige Lakeside Habitat"
+                    required
+                  />
+                </div>
+
+                <div className="sv-form-group">
+                  <label>
+                    <MapPin className="w-4 h-4" />
+                    Location *
+                  </label>
+                  <input
+                    type="text"
+                    value={formLocation}
+                    onChange={(e) => setFormLocation(e.target.value)}
+                    placeholder="e.g., Whitefield, Bangalore"
+                    required
+                  />
+                </div>
+
+                <div className="sv-form-group">
+                  <label>
+                    <User className="w-4 h-4" />
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="e.g., Rahul Sharma"
+                  />
+                </div>
+
+                <div className="sv-form-group">
+                  <label>
+                    <Phone className="w-4 h-4" />
+                    Mob No.
+                  </label>
+                  <input
+                    type="tel"
+                    value={clientMobile}
+                    onChange={(e) => handleMobileChange(e.target.value)}
+                    placeholder="e.g., 9876543210"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                  />
+                </div>
+
+                {/* Client Visit History */}
+                {loadingHistory && (
+                  <div className="sv-form-full sv-client-history-loading">
+                    <Loader2 className="w-4 h-4 sv-spin" />
+                    <span>Checking visit history...</span>
+                  </div>
+                )}
+                {clientVisitHistory.length > 0 && (
+                  <div className="sv-form-group sv-form-full">
+                    <div className="sv-client-history">
+                      <div className="sv-client-history-header">
+                        <History className="w-4 h-4" />
+                        <span>
+                          This client has visited{" "}
+                          <strong>{clientVisitHistory.length}</strong> project
+                          {clientVisitHistory.length > 1 ? "s" : ""} before
+                        </span>
+                      </div>
+                      <div className="sv-client-history-list">
+                        {clientVisitHistory.map((h, i) => (
+                          <div key={i} className="sv-client-history-item">
+                            <div className="sv-client-history-project">
+                              <Building className="w-3.5 h-3.5" />
+                              {h.property_title}
+                            </div>
+                            <div className="sv-client-history-details">
+                              <span>
+                                <MapPin className="w-3 h-3" />
+                                {h.location}
+                              </span>
+                              <span>
+                                <Calendar className="w-3 h-3" />
+                                {new Date(h.visit_date + "T00:00:00").toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                              {h.staff_name && (
+                                <span>
+                                  <User className="w-3 h-3" />
+                                  {h.staff_name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="sv-form-group">
+                    <label>
+                      <Calendar className="w-4 h-4" />
+                      Visit Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={visitDate}
+                      onChange={(e) => setVisitDate(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                      required
+                    />
+                  </div>
+
+                  <div className="sv-form-group">
+                    <label>
+                      <Clock className="w-4 h-4" />
+                      Visit Time
+                    </label>
+                    <input
+                      type="time"
+                      value={visitTime}
+                      onChange={(e) => setVisitTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="sv-form-group sv-form-full">
+                  <label>
+                    <FileText className="w-4 h-4" />
+                    Notes
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Any observations, client feedback, property condition..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="sv-form-group sv-form-full">
+                  <label>
+                    <Camera className="w-4 h-4" />
+                    Photo Proof *
+                  </label>
+                  <div
+                    className={`sv-photo-upload ${photoPreview ? "has-preview" : ""}`}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {photoPreview ? (
+                      <div className="sv-photo-preview">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photoPreview} alt="Preview" />
+                        <div className="sv-photo-overlay">
+                          <Camera className="w-6 h-6" />
+                          <span>Change Photo</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="sv-photo-placeholder">
+                        <ImageIcon className="w-10 h-10" />
+                        <span>Click to upload photo</span>
+                        <span className="sv-photo-hint">
+                          JPG, PNG up to 5MB
+                        </span>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      style={{ display: "none" }}
+                      required={!photoPreview}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sv-form-actions">
+                <button
+                  type="button"
+                  className="sv-btn-secondary"
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="sv-btn-primary"
+                  disabled={submitting || !photoFile}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sv-spin" />
+                      Recording...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Record Visit
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
 
       {/* Stats Grid */}
       <motion.div
@@ -464,8 +927,9 @@ export default function AdminSiteVisitsPage() {
               <div className="admin-sv-visit-content">
                 <div className="admin-sv-visit-top">
                   <h3>{visit.property_title}</h3>
-                  <span className="admin-sv-visit-staff-badge">
-                    {visit.crm_staff?.name || "Unknown"}
+                  <span className={`admin-sv-visit-staff-badge ${isAdminVisit(visit) ? "admin-sv-visit-admin-badge" : ""}`}>
+                    {isAdminVisit(visit) && <Shield className="w-3 h-3" />}
+                    {getVisitorName(visit)}
                   </span>
                 </div>
                 {(visit.client_name || visit.client_mobile) && (

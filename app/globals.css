@@ -26533,6 +26533,10 @@ body {
    ============================================================================ */
 
 .admin-sv-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
@@ -26950,6 +26954,13 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
   border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.admin-sv-visit-admin-badge {
+  gap: 0.25rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.2);
 }
 
 .admin-sv-visit-client {
