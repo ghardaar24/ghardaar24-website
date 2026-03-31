@@ -26,22 +26,18 @@ interface InvoiceGeneratorProps {
 
 export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   const [invoiceData, setInvoiceData] = useState({
-    // Company Header
-    companyName: "",
-    officeAddress: "",
-    mobileNo: "",
-    emailId: "",
-    reraNo: "",
-    // To Section
+    // Ghardaar Details (From)
+    companyName: "Ghardaar24 Prop. Sanket Balwant Hire",
+    reraNo: "A31262500989",
+    fromPanNo: "AIGPH9978Q",
+    // Construction Company Details (To / Bill To)
     toName: "",
     toAddress: "",
-    toPan: "",
     toGstn: "",
-    // From Section
+    toReraNo: "",
+    // Invoice Info
     invoiceNo: "",
     date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
-    fromGstn: "",
-    fromPanNo: "",
     // Primary Bank Details
     favouringName1: "GHARDAAR24",
     bankName1: "Union Bank of India",
@@ -59,7 +55,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   });
 
   const [items, setItems] = useState([
-    { id: 1, projectName: "", customerName: "", flatNo: "", basicCost: "0", brokerageAmount: "0" }
+    { id: 1, projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2" }
   ]);
 
   // History state
@@ -129,8 +125,11 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   const handleItemChange = (id: number, field: string, value: string) => {
     setItems(items.map(item => {
       if (item.id === id) {
-        if (field === 'basicCost' || field === 'brokerageAmount') {
+        if (field === 'agreementCost' || field === 'infra' || field === 'unitCost') {
           return { ...item, [field]: value.replace(/[^0-9]/g, "") };
+        }
+        if (field === 'brokeragePercent') {
+          return { ...item, [field]: value.replace(/[^0-9.]/g, "") };
         }
         return { ...item, [field]: value };
       }
@@ -139,7 +138,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   };
 
   const addItem = () => {
-    setItems([...items, { id: Date.now(), projectName: "", customerName: "", flatNo: "", basicCost: "0", brokerageAmount: "0" }]);
+    setItems([...items, { id: Date.now(), projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2" }]);
   };
 
   const removeItem = (id: number) => {
@@ -148,7 +147,13 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
     }
   };
 
-  const totalBrokerage = items.reduce((sum, item) => sum + parseInt(item.brokerageAmount || "0", 10), 0);
+  const getItemBrokerage = (item: typeof items[0]) => {
+    const unitCost = parseInt(item.unitCost || "0", 10);
+    const percent = parseFloat(item.brokeragePercent || "0");
+    return Math.round(unitCost * percent / 100);
+  };
+
+  const totalBrokerage = items.reduce((sum, item) => sum + getItemBrokerage(item), 0);
   const sgstAmount = Math.round(totalBrokerage * 0.09);
   const cgstAmount = Math.round(totalBrokerage * 0.09);
   const igstAmount = Math.round(totalBrokerage * 0.18);
@@ -240,19 +245,15 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
     const data = record.invoice_data as any;
     if (data) {
       setInvoiceData({
-        companyName: data.companyName || "",
-        officeAddress: data.officeAddress || "",
-        mobileNo: data.mobileNo || "",
-        emailId: data.emailId || "",
-        reraNo: data.reraNo || "",
+        companyName: data.companyName || "Ghardaar24 Prop. Sanket Balwant Hire",
+        reraNo: "A31262500989",
+        fromPanNo: "AIGPH9978Q",
         toName: data.toName || "",
         toAddress: data.toAddress || "",
-        toPan: data.toPan || "",
         toGstn: data.toGstn || "",
+        toReraNo: data.toReraNo || "",
         invoiceNo: data.invoiceNo || "",
         date: data.date || "",
-        fromGstn: data.fromGstn || "",
-        fromPanNo: data.fromPanNo || "",
         favouringName1: data.favouringName1 || "GHARDAAR24",
         bankName1: data.bankName1 || "Union Bank of India",
         accNo1: data.accNo1 || "583801010050654",
@@ -279,63 +280,6 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
         <div className="w-full lg:w-1/3 bg-white p-6 md:rounded-xl shadow-sm border border-gray-100 print:hidden h-fit max-h-[90vh] overflow-y-auto">
           <h2 className="text-xl font-semibold mb-6">Invoice Details</h2>
           <div className="space-y-6">
-            {/* Company Header */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium border-b pb-2">Company Header</h3>
-              <div>
-                <label htmlFor="companyName" className="text-sm font-medium leading-none">Company Name</label>
-                <input
-                  id="companyName"
-                  name="companyName"
-                  value={invoiceData.companyName}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                />
-              </div>
-              <div>
-                <label htmlFor="officeAddress" className="text-sm font-medium leading-none">Office Address</label>
-                <input
-                  id="officeAddress"
-                  name="officeAddress"
-                  value={invoiceData.officeAddress}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="mobileNo" className="text-sm font-medium leading-none">Mobile No.</label>
-                  <input
-                    id="mobileNo"
-                    name="mobileNo"
-                    value={invoiceData.mobileNo}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="emailId" className="text-sm font-medium leading-none">Email Id</label>
-                  <input
-                    id="emailId"
-                    name="emailId"
-                    value={invoiceData.emailId}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="reraNo" className="text-sm font-medium leading-none">RERA NO</label>
-                <input
-                  id="reraNo"
-                  name="reraNo"
-                  value={invoiceData.reraNo}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                />
-              </div>
-            </div>
-
             {/* Invoice Info */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium border-b pb-2">Invoice Info</h3>
@@ -347,11 +291,12 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                     name="invoiceNo"
                     value={invoiceData.invoiceNo}
                     onChange={handleInputChange}
+                    placeholder="FY-25-26-001"
                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
                   />
                 </div>
                 <div>
-                  <label htmlFor="date" className="text-sm font-medium leading-none">Invoice Date</label>
+                  <label htmlFor="date" className="text-sm font-medium leading-none">Date</label>
                   <input
                     id="date"
                     name="date"
@@ -361,35 +306,13 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="fromGstn" className="text-sm font-medium leading-none">GSTN</label>
-                  <input
-                    id="fromGstn"
-                    name="fromGstn"
-                    value={invoiceData.fromGstn}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="fromPanNo" className="text-sm font-medium leading-none">Pan No.</label>
-                  <input
-                    id="fromPanNo"
-                    name="fromPanNo"
-                    value={invoiceData.fromPanNo}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
-                  />
-                </div>
-              </div>
             </div>
 
-            {/* To Section */}
+            {/* Construction Company (Bill To) */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium border-b pb-2">To (Bill To)</h3>
+              <h3 className="text-lg font-medium border-b pb-2">Construction Company</h3>
               <div>
-                <label htmlFor="toName" className="text-sm font-medium leading-none">Company / Person Name</label>
+                <label htmlFor="toName" className="text-sm font-medium leading-none">Company Name</label>
                 <input
                   id="toName"
                   name="toName"
@@ -399,7 +322,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                 />
               </div>
               <div>
-                <label htmlFor="toAddress" className="text-sm font-medium leading-none">Address</label>
+                <label htmlFor="toAddress" className="text-sm font-medium leading-none">Reg Address</label>
                 <textarea
                   id="toAddress"
                   name="toAddress"
@@ -411,17 +334,17 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="toPan" className="text-sm font-medium leading-none">Pan</label>
+                  <label htmlFor="toReraNo" className="text-sm font-medium leading-none">RERA No.</label>
                   <input
-                    id="toPan"
-                    name="toPan"
-                    value={invoiceData.toPan}
+                    id="toReraNo"
+                    name="toReraNo"
+                    value={invoiceData.toReraNo}
                     onChange={handleInputChange}
                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
                   />
                 </div>
                 <div>
-                  <label htmlFor="toGstn" className="text-sm font-medium leading-none">GSTN</label>
+                  <label htmlFor="toGstn" className="text-sm font-medium leading-none">GST No.</label>
                   <input
                     id="toGstn"
                     name="toGstn"
@@ -429,6 +352,31 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                     onChange={handleInputChange}
                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Ghardaar Details (From) */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium border-b pb-2">Ghardaar24 Details</h3>
+              <div>
+                <label htmlFor="companyName" className="text-sm font-medium leading-none">Name</label>
+                <input
+                  id="companyName"
+                  name="companyName"
+                  value={invoiceData.companyName}
+                  onChange={handleInputChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-sm font-medium leading-none text-gray-500">RERA No.</span>
+                  <div className="mt-1 font-medium">{invoiceData.reraNo}</div>
+                </div>
+                <div>
+                  <span className="text-sm font-medium leading-none text-gray-500">PAN</span>
+                  <div className="mt-1 font-medium">{invoiceData.fromPanNo}</div>
                 </div>
               </div>
             </div>
@@ -595,14 +543,6 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium">Project Name</label>
-                        <input
-                          value={item.projectName}
-                          onChange={(e) => handleItemChange(item.id, 'projectName', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                        />
-                      </div>
-                      <div>
                         <label className="text-xs font-medium">Customer Name</label>
                         <input
                           value={item.customerName}
@@ -610,34 +550,75 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                           className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
                         />
                       </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium">Flat No.</label>
-                      <input
-                        value={item.flatNo}
-                        onChange={(e) => handleItemChange(item.id, 'flatNo', e.target.value)}
-                        className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                      />
+                      <div>
+                        <label className="text-xs font-medium">Project Name</label>
+                        <input
+                          value={item.projectName}
+                          onChange={(e) => handleItemChange(item.id, 'projectName', e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                        />
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium">Basic Cost (&#8377;)</label>
+                        <label className="text-xs font-medium">Wing</label>
                         <input
-                          value={item.basicCost}
-                          onChange={(e) => handleItemChange(item.id, 'basicCost', e.target.value)}
+                          value={item.wing}
+                          onChange={(e) => handleItemChange(item.id, 'wing', e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium">Flat No.</label>
+                        <input
+                          value={item.flatNo}
+                          onChange={(e) => handleItemChange(item.id, 'flatNo', e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium">Agreement Cost (&#8377;)</label>
+                        <input
+                          value={item.agreementCost}
+                          onChange={(e) => handleItemChange(item.id, 'agreementCost', e.target.value)}
                           className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
                           placeholder="0"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium">Brokerage Amount (&#8377;)</label>
+                        <label className="text-xs font-medium">Infra (&#8377;)</label>
                         <input
-                          value={item.brokerageAmount}
-                          onChange={(e) => handleItemChange(item.id, 'brokerageAmount', e.target.value)}
+                          value={item.infra}
+                          onChange={(e) => handleItemChange(item.id, 'infra', e.target.value)}
                           className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
                           placeholder="0"
                         />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium">Unit Cost (&#8377;)</label>
+                        <input
+                          value={item.unitCost}
+                          onChange={(e) => handleItemChange(item.id, 'unitCost', e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium">Brokerage (%)</label>
+                        <input
+                          value={item.brokeragePercent}
+                          onChange={(e) => handleItemChange(item.id, 'brokeragePercent', e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                          placeholder="2"
+                        />
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 text-right">
+                      Brokerage Amount: &#8377;{formatCurrency(getItemBrokerage(item))}
                     </div>
                   </div>
                 </div>
@@ -788,7 +769,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                           {((viewingInvoice.invoice_data as any).items as any[]).map((item: any, i: number) => (
                             <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-sm">
                               <span>{item.projectName || item.description || `Item ${i + 1}`}</span>
-                              <span className="font-semibold">&#8377;{formatCurrency(item.brokerageAmount || item.amount || 0)}</span>
+                              <span className="font-semibold">&#8377;{formatCurrency(item.brokerageAmount || (item.unitCost && item.brokeragePercent ? Math.round(parseInt(item.unitCost || "0") * parseFloat(item.brokeragePercent || "0") / 100) : 0) || item.amount || 0)}</span>
                             </div>
                           ))}
                         </div>
@@ -819,157 +800,125 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
         <div className="w-full lg:w-2/3 print:w-full print:absolute print:top-0 print:left-0 lg:sticky lg:top-8 h-fit">
           <div className="bg-white print:shadow-none shadow-md overflow-hidden text-sm print:text-xs border-2 border-black">
 
-            {/* Company Header */}
-            <div className="p-3 pb-1">
-              <div className="text-2xl print:text-xl font-bold">{invoiceData.companyName || "Company Name"}</div>
-              <table className="w-full text-xs print:text-[10px] mt-1">
+            {/* Title */}
+            <div className="flex items-center justify-center gap-2 py-2 border-b border-black">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Ghardaar24" className="h-10 w-10 print:h-8 print:w-8 object-contain" />
+              <span className="text-base print:text-sm font-bold">Ghardaar24</span>
+            </div>
+
+            {/* Invoice No & Date Row */}
+            <div className="flex border-b border-black text-xs print:text-[10px]">
+              <div className="flex-1 p-1.5 font-medium">
+                INVOICE NO. {invoiceData.invoiceNo}
+              </div>
+              <div className="p-1.5 font-medium text-right">
+                DATE : {invoiceData.date}
+              </div>
+            </div>
+
+            {/* Construction Company Details */}
+            <div className="border-b border-black">
+              <table className="w-full text-xs print:text-[10px] border-collapse">
                 <tbody>
-                  <tr><td className="py-0.5">Office Address:</td><td colSpan={5} className="py-0.5">{invoiceData.officeAddress}</td></tr>
-                  <tr><td className="py-0.5">Mobile No.:</td><td colSpan={5} className="py-0.5">{invoiceData.mobileNo}</td></tr>
-                  <tr><td className="py-0.5">Email Id:</td><td colSpan={5} className="py-0.5">{invoiceData.emailId}</td></tr>
-                  <tr><td className="py-0.5">RERA NO:</td><td colSpan={5} className="py-0.5">{invoiceData.reraNo}</td></tr>
+                  <tr>
+                    <td className="border-b border-r border-black p-1.5 w-[35%] align-top">
+                      <div>Construction Company Name :-</div>
+                      <div>Construction Company Reg Address :-</div>
+                    </td>
+                    <td className="border-b border-black p-1.5 align-top text-center font-medium">
+                      <div>{invoiceData.toName}</div>
+                      <div>{invoiceData.toAddress}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border-r border-black p-1.5 align-top">
+                      <div>Rera No. :-</div>
+                      <div>GST NO.</div>
+                    </td>
+                    <td className="p-1.5 text-center font-medium">
+                      <div>{invoiceData.toReraNo}</div>
+                      <div>{invoiceData.toGstn}</div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* INVOICE Title */}
-            <div className="text-center font-bold text-2xl print:text-xl py-3 border-t border-black">
-              INVOICE
-            </div>
-
-            {/* To / From Section */}
-            <div className="flex border-t border-black">
-              <div className="w-1/2 border-r border-black p-2 text-xs print:text-[10px]">
-                <div className="font-semibold mb-1">To</div>
-                <div>{invoiceData.toName}</div>
-                {invoiceData.toAddress && invoiceData.toAddress.split('\n').map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
-                <div className="mt-1">
-                  <span className="font-semibold">Pan:</span> <span className="ml-12">{invoiceData.toPan}</span>
-                </div>
-                <div>
-                  <span className="font-semibold">GSTN-</span> <span className="ml-10">{invoiceData.toGstn}</span>
-                </div>
+            {/* Ghardaar24 Details */}
+            <div className="border-b border-black text-xs print:text-[10px]">
+              <div className="p-1.5 border-b border-black">
+                Name : {invoiceData.companyName || "Ghardaar24 Prop Sanket Balwant Hire"}
               </div>
-              <div className="w-1/2 p-2 text-xs print:text-[10px]">
-                <div><span className="font-semibold">From:</span></div>
-                <div><span className="font-semibold">Invoice Date:</span> <span className="ml-2">{invoiceData.date}</span></div>
-                <div><span className="font-semibold">Invoice No:</span> <span className="ml-4">{invoiceData.invoiceNo}</span></div>
-                <div><span className="font-semibold">GSTN :</span> <span className="ml-8">{invoiceData.fromGstn}</span></div>
-                <div><span className="font-semibold">Pan No.:</span> <span className="ml-5">{invoiceData.fromPanNo}</span></div>
+              <div className="p-1.5 border-b border-black">
+                Rera No. : {invoiceData.reraNo}
+              </div>
+              <div className="p-1.5">
+                PAN : {invoiceData.fromPanNo}
               </div>
             </div>
 
             {/* Items Table */}
             <table className="w-full border-collapse text-xs print:text-[10px]">
               <thead>
-                <tr className="border-t-2 border-black">
-                  <th className="border border-black p-1.5 w-[8%] text-center">S.N.</th>
-                  <th className="border border-black p-1.5 w-[22%] text-center">Project Name</th>
-                  <th className="border border-black p-1.5 w-[22%] text-center">Customer Name</th>
-                  <th className="border border-black p-1.5 w-[12%] text-center">Flat No.</th>
-                  <th className="border border-black p-1.5 w-[16%] text-center">Basic Cost</th>
-                  <th className="border border-black p-1.5 w-[20%] text-center">Brokerage Amount</th>
+                <tr>
+                  <th className="border border-black p-1.5 w-[8%] text-center">Sr. No.</th>
+                  <th className="border border-black p-1.5 w-[52%] text-center">Particulars</th>
+                  <th className="border border-black p-1.5 w-[15%] text-center">Tax Rate</th>
+                  <th className="border border-black p-1.5 w-[25%] text-center">Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item, index) => (
-                  <tr key={item.id}>
-                    <td className="border border-black p-1.5 text-center">{index + 1}</td>
-                    <td className="border border-black p-1.5">{item.projectName}</td>
-                    <td className="border border-black p-1.5">{item.customerName}</td>
-                    <td className="border border-black p-1.5 text-center">{item.flatNo}</td>
-                    <td className="border border-black p-1.5 text-right">{formatCurrency(item.basicCost)}</td>
-                    <td className="border border-black p-1.5 text-right">{formatCurrency(item.brokerageAmount)}</td>
+                  <tr key={item.id} className="align-top">
+                    <td className="border border-black p-1.5 text-center align-middle font-bold">{index + 1}</td>
+                    <td className="border border-black p-2">
+                      <div className="space-y-0.5">
+                        <div className="font-medium mb-1">Description of Service Provided</div>
+                        <div>Customer Name : {item.customerName}</div>
+                        <div>Project Name : {item.projectName}</div>
+                        {item.wing && <div>Wing : {item.wing}</div>}
+                        <div>Flat no : {item.flatNo}</div>
+                        <div>Agreement Cost : {formatCurrency(item.agreementCost)}</div>
+                        {parseInt(item.infra || "0") > 0 && <div>Infra : {formatCurrency(item.infra)}</div>}
+                        <div>Unit Cost : {formatCurrency(item.unitCost)}</div>
+                        <div>Brokerage : {item.brokeragePercent}%</div>
+                      </div>
+                    </td>
+                    <td className="border border-black p-1.5 text-center align-middle">
+                      TOTAL AMOUNT : -
+                    </td>
+                    <td className="border border-black p-1.5 text-right align-middle font-medium">
+                      {formatCurrency(getItemBrokerage(item))}
+                    </td>
                   </tr>
                 ))}
-                {/* Empty rows to fill the table */}
-                {Array.from({ length: Math.max(0, 10 - items.length) }).map((_, i) => (
-                  <tr key={`empty-${i}`}>
-                    <td className="border border-black p-1.5">&nbsp;</td>
-                    <td className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5"></td>
-                  </tr>
-                ))}
-                {/* Total Amount Row */}
+                {/* Total Amount Payable Row */}
                 <tr className="font-semibold">
-                  <td colSpan={4} className="border border-black p-1.5"></td>
-                  <td className="border border-black p-1.5 text-right font-bold">Total Amount</td>
+                  <td className="border border-black p-1.5"></td>
+                  <td className="border border-black p-1.5">Total amount Payable in Rupees :</td>
+                  <td className="border border-black p-1.5"></td>
                   <td className="border border-black p-1.5 text-right">{formatCurrency(totalBrokerage)}</td>
-                </tr>
-                {/* Tax Rows */}
-                {invoiceData.taxType === "sgst_cgst" ? (
-                  <>
-                    <tr>
-                      <td colSpan={4} className="border border-black p-1.5"></td>
-                      <td className="border border-black p-1.5 text-right">SGST</td>
-                      <td className="border border-black p-1.5 text-right">9%&nbsp;&nbsp;&nbsp;{formatCurrency(sgstAmount)}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={4} className="border border-black p-1.5"></td>
-                      <td className="border border-black p-1.5 text-right">CGST</td>
-                      <td className="border border-black p-1.5 text-right">9%&nbsp;&nbsp;&nbsp;{formatCurrency(cgstAmount)}</td>
-                    </tr>
-                  </>
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5 text-right">IGST</td>
-                    <td className="border border-black p-1.5 text-right">18%&nbsp;&nbsp;&nbsp;{formatCurrency(igstAmount)}</td>
-                  </tr>
-                )}
-                {/* Grand Total */}
-                <tr className="font-bold">
-                  <td colSpan={4} className="border border-black p-1.5"></td>
-                  <td className="border border-black p-1.5 text-right">Grand Total</td>
-                  <td className="border border-black p-1.5 text-right">{formatCurrency(grandTotal)}</td>
                 </tr>
               </tbody>
             </table>
 
             {/* Amount in Words */}
-            <div className="border-t border-black p-2 text-xs print:text-[10px]">
-              <span className="font-semibold">Amount in Words - </span>{numToWords(grandTotal)}
+            <div className="border-t border-black p-2 text-xs print:text-[10px] bg-gray-100 text-center">
+              Amount in Words : {numToWords(grandTotal)}
             </div>
 
-            {/* Spacer line */}
-            <div className="border-t border-black p-2"></div>
-
             {/* Bank Details + Authorised Signatory */}
-            <div className="border-t border-black flex">
-              <div className="flex-1 p-2 text-xs print:text-[10px]">
-                <table className="text-xs print:text-[10px]">
-                  <tbody>
-                    <tr>
-                      <td className="font-semibold py-0.5 pr-2 align-top">Bank Details For<br/>RTGS/NEFT</td>
-                      <td className="py-0.5"></td>
-                    </tr>
-                    <tr>
-                      <td className="font-semibold py-0.5 pr-2">Account Name:</td>
-                      <td className="py-0.5">{invoiceData.selectedBank === "1" ? invoiceData.favouringName1 : invoiceData.favouringName2}</td>
-                    </tr>
-                    <tr>
-                      <td className="font-semibold py-0.5 pr-2">Bank Name:</td>
-                      <td className="py-0.5">{invoiceData.selectedBank === "1" ? invoiceData.bankName1 : invoiceData.bankName2}</td>
-                    </tr>
-                    <tr>
-                      <td className="font-semibold py-0.5 pr-2">Account Number:</td>
-                      <td className="py-0.5">{invoiceData.selectedBank === "1" ? invoiceData.accNo1 : invoiceData.accNo2}</td>
-                    </tr>
-                    <tr>
-                      <td className="font-semibold py-0.5 pr-2">IFSC Code:</td>
-                      <td className="py-0.5">{invoiceData.selectedBank === "1" ? invoiceData.ifsc1 : invoiceData.ifsc2}</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <div className="border-t border-black flex text-xs print:text-[10px]">
+              <div className="flex-1 p-2">
+                <div>Channel Partner Cheque Favouring Name : {invoiceData.selectedBank === "1" ? invoiceData.favouringName1 : invoiceData.favouringName2}</div>
+                <div>Bank Name : {invoiceData.selectedBank === "1" ? invoiceData.bankName1 : invoiceData.bankName2}</div>
+                <div>Account No. {invoiceData.selectedBank === "1" ? invoiceData.accNo1 : invoiceData.accNo2}</div>
+                <div>IFSC CODE : {invoiceData.selectedBank === "1" ? invoiceData.ifsc1 : invoiceData.ifsc2}</div>
+                <div>(As per RERA Certificate)</div>
               </div>
-              <div className="w-[200px] p-2 flex flex-col items-center justify-end">
-                <div className="border border-black w-full h-16 mb-1"></div>
-                <span className="text-xs print:text-[10px] font-semibold">Authorised Sign/stamp</span>
+              <div className="w-[200px] p-2 flex flex-col items-end justify-end">
+                <span className="text-xs print:text-[10px] font-medium">Authorised Signatory</span>
               </div>
             </div>
 
