@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
   getClientIdentifier,
   getRateLimitHeaders,
 } from "@/lib/rate-limit";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +23,38 @@ export async function POST(req: NextRequest) {
           status: 429,
           headers: getRateLimitHeaders(rateLimit.remaining, rateLimit.resetIn),
         }
+      );
+    }
+
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // Verify user is admin or active staff
+    const [{ data: adminRecord }, { data: staffRecord }] = await Promise.all([
+      supabaseAdmin.from("admins").select("id").eq("id", user.id).maybeSingle(),
+      supabaseAdmin.from("crm_staff").select("id").eq("id", user.id).eq("is_active", true).maybeSingle(),
+    ]);
+
+    if (!adminRecord && !staffRecord) {
+      return NextResponse.json(
+        { error: "Unauthorized: Admin or staff access required" },
+        { status: 403 }
       );
     }
 

@@ -90,8 +90,6 @@ export async function GET(request: NextRequest) {
         if (id && !assigneeMap.has(id)) assigneeMap.set(id, { id, name, email });
       });
 
-      console.log("Task assignee resolution - assigneeIds:", assigneeIds, "resolved:", [...assigneeMap.keys()]);
-
       for (const task of data) {
         (task as Record<string, unknown>).assigned_staff = assigneeMap.get(task.assigned_to) || null;
       }

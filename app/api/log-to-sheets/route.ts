@@ -42,39 +42,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if credentials are configured
-    const hasPrivateKey = !!process.env.GOOGLE_SHEETS_PRIVATE_KEY;
-    const hasClientEmail = !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-    const hasSpreadsheetId = !!process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
-
-    console.log("Google Sheets config check:", {
-      hasPrivateKey,
-      hasClientEmail,
-      hasSpreadsheetId,
-    });
-
-    if (!hasPrivateKey || !hasClientEmail || !hasSpreadsheetId) {
-      console.error("Missing Google Sheets credentials:", {
-        hasPrivateKey,
-        hasClientEmail,
-        hasSpreadsheetId,
-      });
+    if (
+      !process.env.GOOGLE_SHEETS_PRIVATE_KEY ||
+      !process.env.GOOGLE_SHEETS_CLIENT_EMAIL ||
+      !process.env.GOOGLE_SHEETS_SPREADSHEET_ID
+    ) {
+      console.error("Missing one or more Google Sheets credentials");
       return NextResponse.json(
-        {
-          error: "Google Sheets not configured",
-          details: {
-            hasPrivateKey,
-            hasClientEmail,
-            hasSpreadsheetId,
-          },
-        },
+        { error: "Google Sheets not configured" },
         { status: 500 }
       );
     }
 
     const body = await req.json();
     const { type, data } = body;
-
-    // console.log("Log to sheets request:", { type }); // Only log type, not data which has PII
 
     if (!type || !data) {
       return NextResponse.json(
@@ -92,7 +73,6 @@ export async function POST(req: NextRequest) {
         );
       }
       await appendUserSignup(signupData);
-      console.log("Successfully logged signup to sheets");
     } else if (type === "property") {
       const propertyData = data as PropertyData;
       if (!propertyData.title || !propertyData.property_type) {
@@ -102,7 +82,6 @@ export async function POST(req: NextRequest) {
         );
       }
       await appendPropertyListing(propertyData);
-      console.log("Successfully logged property to sheets");
     } else {
       return NextResponse.json(
         { error: "Invalid type. Must be 'signup' or 'property'" },

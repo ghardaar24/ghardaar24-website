@@ -20,6 +20,14 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+export const supabaseStaff = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storageKey: "ghardaar-staff-auth",
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
 export interface Property {
   id: string;
   title: string;

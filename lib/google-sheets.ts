@@ -22,14 +22,6 @@ function getSheetsClient() {
     privateKey = privateKey.replace(/\\n/g, "\n");
   }
 
-  // Log for debugging (remove in production)
-  console.log("Google Sheets auth config:", {
-    clientEmail,
-    privateKeyLength: privateKey.length,
-    privateKeyStartsWith: privateKey.substring(0, 30),
-    privateKeyEndsWith: privateKey.substring(privateKey.length - 30),
-  });
-
   const auth = new google.auth.GoogleAuth({
     credentials: {
       private_key: privateKey,

@@ -159,6 +159,7 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | `Admins can manage tasks` | ALL | Only authenticated admins |
 | `Staff can view assigned tasks` | SELECT | Staff can read their tasks |
 | `Staff can update assigned tasks` | UPDATE | Staff can update task status |
+| `Admins can manage tasks assigned to them` | ALL | Admins can update tasks assigned to them or others |
 
 ### Brochures Table Policies
 
@@ -180,6 +181,7 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | --- | --- | --- |
 | `Staff can insert own site visits` | INSERT | Active staff can create their own visits |
 | `Staff can read own site visits` | SELECT | Staff can read their own visits |
+| `Admins can insert own site visits`| INSERT | Admins can create their own visits |
 | `Admins can read all site visits` | SELECT | Admins can view all visits |
 | `Admins can manage all site visits` | ALL | Admins have full access |
 
@@ -411,6 +413,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.6.0   | April 2026    | Admin site visits, Inline CRM client editing, Task assignment enhancement |
 | 1.5.0   | March 2026    | Profile pictures, Staff sheet creation, CRM enhancements, Task timing |
 | 1.4.0   | February 2026 | Site visits, Invoices, Staff permissions, Floor plans |
 | 1.3.1   | January 2026  | Secured API routes with auth checks, CSP updates   |

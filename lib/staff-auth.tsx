@@ -8,20 +8,9 @@ import {
   ReactNode,
 } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseStaff } from "@/lib/supabase";
+export { supabaseStaff };
 import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// Create a separate Supabase client for staff with its own storage key
-export const supabaseStaff = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storageKey: "ghardaar-staff-auth",
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
 
 export interface StaffProfile {
   id: string;

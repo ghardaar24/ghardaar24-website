@@ -68,8 +68,6 @@ export async function GET(request: NextRequest) {
       email: a.email || "",
     }));
 
-    console.log("Staff API - admins found:", admins.length, admins);
-
     return NextResponse.json({ staff: staffData || [], admins });
   } catch (error) {
     console.error("Error in GET /api/admin/staff:", error instanceof Error ? error.message : String(error));

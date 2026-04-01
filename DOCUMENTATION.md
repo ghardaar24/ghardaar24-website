@@ -191,6 +191,7 @@ Stores client information for the CRM system.
 | ------------------- | ----------- | ----------------------------------- |
 | `id`                | UUID        | Primary key                         |
 | `client_name`       | TEXT        | Client's full name                  |
+| `customer_number`   | TEXT        | Unique customer identification number |
 | `phone`             | TEXT        | Client's phone number               |
 | `email`             | TEXT        | Client's email address              |
 | `lead_stage`        | TEXT        | follow_up_req, dnp, disqualified, callback_required, natc, visit_booked, call_after_1_2_months, vdnb |
@@ -246,9 +247,12 @@ Stores staff site visit records with photo proof.
 | Column           | Type        | Description                  |
 | ---------------- | ----------- | ---------------------------- |
 | `id`             | UUID        | Primary key                  |
-| `staff_id`       | UUID        | Reference to `crm_staff`     |
+| `staff_id`       | UUID        | Reference to `crm_staff` (nullable) |
+| `admin_id`       | UUID        | Reference to `admins` (nullable) |
 | `property_title` | TEXT        | Property visited             |
 | `location`       | TEXT        | Visit location               |
+| `client_name`    | TEXT        | Name of the client visiting  |
+| `client_mobile`  | TEXT        | Mobile number of the client  |
 | `visit_date`     | DATE        | Date of visit                |
 | `notes`          | TEXT        | Optional visit notes         |
 | `visit_time`     | TIME        | Time of the site visit       |
@@ -264,7 +268,7 @@ Tasks assigned by admins to staff members.
 | `id`         | UUID        | Primary key                                      |
 | `title`      | TEXT        | Task title                                       |
 | `description`| TEXT        | Task details                                     |
-| `assigned_to`| UUID        | Staff member assigned (auth.users)               |
+| `assigned_to`| UUID        | User/Admin/Staff assigned (`auth.users`)         |
 | `assigned_by`| UUID        | Admin who assigned the task                      |
 | `priority`   | TEXT        | low, medium, high                                |
 | `status`     | TEXT        | pending, in_progress, completed                  |
@@ -660,6 +664,15 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.6.0 (April 2026)
+
+- **Admin Site Visits**: Admins can now record their own site visits. Added `admin_id` to site visits tracking.
+- **Client History in Site Visits**: Added `client_name` and `client_mobile` to site visits to track repeat visitors.
+- **Task Assignment Enhancement**: Extended task assignment capabilities; tasks can now be assigned to any authorized user (Admins, Staff) using `auth.users`.
+- **Inline Client Editing**: Added the ability for Staff/Admins to directly edit client details via client info modals straight from the task list.
+- **CRM Simplification**: Completely removed the legacy bulk update feature in favor of individual record management to prevent accidental data overwrites.
+- **Security Check & Cleanup**: Removed redundant/unused code, optimized endpoints, and secured API routes for improved performance and safety.
 
 ### v1.5.0 (March 2026)
 

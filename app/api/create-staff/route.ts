@@ -11,7 +11,7 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, name, adminId } = body;
+    const { email, password, name } = body;
 
     if (!email || !name) {
       return NextResponse.json(
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
           id: userId,
           email: email,
           name: name,
-          created_by: adminId || null,
+          created_by: user.id,
         },
       ])
       .select()
