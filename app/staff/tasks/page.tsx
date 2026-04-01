@@ -16,6 +16,8 @@ import {
   MessageSquare,
   X,
   Loader2,
+  Edit2,
+  Save,
 } from "lucide-react";
 
 interface CallingCommentEntry {
@@ -37,6 +39,9 @@ interface CRMClient {
   expected_visit_time: string | null;
   deal_status: string;
   admin_notes: string | null;
+  facing: string | null;
+  added_by?: string | null;
+  sheet_id: string | null;
   created_at: string;
 }
 
@@ -103,6 +108,19 @@ export default function StaffTasksPage() {
   const [showClientModal, setShowClientModal] = useState(false);
   const [clientDetails, setClientDetails] = useState<CRMClient | null>(null);
   const [clientLoading, setClientLoading] = useState(false);
+
+  // Client edit modal state
+  const [showClientEditModal, setShowClientEditModal] = useState(false);
+  const [clientEditData, setClientEditData] = useState({
+    lead_stage: "",
+    lead_type: "",
+    location_category: "",
+    expected_visit_date: "",
+    expected_visit_time: "",
+    deal_status: "",
+    facing: "",
+  });
+  const [clientEditSaving, setClientEditSaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -215,6 +233,79 @@ export default function StaffTasksPage() {
     }
   };
 
+  const handleViewClientByName = async (name: string) => {
+    setClientLoading(true);
+    setShowClientModal(true);
+    try {
+      const { data, error } = await supabaseStaff
+        .from("crm_clients")
+        .select("*")
+        .ilike("client_name", name)
+        .limit(1)
+        .single();
+      if (error) throw error;
+      setClientDetails(data);
+    } catch (err) {
+      console.error("Error fetching client by name:", err);
+      setClientDetails(null);
+    } finally {
+      setClientLoading(false);
+    }
+  };
+
+  const openClientEditModal = (client: CRMClient) => {
+    setClientEditData({
+      lead_stage: client.lead_stage || "",
+      lead_type: client.lead_type || "",
+      location_category: client.location_category || "",
+      expected_visit_date: client.expected_visit_date ? client.expected_visit_date.split("T")[0] : "",
+      expected_visit_time: client.expected_visit_time || "",
+      deal_status: client.deal_status || "",
+      facing: client.facing || "",
+    });
+    setShowClientEditModal(true);
+  };
+
+  const handleClientEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clientDetails) return;
+    setClientEditSaving(true);
+    try {
+      const { error } = await supabaseStaff
+        .from("crm_clients")
+        .update({
+          lead_stage: clientEditData.lead_stage,
+          lead_type: clientEditData.lead_type,
+          location_category: clientEditData.location_category || null,
+          expected_visit_date: clientEditData.expected_visit_date || null,
+          expected_visit_time: clientEditData.expected_visit_time || null,
+          deal_status: clientEditData.deal_status,
+          facing: clientEditData.facing || null,
+        })
+        .eq("id", clientDetails.id);
+      if (error) throw error;
+
+      // Update local clientDetails
+      const updated = {
+        ...clientDetails,
+        lead_stage: clientEditData.lead_stage,
+        lead_type: clientEditData.lead_type,
+        location_category: clientEditData.location_category || null,
+        expected_visit_date: clientEditData.expected_visit_date || null,
+        expected_visit_time: clientEditData.expected_visit_time || null,
+        deal_status: clientEditData.deal_status,
+        facing: clientEditData.facing || null,
+      };
+      setClientDetails(updated);
+      setShowClientEditModal(false);
+    } catch (err) {
+      console.error("Error updating client:", err);
+      alert("Failed to update client. Please try again.");
+    } finally {
+      setClientEditSaving(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="staff-tasks-page">
@@ -255,11 +346,6 @@ export default function StaffTasksPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         layout
-        onClick={() => {
-          if (task.client_id) {
-            handleViewClient(task.client_id);
-          }
-        }}
         style={{
           background: overdue ? "#fef2f2" : completed ? "#f0fdf4" : "#f9fafb",
           borderRadius: "12px",
@@ -267,15 +353,50 @@ export default function StaffTasksPage() {
           border: `1px solid ${overdue ? "#fecaca" : completed ? "#bbf7d0" : "#e5e7eb"}`,
           opacity: completed ? 0.75 : 1,
           transition: "all 0.2s",
-          cursor: task.client_id ? "pointer" : "default",
         }}
       >
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3
-              style={{ fontSize: "1rem", fontWeight: 600, color: task.client_id ? "#f36a2a" : "#111827", margin: "0 0 0.5rem" }}
-            >{task.title}</h3>
+              style={{ fontSize: "1rem", fontWeight: 600, color: "#111827", margin: "0 0 0.5rem" }}
+            >
+              {task.title}
+              {(() => {
+                const isCrmTask = task.client_id || task.description?.includes("Automatically created from CRM") || task.title?.startsWith("Site visit for");
+                if (!isCrmTask) return null;
+                const clientName = task.title?.replace("Site visit for ", "").trim();
+                return (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (task.client_id) {
+                        handleViewClient(task.client_id);
+                      } else if (clientName) {
+                        handleViewClientByName(clientName);
+                      }
+                    }}
+                    style={{
+                      marginLeft: "0.5rem",
+                      fontSize: "0.813rem",
+                      fontWeight: 600,
+                      color: "#f36a2a",
+                      background: "rgba(243, 106, 42, 0.08)",
+                      border: "1px solid rgba(243, 106, 42, 0.2)",
+                      borderRadius: "6px",
+                      padding: "0.15rem 0.5rem",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      verticalAlign: "middle",
+                    }}
+                    onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(243, 106, 42, 0.15)'; }}
+                    onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(243, 106, 42, 0.08)'; }}
+                  >
+                    View Client
+                  </button>
+                );
+              })()}
+            </h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
               <span style={badgeStyle(priorityOpt?.color || "#6b7280")}>
                 <Flag className="w-3 h-3" />
@@ -296,7 +417,7 @@ export default function StaffTasksPage() {
 
           {/* Action buttons */}
           {!completed && (
-            <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
               {task.status === "pending" && (
                 <button
                   onClick={() => handleStatusChange(task.id, "in_progress")}
@@ -667,7 +788,27 @@ export default function StaffTasksPage() {
                   </div>
 
                   {/* Footer */}
-                  <div style={{ padding: "1rem 2rem", borderTop: "1px solid #f3f4f6", background: "#fafafa", display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ padding: "1rem 2rem", borderTop: "1px solid #f3f4f6", background: "#fafafa", display: "flex", justifyContent: "space-between" }}>
+                    <button
+                      onClick={() => { if (clientDetails) openClientEditModal(clientDetails); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        padding: "0.625rem 1.25rem",
+                        border: "none",
+                        borderRadius: "10px",
+                        background: "linear-gradient(135deg, #f36a2a 0%, #d4551a 100%)",
+                        color: "white",
+                        fontSize: "0.9375rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        boxShadow: "0 4px 14px 0 rgba(243, 106, 42, 0.3)",
+                      }}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      Edit Client
+                    </button>
                     <button
                       onClick={() => { setShowClientModal(false); setClientDetails(null); }}
                       style={{ padding: "0.625rem 1.5rem", border: "2px solid #e5e7eb", borderRadius: "10px", background: "#ffffff", color: "#374151", fontSize: "0.9375rem", fontWeight: 600, cursor: "pointer" }}
@@ -682,6 +823,158 @@ export default function StaffTasksPage() {
                   <p style={{ margin: 0, fontSize: "0.9375rem" }}>Client not found</p>
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Client Edit Modal */}
+      <AnimatePresence>
+        {showClientEditModal && clientDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowClientEditModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1100,
+              padding: "1rem",
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#ffffff",
+                borderRadius: "20px",
+                width: "100%",
+                maxWidth: "520px",
+                maxHeight: "90vh",
+                overflow: "hidden",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              {/* Header */}
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #f36a2a 0%, #d4551a 100%)",
+                  padding: "1.5rem",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: "1rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+                  <div style={{ width: "48px", height: "48px", background: "rgba(255, 255, 255, 0.2)", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: "white", flexShrink: 0 }}>
+                    <Edit2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: "1.375rem", fontWeight: 700, color: "white", margin: "0 0 0.25rem", letterSpacing: "-0.01em" }}>
+                      Edit Client
+                    </h2>
+                    <p style={{ fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
+                      {clientDetails.client_name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowClientEditModal(false)}
+                  style={{ width: "36px", height: "36px", border: "none", background: "rgba(255, 255, 255, 0.2)", color: "white", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleClientEditSubmit} style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", flex: 1 }}>
+                {/* Lead Stage */}
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Stage</label>
+                  <select value={clientEditData.lead_stage} onChange={(e) => setClientEditData({ ...clientEditData, lead_stage: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem" }}>
+                    {LEAD_STAGE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+
+                {/* Lead Type */}
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Type</label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {LEAD_TYPE_OPTIONS.map((o) => (
+                      <label key={o.value} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "0.75rem 0.5rem", border: `2px solid ${clientEditData.lead_type === o.value ? o.color : "#e5e7eb"}`, borderRadius: "10px", background: clientEditData.lead_type === o.value ? `${o.color}20` : `${o.color}08`, color: clientEditData.lead_type === o.value ? o.color : "#6b7280", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
+                        <input type="radio" name="edit_lead_type" value={o.value} checked={clientEditData.lead_type === o.value} onChange={(e) => setClientEditData({ ...clientEditData, lead_type: e.target.value })} style={{ display: "none" }} />
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: o.color }} />
+                        {o.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Deal Status */}
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Deal Status</label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {DEAL_STATUS_OPTIONS.map((o) => (
+                      <label key={o.value} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "0.75rem 0.5rem", border: `2px solid ${clientEditData.deal_status === o.value ? o.color : "#e5e7eb"}`, borderRadius: "10px", background: clientEditData.deal_status === o.value ? `${o.color}20` : `${o.color}08`, color: clientEditData.deal_status === o.value ? o.color : "#6b7280", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
+                        <input type="radio" name="edit_deal_status" value={o.value} checked={clientEditData.deal_status === o.value} onChange={(e) => setClientEditData({ ...clientEditData, deal_status: e.target.value })} style={{ display: "none" }} />
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: o.color }} />
+                        {o.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Location</label>
+                  <input type="text" value={clientEditData.location_category} onChange={(e) => setClientEditData({ ...clientEditData, location_category: e.target.value })} placeholder="Location category" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                </div>
+
+                {/* Facing */}
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Facing</label>
+                  <input type="text" value={clientEditData.facing} onChange={(e) => setClientEditData({ ...clientEditData, facing: e.target.value })} placeholder="Facing direction" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                </div>
+
+                {/* Expected Visit Date & Time */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 140px" }}>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Date</label>
+                    <input type="date" value={clientEditData.expected_visit_date} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_date: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                  </div>
+                  <div style={{ flex: "1 1 140px" }}>
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Time</label>
+                    <input type="time" value={clientEditData.expected_visit_time} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_time: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                  </div>
+                </div>
+              </form>
+
+              {/* Actions */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", padding: "1.25rem 1.75rem", borderTop: "1px solid #f3f4f6", background: "#fafafa" }}>
+                <button type="button" onClick={() => setShowClientEditModal(false)} disabled={clientEditSaving} style={{ padding: "0.75rem 1.5rem", border: "2px solid #e5e7eb", borderRadius: "10px", background: "#ffffff", color: "#6b7280", fontSize: "0.9375rem", fontWeight: 600, cursor: clientEditSaving ? "not-allowed" : "pointer", opacity: clientEditSaving ? 0.5 : 1 }}>
+                  Cancel
+                </button>
+                <button type="submit" onClick={handleClientEditSubmit} disabled={clientEditSaving} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1.75rem", border: "none", borderRadius: "10px", background: "linear-gradient(135deg, #f36a2a 0%, #d4551a 100%)", color: "white", fontSize: "0.9375rem", fontWeight: 600, cursor: clientEditSaving ? "not-allowed" : "pointer", opacity: clientEditSaving ? 0.7 : 1, boxShadow: "0 4px 14px 0 rgba(243, 106, 42, 0.4)" }}>
+                  {clientEditSaving ? (
+                    <><Loader2 className="w-4 h-4" style={{ animation: "spin 1s linear infinite" }} /> Saving...</>
+                  ) : (
+                    <><Save className="w-4 h-4" /> Save Changes</>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
