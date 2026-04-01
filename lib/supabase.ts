@@ -53,6 +53,8 @@ export interface Property {
   floors?: string;
   config?: string;
   carpet_area?: string;
+  // Resale Details
+  property_age?: string;
   // RERA & Legal Details
   rera_no?: string;
   rera_possession?: string;

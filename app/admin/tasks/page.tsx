@@ -408,42 +408,24 @@ export default function AdminTasksPage() {
     );
   }
 
-  const handleViewClient = async (clientId: string) => {
-    setClientLoading(true);
-    setShowClientModal(true);
-    try {
-      const { data, error } = await supabase
-        .from("crm_clients")
-        .select("*")
-        .eq("id", clientId)
-        .single();
-      if (error) throw error;
-      setClientDetails(data);
-    } catch (err) {
-      console.error("Error fetching client:", err);
-      setClientDetails(null);
-    } finally {
-      setClientLoading(false);
-    }
+  const handleViewClient = (clientId: string) => {
+    window.location.href = `/admin/crm?client_id=${clientId}`;
   };
 
   const handleViewClientByName = async (name: string) => {
-    setClientLoading(true);
-    setShowClientModal(true);
     try {
       const { data, error } = await supabase
         .from("crm_clients")
-        .select("*")
+        .select("id")
         .ilike("client_name", name)
         .limit(1)
         .single();
       if (error) throw error;
-      setClientDetails(data);
+      if (data) {
+        window.location.href = `/admin/crm?client_id=${data.id}`;
+      }
     } catch (err) {
       console.error("Error fetching client by name:", err);
-      setClientDetails(null);
-    } finally {
-      setClientLoading(false);
     }
   };
 

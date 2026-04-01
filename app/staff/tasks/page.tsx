@@ -214,42 +214,24 @@ export default function StaffTasksPage() {
   const completedCount = tasks.filter((t) => t.status === "completed").length;
   const overdueCount = tasks.filter(isOverdue).length;
 
-  const handleViewClient = async (clientId: string) => {
-    setClientLoading(true);
-    setShowClientModal(true);
-    try {
-      const { data, error } = await supabaseStaff
-        .from("crm_clients")
-        .select("*")
-        .eq("id", clientId)
-        .single();
-      if (error) throw error;
-      setClientDetails(data);
-    } catch (err) {
-      console.error("Error fetching client:", err);
-      setClientDetails(null);
-    } finally {
-      setClientLoading(false);
-    }
+  const handleViewClient = (clientId: string) => {
+    window.location.href = `/staff/crm?client_id=${clientId}`;
   };
 
   const handleViewClientByName = async (name: string) => {
-    setClientLoading(true);
-    setShowClientModal(true);
     try {
       const { data, error } = await supabaseStaff
         .from("crm_clients")
-        .select("*")
+        .select("id")
         .ilike("client_name", name)
         .limit(1)
         .single();
       if (error) throw error;
-      setClientDetails(data);
+      if (data) {
+        window.location.href = `/staff/crm?client_id=${data.id}`;
+      }
     } catch (err) {
       console.error("Error fetching client by name:", err);
-      setClientDetails(null);
-    } finally {
-      setClientLoading(false);
     }
   };
 

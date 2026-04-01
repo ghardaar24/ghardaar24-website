@@ -28,6 +28,7 @@ import {
   FileCheck,
   Scale,
   FileDown,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -100,7 +101,7 @@ export default async function PropertyDetailsPage({
   const sections = [
     { id: "overview", label: "Overview" },
     { id: "description", label: "Description" },
-    ...(property.land_parcel || property.towers || property.floors || property.config || property.carpet_area || property.rera_no || property.possession_status || property.target_possession || property.litigation !== undefined ? [{ id: "project-overview", label: "Project Details" }] : []),
+    ...(property.land_parcel || property.towers || property.floors || property.config || property.carpet_area || property.rera_no || property.possession_status || property.target_possession || property.litigation !== undefined || property.property_age ? [{ id: "project-overview", label: "Project Details" }] : []),
     ...(property.amenities && property.amenities.length > 0 ? [{ id: "amenities", label: "Amenities" }] : []),
     ...(property.floor_plan_url ? [{ id: "floor-plan", label: "Floor Plan" }] : []),
     ...(property.video_urls && property.video_urls.length > 0 ? [{ id: "videos", label: "Videos" }] : []),
@@ -276,7 +277,8 @@ export default async function PropertyDetailsPage({
                     property.rera_no ||
                     property.possession_status ||
                     property.target_possession ||
-                    property.litigation !== undefined) && (
+                    property.litigation !== undefined ||
+                    property.property_age) && (
                     <MotionSection delay={0.45}>
                       <div className="property-section" id="project-overview">
                         <h2 className="section-heading">Project Overview</h2>
@@ -437,6 +439,23 @@ export default async function PropertyDetailsPage({
                                   </span>
                                   <span className="project-overview-label">
                                     Target Possession
+                                  </span>
+                                </div>
+                              </div>
+                            </StaggerItem>
+                          )}
+                          {property.property_age && (
+                            <StaggerItem>
+                              <div className="project-overview-item">
+                                <div className="project-overview-icon">
+                                  <Clock className="w-5 h-5" />
+                                </div>
+                                <div className="project-overview-content">
+                                  <span className="project-overview-value">
+                                    {property.property_age}
+                                  </span>
+                                  <span className="project-overview-label">
+                                    Property Age
                                   </span>
                                 </div>
                               </div>

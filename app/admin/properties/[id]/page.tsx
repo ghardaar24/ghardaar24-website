@@ -41,9 +41,11 @@ export default function EditPropertyPage({
     area: "",
     address: "",
     property_type: "apartment" as const,
-    listing_type: "sale" as const,
+    listing_type: "sale" as "sale" | "rent" | "resale",
     featured: false,
     status: "active",
+    // Resale Details
+    property_age: "",
     // Project Details
     land_parcel: "",
     towers: "",
@@ -110,6 +112,8 @@ export default function EditPropertyPage({
           listing_type: data.listing_type || "sale",
           featured: data.featured || false,
           status: data.status || "active",
+          // Resale Details
+          property_age: data.property_age || "",
           // Project Details
           land_parcel: data.land_parcel?.toString() || "",
           towers: data.towers?.toString() || "",
@@ -438,6 +442,7 @@ export default function EditPropertyPage({
             floors: formData.floors,
             possession_status: formData.possession_status,
             carpet_area: formData.carpet_area,
+            property_age: formData.property_age,
           },
         }),
       });
@@ -549,6 +554,8 @@ export default function EditPropertyPage({
           brochure_urls: allBrochureUrls,
           floor_plan_url: uploadedFloorPlanUrl,
           video_urls: allVideoUrls,
+          // Resale Details
+          property_age: formData.property_age || null,
           // Project Details
           land_parcel: parseFloat(formData.land_parcel) || 0,
           towers: parseFloat(formData.towers) || 0,
@@ -734,6 +741,27 @@ export default function EditPropertyPage({
                 <option value="resale">Resale</option>
               </select>
             </div>
+
+            {formData.listing_type === "resale" && (
+              <div className="form-group">
+                <label htmlFor="property_age">Property Age</label>
+                <select
+                  id="property_age"
+                  name="property_age"
+                  value={formData.property_age}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Age</option>
+                  <option value="Less than 1 year">Less than 1 year</option>
+                  <option value="1-3 years">1-3 years</option>
+                  <option value="3-5 years">3-5 years</option>
+                  <option value="5-10 years">5-10 years</option>
+                  <option value="10-15 years">10-15 years</option>
+                  <option value="15-20 years">15-20 years</option>
+                  <option value="20+ years">20+ years</option>
+                </select>
+              </div>
+            )}
 
             <div className="form-group full">
               <PriceRangeInput
