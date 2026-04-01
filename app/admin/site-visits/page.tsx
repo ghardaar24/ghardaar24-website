@@ -29,6 +29,25 @@ import {
   Shield,
 } from "lucide-react";
 
+interface PropertyOption {
+  id: string;
+  title: string;
+  city: string;
+  area: string;
+}
+
+interface ClientOption {
+  id: string;
+  client_name: string;
+  customer_number: string;
+}
+
+interface AdminMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface StaffMember {
   id: string;
   name: string;
@@ -69,6 +88,9 @@ export default function AdminSiteVisitsPage() {
   const { adminProfile } = useAdminAuth();
   const [visits, setVisits] = useState<SiteVisit[]>([]);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [adminList, setAdminList] = useState<AdminMember[]>([]);
+  const [properties, setProperties] = useState<PropertyOption[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -78,18 +100,25 @@ export default function AdminSiteVisitsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [propertyTitle, setPropertyTitle] = useState("");
+  const [propertySearch, setPropertySearch] = useState("");
+  const [showPropertyDropdown, setShowPropertyDropdown] = useState(false);
   const [formLocation, setFormLocation] = useState("");
   const [visitDate, setVisitDate] = useState(new Date().toISOString().split("T")[0]);
   const [visitTime, setVisitTime] = useState("");
   const [clientName, setClientName] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [clientMobile, setClientMobile] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [clientVisitHistory, setClientVisitHistory] = useState<ClientVisitHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [clientAutoFilled, setClientAutoFilled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mobileDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const clientDropdownRef = useRef<HTMLDivElement>(null);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,9 +138,27 @@ export default function AdminSiteVisitsPage() {
     fetchData();
   }, []);
 
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(e.target as Node)) {
+        setShowPropertyDropdown(false);
+      }
+      if (clientDropdownRef.current && !clientDropdownRef.current.contains(e.target as Node)) {
+        setShowClientDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const fetchData = async () => {
     try {
-      const [visitsRes, staffRes] = await Promise.all([
+      // Fetch admin list via API (uses service role to bypass RLS)
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      const [visitsRes, staffRes, propertiesRes, clientsRes, adminsApiRes] = await Promise.all([
         supabase
           .from("site_visits")
           .select(
@@ -133,10 +180,26 @@ export default function AdminSiteVisitsPage() {
           .select("id, name, email")
           .eq("is_active", true)
           .order("name"),
+        supabase
+          .from("properties")
+          .select("id, title, city, area")
+          .order("title"),
+        supabase
+          .from("crm_clients")
+          .select("id, client_name, customer_number")
+          .order("client_name"),
+        token
+          ? fetch("/api/admin/staff", {
+              headers: { Authorization: `Bearer ${token}` },
+            }).then((r) => r.json()).catch(() => ({ admins: [] }))
+          : Promise.resolve({ admins: [] }),
       ]);
 
       if (visitsRes.error) throw visitsRes.error;
       const allVisits = (visitsRes.data || []) as SiteVisit[];
+      setAdminList((adminsApiRes.admins || []) as AdminMember[]);
+      setProperties((propertiesRes.data || []) as PropertyOption[]);
+      setClients((clientsRes.data || []) as ClientOption[]);
       setVisits(allVisits);
       setStaffList(staffRes.data || []);
 
@@ -181,11 +244,16 @@ export default function AdminSiteVisitsPage() {
 
   const resetForm = () => {
     setPropertyTitle("");
+    setPropertySearch("");
+    setShowPropertyDropdown(false);
     setFormLocation("");
     setVisitDate(new Date().toISOString().split("T")[0]);
     setVisitTime("");
     setClientName("");
+    setClientSearch("");
+    setShowClientDropdown(false);
     setClientMobile("");
+    setClientAutoFilled(false);
     setNotes("");
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -197,21 +265,37 @@ export default function AdminSiteVisitsPage() {
     const cleaned = mobile.replace(/\D/g, "");
     if (cleaned.length < 10) {
       setClientVisitHistory([]);
+      setClientAutoFilled(false);
       return;
     }
 
     setLoadingHistory(true);
     try {
-      const { data, error } = await supabase
-        .from("site_visits")
-        .select("property_title, location, visit_date, crm_staff(name)")
-        .eq("client_mobile", cleaned)
-        .order("visit_date", { ascending: false });
+      const [historyRes, clientRes] = await Promise.all([
+        supabase
+          .from("site_visits")
+          .select("property_title, location, visit_date, crm_staff(name)")
+          .eq("client_mobile", cleaned)
+          .order("visit_date", { ascending: false }),
+        supabase
+          .from("crm_clients")
+          .select("client_name")
+          .eq("customer_number", cleaned)
+          .limit(1),
+      ]);
 
-      if (error) throw error;
+      if (historyRes.error) throw historyRes.error;
+
+      // Auto-fill client name from CRM if found
+      if (clientRes.data && clientRes.data.length > 0 && clientRes.data[0].client_name) {
+        setClientName(clientRes.data[0].client_name);
+        setClientAutoFilled(true);
+      } else {
+        setClientAutoFilled(false);
+      }
 
       setClientVisitHistory(
-        (data || []).map((v: Record<string, unknown>) => ({
+        (historyRes.data || []).map((v: Record<string, unknown>) => ({
           property_title: v.property_title as string,
           location: v.location as string,
           visit_date: v.visit_date as string,
@@ -297,6 +381,13 @@ export default function AdminSiteVisitsPage() {
 
   const getVisitorName = (visit: SiteVisit) => {
     if (visit.admin_id && visit.admins) return visit.admins.name || visit.admins.email;
+    if (visit.admin_id) {
+      const admin = adminList.find((a) => a.id === visit.admin_id);
+      if (admin) return admin.name || admin.email;
+      if (adminProfile && visit.admin_id === adminProfile.id) {
+        return adminProfile.name || adminProfile.email;
+      }
+    }
     if (visit.crm_staff) return visit.crm_staff.name;
     return "Unknown";
   };
@@ -482,18 +573,69 @@ export default function AdminSiteVisitsPage() {
               <h2>Record Your Site Visit</h2>
 
               <div className="sv-form-grid">
-                <div className="sv-form-group">
+                <div className="sv-form-group" ref={propertyDropdownRef}>
                   <label>
                     <Building className="w-4 h-4" />
                     Property / Project Name *
                   </label>
-                  <input
-                    type="text"
-                    value={propertyTitle}
-                    onChange={(e) => setPropertyTitle(e.target.value)}
-                    placeholder="e.g., Prestige Lakeside Habitat"
-                    required
-                  />
+                  <div className="sv-combobox">
+                    <input
+                      type="text"
+                      value={propertyTitle}
+                      onChange={(e) => {
+                        setPropertyTitle(e.target.value);
+                        setPropertySearch(e.target.value);
+                        setShowPropertyDropdown(true);
+                      }}
+                      onFocus={() => setShowPropertyDropdown(true)}
+                      placeholder="Search or type property name..."
+                      required
+                      autoComplete="off"
+                    />
+                    <ChevronDown
+                      className={`w-4 h-4 sv-combobox-icon ${showPropertyDropdown ? "open" : ""}`}
+                      onClick={() => setShowPropertyDropdown(!showPropertyDropdown)}
+                    />
+                    {showPropertyDropdown && (
+                      <div className="sv-combobox-dropdown">
+                        {properties
+                          .filter((p) =>
+                            !propertySearch ||
+                            p.title.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                            p.city.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                            p.area?.toLowerCase().includes(propertySearch.toLowerCase())
+                          )
+                          .map((p) => (
+                            <div
+                              key={p.id}
+                              className={`sv-combobox-option ${propertyTitle === p.title ? "selected" : ""}`}
+                              onClick={() => {
+                                setPropertyTitle(p.title);
+                                setPropertySearch(p.title);
+                                setFormLocation([p.area, p.city].filter(Boolean).join(", "));
+                                setShowPropertyDropdown(false);
+                              }}
+                            >
+                              <span className="sv-combobox-option-title">{p.title}</span>
+                              <span className="sv-combobox-option-location">
+                                <MapPin className="w-3 h-3" />
+                                {[p.area, p.city].filter(Boolean).join(", ")}
+                              </span>
+                            </div>
+                          ))}
+                        {properties.filter((p) =>
+                          !propertySearch ||
+                          p.title.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                          p.city.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                          p.area?.toLowerCase().includes(propertySearch.toLowerCase())
+                        ).length === 0 && (
+                          <div className="sv-combobox-empty">
+                            No matching properties — custom name will be used
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="sv-form-group">
@@ -510,23 +652,85 @@ export default function AdminSiteVisitsPage() {
                   />
                 </div>
 
-                <div className="sv-form-group">
+                <div className="sv-form-group" ref={clientDropdownRef}>
                   <label>
                     <User className="w-4 h-4" />
                     Client Name
+                    {clientAutoFilled && (
+                      <span className="sv-auto-filled-badge">
+                        <CheckCircle className="w-3 h-3" />
+                        Auto-detected
+                      </span>
+                    )}
                   </label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="e.g., Rahul Sharma"
-                  />
+                  <div className="sv-combobox">
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => {
+                        setClientName(e.target.value);
+                        setClientSearch(e.target.value);
+                        setShowClientDropdown(true);
+                        setClientAutoFilled(false);
+                      }}
+                      onFocus={() => setShowClientDropdown(true)}
+                      placeholder="Search or type client name..."
+                      autoComplete="off"
+                    />
+                    <ChevronDown
+                      className={`w-4 h-4 sv-combobox-icon ${showClientDropdown ? "open" : ""}`}
+                      onClick={() => setShowClientDropdown(!showClientDropdown)}
+                    />
+                    {showClientDropdown && (
+                      <div className="sv-combobox-dropdown">
+                        {clients
+                          .filter((c) =>
+                            !clientSearch ||
+                            c.client_name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                            c.customer_number?.includes(clientSearch)
+                          )
+                          .map((c) => (
+                            <div
+                              key={c.id}
+                              className={`sv-combobox-option ${clientName === c.client_name ? "selected" : ""}`}
+                              onClick={() => {
+                                setClientName(c.client_name);
+                                setClientSearch(c.client_name);
+                                setClientMobile(c.customer_number || "");
+                                setShowClientDropdown(false);
+                                setClientAutoFilled(false);
+                                if (c.customer_number) {
+                                  lookupClientHistory(c.customer_number);
+                                }
+                              }}
+                            >
+                              <span className="sv-combobox-option-title">{c.client_name}</span>
+                              {c.customer_number && (
+                                <span className="sv-combobox-option-location">
+                                  <Phone className="w-3 h-3" />
+                                  {c.customer_number}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        {clients.filter((c) =>
+                          !clientSearch ||
+                          c.client_name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                          c.customer_number?.includes(clientSearch)
+                        ).length === 0 && (
+                          <div className="sv-combobox-empty">
+                            No matching clients — custom name will be used
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="sv-form-group">
                   <label>
                     <Phone className="w-4 h-4" />
-                    Mob No.
+                    Client Phone No.
                   </label>
                   <input
                     type="tel"

@@ -22409,6 +22409,17 @@ body {
   overflow: visible;
 }
 
+/* CRM Bulk Selection Checkboxes */
+.crm-table-section input[type="checkbox"],
+.staff-table-wrapper input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4f46e5;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+}
+
 /* CRM Pagination */
 .crm-pagination {
   display: flex;
@@ -26134,6 +26145,153 @@ body {
 .sv-form-group textarea {
   resize: vertical;
   line-height: 1.6;
+}
+
+/* Combobox / Property Dropdown */
+.sv-combobox {
+  position: relative;
+}
+
+.sv-combobox input {
+  padding-right: 2.5rem !important;
+}
+
+.sv-combobox-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: transform 0.2s, color 0.2s;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.sv-combobox-icon:hover {
+  color: var(--primary);
+}
+
+.sv-combobox-icon.open {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--primary);
+}
+
+.sv-combobox-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 50;
+  padding: 0.35rem;
+  animation: sv-dropdown-in 0.15s ease-out;
+}
+
+@keyframes sv-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sv-combobox-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sv-combobox-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sv-combobox-dropdown::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 3px;
+}
+
+.sv-combobox-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.sv-combobox-option {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: var(--radius-sm);
+  margin-bottom: 2px;
+}
+
+.sv-combobox-option:last-child {
+  margin-bottom: 0;
+}
+
+.sv-combobox-option:hover {
+  background: var(--primary-light);
+}
+
+.sv-combobox-option.selected {
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+  padding-left: calc(0.75rem - 3px);
+}
+
+.sv-combobox-option-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.sv-combobox-option:hover .sv-combobox-option-title {
+  color: var(--primary-dark);
+}
+
+.sv-combobox-option-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sv-combobox-option-location svg {
+  color: var(--primary);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.sv-combobox-empty {
+  padding: 1.25rem 1rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Auto-filled badge */
+.sv-auto-filled-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.01em;
 }
 
 /* Photo Upload */

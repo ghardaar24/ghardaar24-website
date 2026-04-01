@@ -19,7 +19,21 @@ import {
   User,
   Phone,
   History,
+  ChevronDown,
 } from "lucide-react";
+
+interface PropertyOption {
+  id: string;
+  title: string;
+  city: string;
+  area: string;
+}
+
+interface ClientOption {
+  id: string;
+  client_name: string;
+  customer_number: string;
+}
 
 interface SiteVisit {
   id: string;
@@ -44,6 +58,8 @@ interface ClientVisitHistory {
 export default function StaffSiteVisitsPage() {
   const { staffProfile } = useStaffAuth();
   const [visits, setVisits] = useState<SiteVisit[]>([]);
+  const [properties, setProperties] = useState<PropertyOption[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,12 +70,16 @@ export default function StaffSiteVisitsPage() {
 
   // Form state
   const [propertyTitle, setPropertyTitle] = useState("");
+  const [propertySearch, setPropertySearch] = useState("");
+  const [showPropertyDropdown, setShowPropertyDropdown] = useState(false);
   const [location, setLocation] = useState("");
   const [visitDate, setVisitDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [visitTime, setVisitTime] = useState("");
   const [clientName, setClientName] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [clientMobile, setClientMobile] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -67,26 +87,55 @@ export default function StaffSiteVisitsPage() {
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [clientVisitHistory, setClientVisitHistory] = useState<ClientVisitHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [clientAutoFilled, setClientAutoFilled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mobileDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const clientDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch staff's visits
+  // Fetch staff's visits and properties
   useEffect(() => {
     if (!staffProfile) return;
     fetchVisits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [staffProfile]);
 
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(e.target as Node)) {
+        setShowPropertyDropdown(false);
+      }
+      if (clientDropdownRef.current && !clientDropdownRef.current.contains(e.target as Node)) {
+        setShowClientDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const fetchVisits = async () => {
     try {
-      const { data, error } = await supabaseStaff
-        .from("site_visits")
-        .select("*")
-        .eq("staff_id", staffProfile!.id)
-        .order("visit_date", { ascending: false });
+      const [visitsRes, propertiesRes, clientsRes] = await Promise.all([
+        supabaseStaff
+          .from("site_visits")
+          .select("*")
+          .eq("staff_id", staffProfile!.id)
+          .order("visit_date", { ascending: false }),
+        supabaseStaff
+          .from("properties")
+          .select("id, title, city, area")
+          .order("title"),
+        supabaseStaff
+          .from("crm_clients")
+          .select("id, client_name, customer_number")
+          .order("client_name"),
+      ]);
 
-      if (error) throw error;
-      setVisits(data || []);
+      if (visitsRes.error) throw visitsRes.error;
+      setVisits(visitsRes.data || []);
+      setProperties((propertiesRes.data || []) as PropertyOption[]);
+      setClients((clientsRes.data || []) as ClientOption[]);
     } catch (err) {
       console.error("Error fetching visits:", err);
     } finally {
@@ -110,11 +159,16 @@ export default function StaffSiteVisitsPage() {
 
   const resetForm = () => {
     setPropertyTitle("");
+    setPropertySearch("");
+    setShowPropertyDropdown(false);
     setLocation("");
     setVisitDate(new Date().toISOString().split("T")[0]);
     setVisitTime("");
     setClientName("");
+    setClientSearch("");
+    setShowClientDropdown(false);
     setClientMobile("");
+    setClientAutoFilled(false);
     setNotes("");
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -122,26 +176,42 @@ export default function StaffSiteVisitsPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Lookup client visit history by mobile number
+  // Lookup client visit history by mobile number and auto-fill client name
   const lookupClientHistory = async (mobile: string) => {
     const cleaned = mobile.replace(/\D/g, "");
     if (cleaned.length < 10) {
       setClientVisitHistory([]);
+      setClientAutoFilled(false);
       return;
     }
 
     setLoadingHistory(true);
     try {
-      const { data, error } = await supabaseStaff
-        .from("site_visits")
-        .select("property_title, location, visit_date, crm_staff(name)")
-        .eq("client_mobile", cleaned)
-        .order("visit_date", { ascending: false });
+      const [historyRes, clientRes] = await Promise.all([
+        supabaseStaff
+          .from("site_visits")
+          .select("property_title, location, visit_date, crm_staff(name)")
+          .eq("client_mobile", cleaned)
+          .order("visit_date", { ascending: false }),
+        supabaseStaff
+          .from("crm_clients")
+          .select("client_name")
+          .eq("customer_number", cleaned)
+          .limit(1),
+      ]);
 
-      if (error) throw error;
+      if (historyRes.error) throw historyRes.error;
+
+      // Auto-fill client name from CRM if found
+      if (clientRes.data && clientRes.data.length > 0 && clientRes.data[0].client_name) {
+        setClientName(clientRes.data[0].client_name);
+        setClientAutoFilled(true);
+      } else {
+        setClientAutoFilled(false);
+      }
 
       setClientVisitHistory(
-        (data || []).map((v: Record<string, unknown>) => ({
+        (historyRes.data || []).map((v: Record<string, unknown>) => ({
           property_title: v.property_title as string,
           location: v.location as string,
           visit_date: v.visit_date as string,
@@ -346,18 +416,69 @@ export default function StaffSiteVisitsPage() {
               <h2>Record New Site Visit</h2>
 
               <div className="sv-form-grid">
-                <div className="sv-form-group">
+                <div className="sv-form-group" ref={propertyDropdownRef}>
                   <label>
                     <Building className="w-4 h-4" />
                     Property / Project Name *
                   </label>
-                  <input
-                    type="text"
-                    value={propertyTitle}
-                    onChange={(e) => setPropertyTitle(e.target.value)}
-                    placeholder="e.g., Prestige Lakeside Habitat"
-                    required
-                  />
+                  <div className="sv-combobox">
+                    <input
+                      type="text"
+                      value={propertyTitle}
+                      onChange={(e) => {
+                        setPropertyTitle(e.target.value);
+                        setPropertySearch(e.target.value);
+                        setShowPropertyDropdown(true);
+                      }}
+                      onFocus={() => setShowPropertyDropdown(true)}
+                      placeholder="Search or type property name..."
+                      required
+                      autoComplete="off"
+                    />
+                    <ChevronDown
+                      className={`w-4 h-4 sv-combobox-icon ${showPropertyDropdown ? "open" : ""}`}
+                      onClick={() => setShowPropertyDropdown(!showPropertyDropdown)}
+                    />
+                    {showPropertyDropdown && (
+                      <div className="sv-combobox-dropdown">
+                        {properties
+                          .filter((p) =>
+                            !propertySearch ||
+                            p.title.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                            p.city.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                            p.area?.toLowerCase().includes(propertySearch.toLowerCase())
+                          )
+                          .map((p) => (
+                            <div
+                              key={p.id}
+                              className={`sv-combobox-option ${propertyTitle === p.title ? "selected" : ""}`}
+                              onClick={() => {
+                                setPropertyTitle(p.title);
+                                setPropertySearch(p.title);
+                                setLocation([p.area, p.city].filter(Boolean).join(", "));
+                                setShowPropertyDropdown(false);
+                              }}
+                            >
+                              <span className="sv-combobox-option-title">{p.title}</span>
+                              <span className="sv-combobox-option-location">
+                                <MapPin className="w-3 h-3" />
+                                {[p.area, p.city].filter(Boolean).join(", ")}
+                              </span>
+                            </div>
+                          ))}
+                        {properties.filter((p) =>
+                          !propertySearch ||
+                          p.title.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                          p.city.toLowerCase().includes(propertySearch.toLowerCase()) ||
+                          p.area?.toLowerCase().includes(propertySearch.toLowerCase())
+                        ).length === 0 && (
+                          <div className="sv-combobox-empty">
+                            No matching properties — custom name will be used
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="sv-form-group">
@@ -374,23 +495,85 @@ export default function StaffSiteVisitsPage() {
                   />
                 </div>
 
-                <div className="sv-form-group">
+                <div className="sv-form-group" ref={clientDropdownRef}>
                   <label>
                     <User className="w-4 h-4" />
                     Client Name
+                    {clientAutoFilled && (
+                      <span className="sv-auto-filled-badge">
+                        <CheckCircle className="w-3 h-3" />
+                        Auto-detected
+                      </span>
+                    )}
                   </label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="e.g., Rahul Sharma"
-                  />
+                  <div className="sv-combobox">
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => {
+                        setClientName(e.target.value);
+                        setClientSearch(e.target.value);
+                        setShowClientDropdown(true);
+                        setClientAutoFilled(false);
+                      }}
+                      onFocus={() => setShowClientDropdown(true)}
+                      placeholder="Search or type client name..."
+                      autoComplete="off"
+                    />
+                    <ChevronDown
+                      className={`w-4 h-4 sv-combobox-icon ${showClientDropdown ? "open" : ""}`}
+                      onClick={() => setShowClientDropdown(!showClientDropdown)}
+                    />
+                    {showClientDropdown && (
+                      <div className="sv-combobox-dropdown">
+                        {clients
+                          .filter((c) =>
+                            !clientSearch ||
+                            c.client_name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                            c.customer_number?.includes(clientSearch)
+                          )
+                          .map((c) => (
+                            <div
+                              key={c.id}
+                              className={`sv-combobox-option ${clientName === c.client_name ? "selected" : ""}`}
+                              onClick={() => {
+                                setClientName(c.client_name);
+                                setClientSearch(c.client_name);
+                                setClientMobile(c.customer_number || "");
+                                setShowClientDropdown(false);
+                                setClientAutoFilled(false);
+                                if (c.customer_number) {
+                                  lookupClientHistory(c.customer_number);
+                                }
+                              }}
+                            >
+                              <span className="sv-combobox-option-title">{c.client_name}</span>
+                              {c.customer_number && (
+                                <span className="sv-combobox-option-location">
+                                  <Phone className="w-3 h-3" />
+                                  {c.customer_number}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        {clients.filter((c) =>
+                          !clientSearch ||
+                          c.client_name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                          c.customer_number?.includes(clientSearch)
+                        ).length === 0 && (
+                          <div className="sv-combobox-empty">
+                            No matching clients — custom name will be used
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="sv-form-group">
                   <label>
                     <Phone className="w-4 h-4" />
-                    Mob No.
+                    Client Phone No.
                   </label>
                   <input
                     type="tel"

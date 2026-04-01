@@ -54,8 +54,23 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
     taxType: "sgst_cgst" as "sgst_cgst" | "igst",
   });
 
+  const allOptionalFields = [
+    { key: 'customerName', label: 'Customer Name' },
+    { key: 'projectName', label: 'Project Name' },
+    { key: 'wing', label: 'Wing' },
+    { key: 'flatNo', label: 'Flat No.' },
+    { key: 'agreementCost', label: 'Agreement Cost (₹)' },
+    { key: 'infra', label: 'Infra (₹)' },
+    { key: 'unitCost', label: 'Unit Cost (₹)' },
+    { key: 'brokeragePercent', label: 'Brokerage (%)' },
+  ] as const;
+
+  type FieldKey = typeof allOptionalFields[number]['key'];
+
+  const defaultVisibleFields: FieldKey[] = ['customerName', 'projectName', 'wing', 'flatNo', 'agreementCost', 'infra', 'unitCost', 'brokeragePercent'];
+
   const [items, setItems] = useState([
-    { id: 1, projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2" }
+    { id: 1, title: "Description of Service Provided", projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2", visibleFields: [...defaultVisibleFields] as FieldKey[] }
   ]);
 
   // History state
@@ -138,7 +153,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
   };
 
   const addItem = () => {
-    setItems([...items, { id: Date.now(), projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2" }]);
+    setItems([...items, { id: Date.now(), title: "Description of Service Provided", projectName: "", customerName: "", wing: "", flatNo: "", agreementCost: "0", infra: "0", unitCost: "0", brokeragePercent: "2", visibleFields: [...defaultVisibleFields] as FieldKey[] }]);
   };
 
   const removeItem = (id: number) => {
@@ -166,32 +181,79 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
     return num.toLocaleString("en-IN");
   };
 
-  // Basic Number to Words converter for Indian Numbering System
-  const numToWords = (numStr: string | number) => {
-    const num = typeof numStr === "string" ? parseInt(numStr.replace(/,/g, "") || "0", 10) : numStr;
-    if (num === 0) return "Zero";
+  const toggleField = (itemId: number, field: FieldKey) => {
+    setItems(items.map(item => {
+      if (item.id === itemId) {
+        const fields = item.visibleFields || [...defaultVisibleFields];
+        const newFields = fields.includes(field)
+          ? fields.filter(f => f !== field)
+          : [...fields, field];
+        return { ...item, visibleFields: newFields };
+      }
+      return item;
+    }));
+  };
 
-    const a = [
-      "", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ",
-      "Eleven ", "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "
-    ];
-    const b = [
-      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
-    ];
+  const isFieldVisible = (item: typeof items[0], field: FieldKey) => {
+    return (item.visibleFields || defaultVisibleFields).includes(field);
+  };
 
-    const strNum = num.toString();
-    if (strNum.length > 9) return "overflow";
-    const padded = ("000000000" + strNum).slice(-9);
-    const n = padded.match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-    if (!n) return "";
+  // Number to Words converter for Indian Numbering System
+  const numToWords = (numStr: string | number): string => {
+    const num = typeof numStr === "string" ? parseInt(numStr.replace(/,/g, "") || "0", 10) : Math.round(numStr);
+    if (num === 0) return "Zero Only/-";
+    if (isNaN(num)) return "Zero Only/-";
 
-    let str = "";
-    str += n[1] !== "00" ? (a[Number(n[1])] || b[Number(n[1][0])] + " " + a[Number(n[1][1])]) + "Crore " : "";
-    str += n[2] !== "00" ? (a[Number(n[2])] || b[Number(n[2][0])] + " " + a[Number(n[2][1])]) + "Lakh " : "";
-    str += n[3] !== "00" ? (a[Number(n[3])] || b[Number(n[3][0])] + " " + a[Number(n[3][1])]) + "Thousand " : "";
-    str += n[4] !== "0" ? (a[Number(n[4])] || b[Number(n[4][0])] + " " + a[Number(n[4][1])]) + "Hundred " : "";
-    str += n[5] !== "00" ? (str !== "" ? "and " : "") + (a[Number(n[5])] || b[Number(n[5][0])] + " " + a[Number(n[5][1])]) : "";
-    return str.trim() + " Only/-";
+    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+      "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+    const twoDigitToWords = (n: number): string => {
+      if (n === 0) return "";
+      if (n < 20) return ones[n];
+      const t = Math.floor(n / 10);
+      const o = n % 10;
+      return tens[t] + (o ? " " + ones[o] : "");
+    };
+
+    const parts: string[] = [];
+    let remaining = num;
+
+    // Crore (1,00,00,000)
+    if (remaining >= 10000000) {
+      const crore = Math.floor(remaining / 10000000);
+      parts.push(twoDigitToWords(crore) + " Crore");
+      remaining %= 10000000;
+    }
+
+    // Lakh (1,00,000)
+    if (remaining >= 100000) {
+      const lakh = Math.floor(remaining / 100000);
+      parts.push(twoDigitToWords(lakh) + " Lakh");
+      remaining %= 100000;
+    }
+
+    // Thousand (1,000)
+    if (remaining >= 1000) {
+      const thousand = Math.floor(remaining / 1000);
+      parts.push(twoDigitToWords(thousand) + " Thousand");
+      remaining %= 1000;
+    }
+
+    // Hundred
+    if (remaining >= 100) {
+      const hundred = Math.floor(remaining / 100);
+      parts.push(ones[hundred] + " Hundred");
+      remaining %= 100;
+    }
+
+    // Remaining two digits
+    if (remaining > 0) {
+      if (parts.length > 0) parts.push("and");
+      parts.push(twoDigitToWords(remaining));
+    }
+
+    return parts.join(" ") + " Only/-";
   };
 
   const saveInvoice = async () => {
@@ -533,90 +595,149 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
               {items.map((item, index) => (
                 <div key={item.id} className="p-4 border rounded-md mb-4 bg-gray-50 relative">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-500">Item {index + 1}</span>
+                    <span className="text-xs font-medium text-gray-400">Item {index + 1}</span>
                     {items.length > 1 && (
                       <button onClick={() => removeItem(item.id)} className="text-red-500 hover:text-red-700">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
+                  <div className="mb-3">
+                    <label className="text-xs font-medium">Item Title</label>
+                    <input
+                      value={item.title}
+                      onChange={(e) => handleItemChange(item.id, 'title', e.target.value)}
+                      placeholder="Description of Service Provided"
+                      className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1 font-medium"
+                    />
+                  </div>
+
+                  {/* Field toggles */}
+                  <div className="mb-3">
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Show/Hide Fields</span>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {allOptionalFields.map(f => (
+                        <button
+                          key={f.key}
+                          type="button"
+                          onClick={() => toggleField(item.id, f.key)}
+                          className={`px-2 py-0.5 text-[11px] rounded-full border transition-colors font-medium ${
+                            isFieldVisible(item, f.key)
+                              ? 'bg-blue-50 border-blue-300 text-blue-700'
+                              : 'bg-gray-100 border-gray-200 text-gray-400 line-through'
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium">Customer Name</label>
-                        <input
-                          value={item.customerName}
-                          onChange={(e) => handleItemChange(item.id, 'customerName', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                        />
+                    {/* Row 1: Customer Name + Project Name */}
+                    {(isFieldVisible(item, 'customerName') || isFieldVisible(item, 'projectName')) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {isFieldVisible(item, 'customerName') && (
+                          <div>
+                            <label className="text-xs font-medium">Customer Name</label>
+                            <input
+                              value={item.customerName}
+                              onChange={(e) => handleItemChange(item.id, 'customerName', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                            />
+                          </div>
+                        )}
+                        {isFieldVisible(item, 'projectName') && (
+                          <div>
+                            <label className="text-xs font-medium">Project Name</label>
+                            <input
+                              value={item.projectName}
+                              onChange={(e) => handleItemChange(item.id, 'projectName', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                            />
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <label className="text-xs font-medium">Project Name</label>
-                        <input
-                          value={item.projectName}
-                          onChange={(e) => handleItemChange(item.id, 'projectName', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                        />
+                    )}
+                    {/* Row 2: Wing + Flat No */}
+                    {(isFieldVisible(item, 'wing') || isFieldVisible(item, 'flatNo')) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {isFieldVisible(item, 'wing') && (
+                          <div>
+                            <label className="text-xs font-medium">Wing</label>
+                            <input
+                              value={item.wing}
+                              onChange={(e) => handleItemChange(item.id, 'wing', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                            />
+                          </div>
+                        )}
+                        {isFieldVisible(item, 'flatNo') && (
+                          <div>
+                            <label className="text-xs font-medium">Flat No.</label>
+                            <input
+                              value={item.flatNo}
+                              onChange={(e) => handleItemChange(item.id, 'flatNo', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                            />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium">Wing</label>
-                        <input
-                          value={item.wing}
-                          onChange={(e) => handleItemChange(item.id, 'wing', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                        />
+                    )}
+                    {/* Row 3: Agreement Cost + Infra */}
+                    {(isFieldVisible(item, 'agreementCost') || isFieldVisible(item, 'infra')) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {isFieldVisible(item, 'agreementCost') && (
+                          <div>
+                            <label className="text-xs font-medium">Agreement Cost (&#8377;)</label>
+                            <input
+                              value={item.agreementCost}
+                              onChange={(e) => handleItemChange(item.id, 'agreementCost', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                              placeholder="0"
+                            />
+                          </div>
+                        )}
+                        {isFieldVisible(item, 'infra') && (
+                          <div>
+                            <label className="text-xs font-medium">Infra (&#8377;)</label>
+                            <input
+                              value={item.infra}
+                              onChange={(e) => handleItemChange(item.id, 'infra', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                              placeholder="0"
+                            />
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <label className="text-xs font-medium">Flat No.</label>
-                        <input
-                          value={item.flatNo}
-                          onChange={(e) => handleItemChange(item.id, 'flatNo', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                        />
+                    )}
+                    {/* Row 4: Unit Cost + Brokerage */}
+                    {(isFieldVisible(item, 'unitCost') || isFieldVisible(item, 'brokeragePercent')) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {isFieldVisible(item, 'unitCost') && (
+                          <div>
+                            <label className="text-xs font-medium">Unit Cost (&#8377;)</label>
+                            <input
+                              value={item.unitCost}
+                              onChange={(e) => handleItemChange(item.id, 'unitCost', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                              placeholder="0"
+                            />
+                          </div>
+                        )}
+                        {isFieldVisible(item, 'brokeragePercent') && (
+                          <div>
+                            <label className="text-xs font-medium">Brokerage (%)</label>
+                            <input
+                              value={item.brokeragePercent}
+                              onChange={(e) => handleItemChange(item.id, 'brokeragePercent', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
+                              placeholder="2"
+                            />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium">Agreement Cost (&#8377;)</label>
-                        <input
-                          value={item.agreementCost}
-                          onChange={(e) => handleItemChange(item.id, 'agreementCost', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium">Infra (&#8377;)</label>
-                        <input
-                          value={item.infra}
-                          onChange={(e) => handleItemChange(item.id, 'infra', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium">Unit Cost (&#8377;)</label>
-                        <input
-                          value={item.unitCost}
-                          onChange={(e) => handleItemChange(item.id, 'unitCost', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium">Brokerage (%)</label>
-                        <input
-                          value={item.brokeragePercent}
-                          onChange={(e) => handleItemChange(item.id, 'brokeragePercent', e.target.value)}
-                          className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm mt-1"
-                          placeholder="2"
-                        />
-                      </div>
-                    </div>
+                    )}
                     <div className="text-xs text-gray-500 text-right">
                       Brokerage Amount: &#8377;{formatCurrency(getItemBrokerage(item))}
                     </div>
@@ -768,7 +889,7 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                           {((viewingInvoice.invoice_data as any).items as any[]).map((item: any, i: number) => (
                             <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-sm">
-                              <span>{item.projectName || item.description || `Item ${i + 1}`}</span>
+                              <span>{item.title || item.projectName || item.description || `Item ${i + 1}`}</span>
                               <span className="font-semibold">&#8377;{formatCurrency(item.brokerageAmount || (item.unitCost && item.brokeragePercent ? Math.round(parseInt(item.unitCost || "0") * parseFloat(item.brokeragePercent || "0") / 100) : 0) || item.amount || 0)}</span>
                             </div>
                           ))}
@@ -874,15 +995,15 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                     <td className="border border-black p-1.5 text-center align-middle font-bold">{index + 1}</td>
                     <td className="border border-black p-2">
                       <div className="space-y-0.5">
-                        <div className="font-medium mb-1">Description of Service Provided</div>
-                        <div>Customer Name : {item.customerName}</div>
-                        <div>Project Name : {item.projectName}</div>
-                        {item.wing && <div>Wing : {item.wing}</div>}
-                        <div>Flat no : {item.flatNo}</div>
-                        <div>Agreement Cost : {formatCurrency(item.agreementCost)}</div>
-                        {parseInt(item.infra || "0") > 0 && <div>Infra : {formatCurrency(item.infra)}</div>}
-                        <div>Unit Cost : {formatCurrency(item.unitCost)}</div>
-                        <div>Brokerage : {item.brokeragePercent}%</div>
+                        <div className="font-medium mb-1">{item.title || "Description of Service Provided"}</div>
+                        {isFieldVisible(item, 'customerName') && item.customerName && <div>Customer Name : {item.customerName}</div>}
+                        {isFieldVisible(item, 'projectName') && item.projectName && <div>Project Name : {item.projectName}</div>}
+                        {isFieldVisible(item, 'wing') && item.wing && <div>Wing : {item.wing}</div>}
+                        {isFieldVisible(item, 'flatNo') && item.flatNo && <div>Flat no : {item.flatNo}</div>}
+                        {isFieldVisible(item, 'agreementCost') && parseInt(item.agreementCost || "0") > 0 && <div>Agreement Cost : {formatCurrency(item.agreementCost)}</div>}
+                        {isFieldVisible(item, 'infra') && parseInt(item.infra || "0") > 0 && <div>Infra : {formatCurrency(item.infra)}</div>}
+                        {isFieldVisible(item, 'unitCost') && parseInt(item.unitCost || "0") > 0 && <div>Unit Cost : {formatCurrency(item.unitCost)}</div>}
+                        {isFieldVisible(item, 'brokeragePercent') && <div>Brokerage : {item.brokeragePercent}%</div>}
                       </div>
                     </td>
                     <td className="border border-black p-1.5 text-center align-middle">
@@ -893,12 +1014,43 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
                     </td>
                   </tr>
                 ))}
-                {/* Total Amount Payable Row */}
+                {/* Subtotal Row */}
                 <tr className="font-semibold">
                   <td className="border border-black p-1.5"></td>
-                  <td className="border border-black p-1.5">Total amount Payable in Rupees :</td>
+                  <td className="border border-black p-1.5">Total Brokerage Amount :</td>
                   <td className="border border-black p-1.5"></td>
                   <td className="border border-black p-1.5 text-right">{formatCurrency(totalBrokerage)}</td>
+                </tr>
+                {/* Tax Rows */}
+                {invoiceData.taxType === "sgst_cgst" ? (
+                  <>
+                    <tr>
+                      <td className="border border-black p-1.5"></td>
+                      <td className="border border-black p-1.5">SGST @ 9%</td>
+                      <td className="border border-black p-1.5 text-center">9%</td>
+                      <td className="border border-black p-1.5 text-right">{formatCurrency(sgstAmount)}</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black p-1.5"></td>
+                      <td className="border border-black p-1.5">CGST @ 9%</td>
+                      <td className="border border-black p-1.5 text-center">9%</td>
+                      <td className="border border-black p-1.5 text-right">{formatCurrency(cgstAmount)}</td>
+                    </tr>
+                  </>
+                ) : (
+                  <tr>
+                    <td className="border border-black p-1.5"></td>
+                    <td className="border border-black p-1.5">IGST @ 18%</td>
+                    <td className="border border-black p-1.5 text-center">18%</td>
+                    <td className="border border-black p-1.5 text-right">{formatCurrency(igstAmount)}</td>
+                  </tr>
+                )}
+                {/* Grand Total Row */}
+                <tr className="font-bold bg-gray-50">
+                  <td className="border border-black p-1.5"></td>
+                  <td className="border border-black p-1.5">Grand Total :</td>
+                  <td className="border border-black p-1.5"></td>
+                  <td className="border border-black p-1.5 text-right">{formatCurrency(grandTotal)}</td>
                 </tr>
               </tbody>
             </table>

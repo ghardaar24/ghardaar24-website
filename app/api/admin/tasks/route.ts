@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     const { user, supabaseAdmin } = auth;
     const body = await request.json();
-    const { title, description, assigned_to, priority, due_date, due_time } = body;
+    const { title, description, assigned_to, priority, due_date, due_time, client_id } = body;
 
     if (!title || !assigned_to) {
       return NextResponse.json(
@@ -160,6 +160,7 @@ export async function POST(request: NextRequest) {
         priority: priority || "medium",
         due_date: due_date || null,
         due_time: due_time || null,
+        client_id: client_id || null,
       })
       .select(`*`)
       .single();

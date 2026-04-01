@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -33,6 +34,7 @@ import {
   Activity,
   Eye,
   EyeOff,
+  CheckSquare,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
@@ -124,6 +126,7 @@ const DEAL_STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 50;
 
 export default function CRMPage() {
+  const searchParams = useSearchParams();
   const { user, session, loading } = useAdminAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -187,6 +190,13 @@ export default function CRMPage() {
   // Visit History State
   const [visitHistory, setVisitHistory] = useState<SiteVisit[]>([]);
   const [isVisitsLoading, setIsVisitsLoading] = useState(false);
+
+  // Bulk selection & update state
+  const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
+  const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+  const [bulkUpdateField, setBulkUpdateField] = useState("");
+  const [bulkUpdateValue, setBulkUpdateValue] = useState("");
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   // Client-side mounting state for Portal
   const [isMounted, setIsMounted] = useState(false);
@@ -262,6 +272,7 @@ export default function CRMPage() {
         priority: taskData.priority,
         due_date: taskData.due_date || null,
         due_time: taskData.due_time || null,
+        client_id: taskData.clientId || null,
       };
       
       const response = await fetch("/api/admin/tasks", {
@@ -595,6 +606,18 @@ export default function CRMPage() {
       supabase.removeChannel(channel);
     };
   }, [user, selectedSheetId]);
+
+  // Auto-open client details when navigated from tasks page
+  useEffect(() => {
+    const clientId = searchParams.get("client_id");
+    if (clientId && clients.length > 0) {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClient(client);
+        setShowDetailsModal(true);
+      }
+    }
+  }, [searchParams, clients]);
 
   // Filter clients
   const filteredClients = clients.filter((client) => {
@@ -1039,6 +1062,74 @@ export default function CRMPage() {
     } catch (error) {
       console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
+    }
+  };
+
+  // Bulk selection helpers
+  const toggleSelectClient = (clientId: string) => {
+    setSelectedClients((prev) => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedClients.size === paginatedClients.length) {
+      setSelectedClients(new Set());
+    } else {
+      setSelectedClients(new Set(paginatedClients.map((c) => c.id)));
+    }
+  };
+
+  const BULK_UPDATE_FIELDS = [
+    { value: "lead_stage", label: "Lead Stage" },
+    { value: "lead_type", label: "Lead Type" },
+    { value: "deal_status", label: "Deal Status" },
+    { value: "location_category", label: "Location" },
+    { value: "facing", label: "Facing" },
+  ];
+
+  const getBulkValueOptions = (field: string) => {
+    if (field === "lead_stage") return LEAD_STAGE_OPTIONS;
+    if (field === "lead_type") return LEAD_TYPE_OPTIONS;
+    if (field === "deal_status") return DEAL_STATUS_OPTIONS;
+    return null; // free-text fields
+  };
+
+  const handleBulkUpdate = async () => {
+    if (!bulkUpdateField || !bulkUpdateValue || selectedClients.size === 0) return;
+
+    setBulkUpdating(true);
+    try {
+      const ids = Array.from(selectedClients);
+      const { error } = await supabase
+        .from("crm_clients")
+        .update({ [bulkUpdateField]: bulkUpdateValue })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      // Update local state
+      setClients((prev) =>
+        prev.map((c) =>
+          selectedClients.has(c.id)
+            ? { ...c, [bulkUpdateField]: bulkUpdateValue, updated_at: new Date().toISOString() }
+            : c
+        )
+      );
+
+      setSelectedClients(new Set());
+      setShowBulkUpdateModal(false);
+      setBulkUpdateField("");
+      setBulkUpdateValue("");
+      alert(`Successfully updated ${ids.length} client(s).`);
+    } catch (error) {
+      console.error("Error bulk updating:", error);
+      alert("Failed to bulk update. Please try again.");
+    } finally {
+      setBulkUpdating(false);
     }
   };
 
@@ -1711,6 +1802,39 @@ export default function CRMPage() {
         Showing {filteredClients.length} of {clients.length} clients
       </motion.div>
 
+      {/* Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedClients.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center gap-3 px-4 py-3 mb-3 bg-indigo-50 border border-indigo-200 rounded-xl"
+          >
+            <CheckSquare className="w-5 h-5 text-indigo-600" />
+            <span className="text-sm font-medium text-indigo-700">
+              {selectedClients.size} client{selectedClients.size > 1 ? "s" : ""} selected
+            </span>
+            <button
+              onClick={() => {
+                setBulkUpdateField("");
+                setBulkUpdateValue("");
+                setShowBulkUpdateModal(true);
+              }}
+              className="ml-2 px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Bulk Update
+            </button>
+            <button
+              onClick={() => setSelectedClients(new Set())}
+              className="ml-auto px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Clear Selection
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Table Section */}
       <motion.div
         className="admin-section-card crm-table-section"
@@ -1720,12 +1844,20 @@ export default function CRMPage() {
         transition={{ delay: 0.2 }}
       >
         <div className="admin-table-container">
-          <table className="admin-table table-fixed w-full min-w-[1000px]">
+          <table className="admin-table table-fixed w-full min-w-[1050px]">
             <thead>
               <tr>
-                <th className="w-[25%]">Client Name</th>
+                <th style={{ width: "40px", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={paginatedClients.length > 0 && selectedClients.size === paginatedClients.length}
+                    onChange={toggleSelectAll}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#4f46e5" }}
+                  />
+                </th>
+                <th className="w-[22%]">Client Name</th>
                 <th className="w-[12%]">Phone</th>
-                <th className="w-[15%]">Lead Stage</th>
+                <th className="w-[14%]">Lead Stage</th>
                 <th className="w-[8%]">Lead Type</th>
                 <th className="w-[10%]">Location</th>
                 <th className="w-[10%]">Visit Date</th>
@@ -1747,8 +1879,16 @@ export default function CRMPage() {
                         setShowDetailsModal(true);
                         fetchVisitHistory(client);
                       }}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className={`hover:bg-gray-50 cursor-pointer ${selectedClients.has(client.id) ? "bg-indigo-50" : ""}`}
                     >
+                      <td style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedClients.has(client.id)}
+                          onChange={() => toggleSelectClient(client.id)}
+                          style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#4f46e5" }}
+                        />
+                      </td>
                       <td className="table-property-title max-w-0">
                         <div className="crm-client-name cursor-pointer hover:text-indigo-600 transition-colors truncate block w-full">
                           <span className="truncate">{client.client_name}</span>
@@ -1974,7 +2114,7 @@ export default function CRMPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="empty-state-small">
+                    <td colSpan={9} className="empty-state-small">
                       No clients found matching your search.
                     </td>
                   </tr>
@@ -3346,6 +3486,109 @@ export default function CRMPage() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Update Modal */}
+      <AnimatePresence>
+        {showBulkUpdateModal && isMounted && createPortal(
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Bulk Update</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Update {selectedClients.size} selected client{selectedClients.size > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBulkUpdateModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Field to Update
+                  </label>
+                  <select
+                    className="crm-select"
+                    value={bulkUpdateField}
+                    onChange={(e) => {
+                      setBulkUpdateField(e.target.value);
+                      setBulkUpdateValue("");
+                    }}
+                  >
+                    <option value="">Select a field...</option>
+                    {BULK_UPDATE_FIELDS.map((f) => (
+                      <option key={f.value} value={f.value}>{f.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {bulkUpdateField && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      New Value
+                    </label>
+                    {getBulkValueOptions(bulkUpdateField) ? (
+                      <select
+                        className="crm-select"
+                        value={bulkUpdateValue}
+                        onChange={(e) => setBulkUpdateValue(e.target.value)}
+                      >
+                        <option value="">Select a value...</option>
+                        {getBulkValueOptions(bulkUpdateField)!.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        className="crm-input"
+                        value={bulkUpdateValue}
+                        onChange={(e) => setBulkUpdateValue(e.target.value)}
+                        placeholder={`Enter ${BULK_UPDATE_FIELDS.find((f) => f.value === bulkUpdateField)?.label || "value"}...`}
+                      />
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    onClick={() => setShowBulkUpdateModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleBulkUpdate}
+                    disabled={!bulkUpdateField || !bulkUpdateValue || bulkUpdating}
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 font-medium flex items-center justify-center gap-2"
+                  >
+                    {bulkUpdating ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      `Update ${selectedClients.size} Client${selectedClients.size > 1 ? "s" : ""}`
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
     </div>

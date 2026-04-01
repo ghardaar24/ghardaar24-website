@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
@@ -21,6 +22,7 @@ import {
   ChevronRight,
   Plus,
   Edit2,
+  CheckSquare,
 } from "lucide-react";
 
 // Types
@@ -89,7 +91,8 @@ const DEAL_STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 100;
 
 export default function StaffCRMPage() {
-  const { staffProfile, accessibleSheets, loading: authLoading } = useStaffAuth();
+  const searchParams = useSearchParams();
+  const { staffProfile, session, accessibleSheets, loading: authLoading } = useStaffAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [sheets, setSheets] = useState<CRMSheet[]>([]);
   const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
@@ -201,6 +204,13 @@ export default function StaffCRMPage() {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Bulk selection & update state
+  const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
+  const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+  const [bulkUpdateField, setBulkUpdateField] = useState("");
+  const [bulkUpdateValue, setBulkUpdateValue] = useState("");
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
   // Inline editing state
   const [editingCell, setEditingCell] = useState<{ clientId: string; field: string } | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
@@ -237,11 +247,15 @@ export default function StaffCRMPage() {
         priority: taskData.priority,
         due_date: taskData.due_date || null,
         due_time: taskData.due_time || null,
+        client_id: taskData.clientId || null,
       };
       
       const response = await fetch("/api/staff/tasks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -417,6 +431,18 @@ export default function StaffCRMPage() {
       supabaseStaff.removeChannel(channel);
     };
   }, [selectedSheetId, staffProfile?.id]);
+
+  // Auto-open client details when navigated from tasks page
+  useEffect(() => {
+    const clientId = searchParams.get("client_id");
+    if (clientId && clients.length > 0) {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClient(client);
+        setShowDetailsModal(true);
+      }
+    }
+  }, [searchParams, clients]);
 
   // Filter clients
   const filteredClients = clients.filter((client) => {
@@ -643,6 +669,89 @@ export default function StaffCRMPage() {
     } catch (error) {
       console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
+    }
+  };
+
+  // Bulk selection helpers
+  const toggleSelectClient = (clientId: string) => {
+    setSelectedClients((prev) => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedClients.size === paginatedClients.length) {
+      setSelectedClients(new Set());
+    } else {
+      setSelectedClients(new Set(paginatedClients.map((c) => c.id)));
+    }
+  };
+
+  const BULK_UPDATE_FIELDS = [
+    { value: "lead_stage", label: "Lead Stage" },
+    { value: "lead_type", label: "Lead Type" },
+    { value: "deal_status", label: "Deal Status" },
+    { value: "location_category", label: "Location" },
+    { value: "facing", label: "Facing" },
+  ];
+
+  const getBulkValueOptions = (field: string) => {
+    if (field === "lead_stage") return LEAD_STAGE_OPTIONS;
+    if (field === "lead_type") return LEAD_TYPE_OPTIONS;
+    if (field === "deal_status") return DEAL_STATUS_OPTIONS;
+    return null;
+  };
+
+  const handleBulkUpdate = async () => {
+    if (!bulkUpdateField || !bulkUpdateValue || selectedClients.size === 0) return;
+
+    setBulkUpdating(true);
+    try {
+      const ids = Array.from(selectedClients);
+      const { error } = await supabaseStaff
+        .from("crm_clients")
+        .update({ [bulkUpdateField]: bulkUpdateValue })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      // Log activity for each updated client
+      for (const id of ids) {
+        const client = clients.find((c) => c.id === id);
+        if (client) {
+          const oldValue = client[bulkUpdateField as keyof CRMClient] as string | null;
+          await logActivity(
+            client,
+            "bulk_update",
+            getFieldLabel(bulkUpdateField),
+            getDisplayValue(bulkUpdateField, oldValue),
+            getDisplayValue(bulkUpdateField, bulkUpdateValue)
+          );
+        }
+      }
+
+      // Update local state
+      setClients((prev) =>
+        prev.map((c) =>
+          selectedClients.has(c.id)
+            ? { ...c, [bulkUpdateField]: bulkUpdateValue }
+            : c
+        )
+      );
+
+      setSelectedClients(new Set());
+      setShowBulkUpdateModal(false);
+      setBulkUpdateField("");
+      setBulkUpdateValue("");
+      alert(`Successfully updated ${ids.length} client(s).`);
+    } catch (error) {
+      console.error("Error bulk updating:", error);
+      alert("Failed to bulk update. Please try again.");
+    } finally {
+      setBulkUpdating(false);
     }
   };
 
@@ -1130,10 +1239,52 @@ export default function StaffCRMPage() {
             <p>No clients found matching your search.</p>
           </div>
         ) : (
+          <>
+          {/* Bulk Action Bar */}
+          <AnimatePresence>
+            {selectedClients.size > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-3 px-4 py-3 mb-3 bg-indigo-50 border border-indigo-200 rounded-xl"
+              >
+                <CheckSquare className="w-5 h-5 text-indigo-600" />
+                <span className="text-sm font-medium text-indigo-700">
+                  {selectedClients.size} client{selectedClients.size > 1 ? "s" : ""} selected
+                </span>
+                <button
+                  onClick={() => {
+                    setBulkUpdateField("");
+                    setBulkUpdateValue("");
+                    setShowBulkUpdateModal(true);
+                  }}
+                  className="ml-2 px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Bulk Update
+                </button>
+                <button
+                  onClick={() => setSelectedClients(new Set())}
+                  className="ml-auto px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Clear Selection
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="staff-table-wrapper">
-            <table className="w-full min-w-[1000px]">
+            <table className="w-full min-w-[1050px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th style={{ width: "40px", textAlign: "center", padding: "0.75rem 1rem" }} onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={paginatedClients.length > 0 && selectedClients.size === paginatedClients.length}
+                      onChange={toggleSelectAll}
+                      style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#4f46e5" }}
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Client Name
                   </th>
@@ -1164,12 +1315,20 @@ export default function StaffCRMPage() {
                 {paginatedClients.map((client) => (
                   <tr
                     key={client.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${selectedClients.has(client.id) ? "bg-indigo-50" : ""}`}
                     onClick={() => {
                       setSelectedClient(client);
                       setShowDetailsModal(true);
                     }}
                   >
+                    <td style={{ textAlign: "center", padding: "0.75rem 1rem" }} onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedClients.has(client.id)}
+                        onChange={() => toggleSelectClient(client.id)}
+                        style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#4f46e5" }}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-900">{client.client_name}</span>
                     </td>
@@ -1346,8 +1505,9 @@ export default function StaffCRMPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
-        
+
         {/* Pagination Controls */}
         {filteredClients.length > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 sm:px-6">
@@ -2170,6 +2330,108 @@ export default function StaffCRMPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Update Modal */}
+      <AnimatePresence>
+        {showBulkUpdateModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Bulk Update</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Update {selectedClients.size} selected client{selectedClients.size > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBulkUpdateModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Field to Update
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                    value={bulkUpdateField}
+                    onChange={(e) => {
+                      setBulkUpdateField(e.target.value);
+                      setBulkUpdateValue("");
+                    }}
+                  >
+                    <option value="">Select a field...</option>
+                    {BULK_UPDATE_FIELDS.map((f) => (
+                      <option key={f.value} value={f.value}>{f.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {bulkUpdateField && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      New Value
+                    </label>
+                    {getBulkValueOptions(bulkUpdateField) ? (
+                      <select
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={bulkUpdateValue}
+                        onChange={(e) => setBulkUpdateValue(e.target.value)}
+                      >
+                        <option value="">Select a value...</option>
+                        {getBulkValueOptions(bulkUpdateField)!.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={bulkUpdateValue}
+                        onChange={(e) => setBulkUpdateValue(e.target.value)}
+                        placeholder={`Enter ${BULK_UPDATE_FIELDS.find((f) => f.value === bulkUpdateField)?.label || "value"}...`}
+                      />
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    onClick={() => setShowBulkUpdateModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleBulkUpdate}
+                    disabled={!bulkUpdateField || !bulkUpdateValue || bulkUpdating}
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 font-medium flex items-center justify-center gap-2"
+                  >
+                    {bulkUpdating ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      `Update ${selectedClients.size} Client${selectedClients.size > 1 ? "s" : ""}`
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
