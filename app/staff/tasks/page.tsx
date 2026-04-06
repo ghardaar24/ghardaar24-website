@@ -103,6 +103,7 @@ export default function StaffTasksPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [success, setSuccess] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterOverdue, setFilterOverdue] = useState(false);
 
   // Client details modal state
   const [showClientModal, setShowClientModal] = useState(false);
@@ -560,34 +561,61 @@ export default function StaffTasksPage() {
 
       {/* Filter */}
       <div className="staff-filters-card" style={{ marginBottom: "1rem" }}>
-        <div className="staff-form-group" style={{ marginBottom: 0 }}>
-          <label className="staff-form-label">Filter by Status</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="staff-filter-select"
-            style={{ maxWidth: "200px" }}
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div className="staff-form-group" style={{ marginBottom: 0 }}>
+            <label className="staff-form-label">Filter by Status</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="staff-filter-select"
+              style={{ maxWidth: "200px" }}
+            >
+              <option value="">All Tasks</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => setFilterOverdue((v) => !v)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.625rem 1rem",
+              borderRadius: "10px",
+              border: `2px solid ${filterOverdue ? "#ef4444" : "#e5e7eb"}`,
+              background: filterOverdue ? "rgba(239, 68, 68, 0.1)" : "#fafafa",
+              color: filterOverdue ? "#ef4444" : "#6b7280",
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s",
+              whiteSpace: "nowrap",
+              marginBottom: "0.125rem",
+            }}
           >
-            <option value="">All Tasks</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
+            <AlertCircle className="w-4 h-4" />
+            Overdue Only
+          </button>
         </div>
       </div>
 
       {/* Tasks List */}
       <div className="staff-tasks-container">
-        {tasks.length === 0 ? (
-          <div className="staff-empty-state">
-            <CheckCircle className="w-12 h-12" />
-            <p>No tasks found. You&apos;re all caught up!</p>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {tasks.map(renderTaskCard)}
-          </div>
-        )}
+        {(() => {
+          const displayedTasks = filterOverdue ? tasks.filter(isOverdue) : tasks;
+          return displayedTasks.length === 0 ? (
+            <div className="staff-empty-state">
+              <CheckCircle className="w-12 h-12" />
+              <p>{filterOverdue ? "No overdue tasks found." : "No tasks found. You're all caught up!"}</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {displayedTasks.map(renderTaskCard)}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Client Details Modal */}

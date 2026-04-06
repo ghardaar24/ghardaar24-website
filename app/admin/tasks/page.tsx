@@ -143,6 +143,7 @@ export default function AdminTasksPage() {
   // Filter state
   const [filterStaff, setFilterStaff] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterOverdue, setFilterOverdue] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -384,8 +385,9 @@ export default function AdminTasksPage() {
 
   // Separate tasks
   const adminIds = new Set(admins.map((a) => a.id));
-  const adminTasks = tasks.filter((t) => adminIds.has(t.assigned_to));
-  const staffTasks = tasks.filter((t) => !adminIds.has(t.assigned_to));
+  const filteredTasks = filterOverdue ? tasks.filter(isOverdue) : tasks;
+  const adminTasks = filteredTasks.filter((t) => adminIds.has(t.assigned_to));
+  const staffTasks = filteredTasks.filter((t) => !adminIds.has(t.assigned_to));
 
   // Stats
   const pendingCount = tasks.filter((t) => t.status === "pending").length;
@@ -736,6 +738,29 @@ export default function AdminTasksPage() {
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
+          </div>
+          <div style={{ flex: "0 0 auto", display: "flex", alignItems: "flex-end" }}>
+            <button
+              onClick={() => setFilterOverdue((v) => !v)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.625rem 1rem",
+                borderRadius: "10px",
+                border: `2px solid ${filterOverdue ? "#ef4444" : "#e5e7eb"}`,
+                background: filterOverdue ? "rgba(239, 68, 68, 0.1)" : "#fafafa",
+                color: filterOverdue ? "#ef4444" : "#6b7280",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <AlertCircle className="w-4 h-4" />
+              Overdue Only
+            </button>
           </div>
         </div>
       </div>
