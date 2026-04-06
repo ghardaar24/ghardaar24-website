@@ -25,6 +25,8 @@ import {
   MapPin,
   MessageSquare,
   Save,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 interface CallingCommentEntry {
@@ -144,6 +146,9 @@ export default function AdminTasksPage() {
   const [filterStaff, setFilterStaff] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterOverdue, setFilterOverdue] = useState(false);
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -385,7 +390,20 @@ export default function AdminTasksPage() {
 
   // Separate tasks
   const adminIds = new Set(admins.map((a) => a.id));
-  const filteredTasks = filterOverdue ? tasks.filter(isOverdue) : tasks;
+  const filteredTasks = (() => {
+    let result = filterOverdue ? tasks.filter(isOverdue) : [...tasks];
+    if (filterDateFrom) result = result.filter((t) => t.due_date && t.due_date >= filterDateFrom);
+    if (filterDateTo) result = result.filter((t) => t.due_date && t.due_date <= filterDateTo);
+    result.sort((a, b) => {
+      const da = a.due_date || "";
+      const db = b.due_date || "";
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return sortOrder === "asc" ? da.localeCompare(db) : db.localeCompare(da);
+    });
+    return result;
+  })();
   const adminTasks = filteredTasks.filter((t) => adminIds.has(t.assigned_to));
   const staffTasks = filteredTasks.filter((t) => !adminIds.has(t.assigned_to));
 
@@ -739,7 +757,46 @@ export default function AdminTasksPage() {
               ))}
             </select>
           </div>
-          <div style={{ flex: "0 0 auto", display: "flex", alignItems: "flex-end" }}>
+          <div style={{ flex: "1 1 160px" }}>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Due Date From</label>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={(e) => setFilterDateFrom(e.target.value)}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+            />
+          </div>
+          <div style={{ flex: "1 1 160px" }}>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Due Date To</label>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => setFilterDateTo(e.target.value)}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+            />
+          </div>
+          <div style={{ flex: "0 0 auto", display: "flex", alignItems: "flex-end", gap: "0.5rem" }}>
+            <button
+              onClick={() => setSortOrder((v) => v === "asc" ? "desc" : "asc")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.625rem 1rem",
+                borderRadius: "10px",
+                border: "2px solid #e5e7eb",
+                background: "#fafafa",
+                color: "#374151",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {sortOrder === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+              Due Date {sortOrder === "asc" ? "Asc" : "Desc"}
+            </button>
             <button
               onClick={() => setFilterOverdue((v) => !v)}
               style={{

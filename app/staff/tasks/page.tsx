@@ -18,6 +18,8 @@ import {
   Loader2,
   Edit2,
   Save,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 interface CallingCommentEntry {
@@ -104,6 +106,9 @@ export default function StaffTasksPage() {
   const [success, setSuccess] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterOverdue, setFilterOverdue] = useState(false);
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Client details modal state
   const [showClientModal, setShowClientModal] = useState(false);
@@ -576,6 +581,48 @@ export default function StaffTasksPage() {
               ))}
             </select>
           </div>
+          <div className="staff-form-group" style={{ marginBottom: 0 }}>
+            <label className="staff-form-label">Due Date From</label>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={(e) => setFilterDateFrom(e.target.value)}
+              className="staff-filter-select"
+              style={{ maxWidth: "180px" }}
+            />
+          </div>
+          <div className="staff-form-group" style={{ marginBottom: 0 }}>
+            <label className="staff-form-label">Due Date To</label>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => setFilterDateTo(e.target.value)}
+              className="staff-filter-select"
+              style={{ maxWidth: "180px" }}
+            />
+          </div>
+          <button
+            onClick={() => setSortOrder((v) => v === "asc" ? "desc" : "asc")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.625rem 1rem",
+              borderRadius: "10px",
+              border: "2px solid #e5e7eb",
+              background: "#fafafa",
+              color: "#374151",
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s",
+              whiteSpace: "nowrap",
+              marginBottom: "0.125rem",
+            }}
+          >
+            {sortOrder === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+            Due Date {sortOrder === "asc" ? "Asc" : "Desc"}
+          </button>
           <button
             onClick={() => setFilterOverdue((v) => !v)}
             style={{
@@ -604,11 +651,21 @@ export default function StaffTasksPage() {
       {/* Tasks List */}
       <div className="staff-tasks-container">
         {(() => {
-          const displayedTasks = filterOverdue ? tasks.filter(isOverdue) : tasks;
+          let displayedTasks = filterOverdue ? tasks.filter(isOverdue) : [...tasks];
+          if (filterDateFrom) displayedTasks = displayedTasks.filter((t) => t.due_date && t.due_date >= filterDateFrom);
+          if (filterDateTo) displayedTasks = displayedTasks.filter((t) => t.due_date && t.due_date <= filterDateTo);
+          displayedTasks.sort((a, b) => {
+            const da = a.due_date || "";
+            const db = b.due_date || "";
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return sortOrder === "asc" ? da.localeCompare(db) : db.localeCompare(da);
+          });
           return displayedTasks.length === 0 ? (
             <div className="staff-empty-state">
               <CheckCircle className="w-12 h-12" />
-              <p>{filterOverdue ? "No overdue tasks found." : "No tasks found. You're all caught up!"}</p>
+              <p>{filterOverdue ? "No overdue tasks found." : "No tasks found. You&apos;re all caught up!"}</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
