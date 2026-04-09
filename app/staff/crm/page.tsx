@@ -1696,6 +1696,15 @@ export default function StaffCRMPage() {
                 </div>
 
                 <div className="flex gap-3">
+                  {searchParams.get("from") === "tasks" && (
+                    <button
+                      onClick={() => { window.location.href = "/staff/tasks"; }}
+                      className="flex-1 py-2.5 px-4 bg-orange-50 text-orange-600 font-medium rounded-xl hover:bg-orange-100 transition-colors flex items-center justify-center gap-2 border border-orange-200"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Back to Tasks
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setShowDetailsModal(false);

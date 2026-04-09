@@ -3131,7 +3131,16 @@ export default function CRMPage() {
                   </div>
                 </div>
                 <div className="modal-actions p-8 pt-0 border-t-0">
-                  <button 
+                  {searchParams.get("from") === "tasks" && (
+                    <button
+                      className="flex-1 py-4 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-xl transition-all hover:scale-[1.01] flex items-center justify-center gap-2 border border-orange-200"
+                      onClick={() => { window.location.href = "/admin/tasks"; }}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                      Back to Tasks
+                    </button>
+                  )}
+                  <button
                     className="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-all hover:scale-[1.01]"
                     onClick={() => setShowDetailsModal(false)}
                   >

@@ -429,20 +429,21 @@ export default function AdminTasksPage() {
   }
 
   const handleViewClient = (clientId: string) => {
-    window.location.href = `/admin/crm?client_id=${clientId}`;
+    window.location.href = `/admin/crm?client_id=${clientId}&from=tasks`;
   };
 
   const handleViewClientByName = async (name: string) => {
     try {
-      const { data, error } = await supabase
+      // Exact match only (case-insensitive)
+      const { data } = await supabase
         .from("crm_clients")
         .select("id")
         .ilike("client_name", name)
-        .limit(1)
-        .single();
-      if (error) throw error;
-      if (data) {
-        window.location.href = `/admin/crm?client_id=${data.id}`;
+        .limit(1);
+      if (data?.length) {
+        window.location.href = `/admin/crm?client_id=${data[0].id}&from=tasks`;
+      } else {
+        alert("Client not found in CRM");
       }
     } catch (err) {
       console.error("Error fetching client by name:", err);
@@ -534,9 +535,9 @@ export default function AdminTasksPage() {
             >
               {task.title}
               {(() => {
-                const isCrmTask = task.client_id || task.description?.includes("Automatically created from CRM") || task.title?.startsWith("Site visit for");
+                const isCrmTask = task.client_id || task.description?.includes("Automatically created from CRM") || task.title?.startsWith("Site visit for") || task.title?.startsWith("Call to ");
                 if (!isCrmTask) return null;
-                const clientName = task.title?.replace("Site visit for ", "").trim();
+                const clientName = task.title?.replace("Site visit for ", "").replace("Call to ", "").trim();
                 return (
                   <button
                     onClick={(e) => {
