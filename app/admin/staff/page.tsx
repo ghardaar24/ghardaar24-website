@@ -1254,10 +1254,10 @@ export default function StaffManagementPage() {
                           <FileSpreadsheet className="w-5 h-5 text-gray-500" />
                           <div>
                             <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
-                              Create CRM Sheets
+                              Create CRM Sheets & Add Leads
                             </span>
                             <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                              Allows creating new sheets for personal and admin use
+                              Allows creating new sheets and adding own leads
                             </span>
                           </div>
                         </div>

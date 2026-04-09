@@ -113,7 +113,7 @@ export default function StaffTasksPage() {
   // Client details modal state
   const [showClientModal, setShowClientModal] = useState(false);
   const [clientDetails, setClientDetails] = useState<CRMClient | null>(null);
-  const [clientLoading, setClientLoading] = useState(false);
+  const [clientLoading] = useState(false);
 
   // Client edit modal state
   const [showClientEditModal, setShowClientEditModal] = useState(false);

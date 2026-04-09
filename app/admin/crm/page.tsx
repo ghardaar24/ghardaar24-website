@@ -44,6 +44,8 @@ interface CallingCommentEntry {
   comment: string;
   date: string;
   addedBy?: string;
+  addedById?: string;
+  addedByRole?: "admin" | "staff";
 }
 
 interface CRMSheet {
@@ -51,6 +53,8 @@ interface CRMSheet {
   name: string;
   description: string | null;
   created_at: string;
+  created_by_staff: string | null;
+  crm_staff?: { name: string } | null;
 }
 
 interface CRMClient {
@@ -127,7 +131,7 @@ const ITEMS_PER_PAGE = 50;
 
 export default function CRMPage() {
   const searchParams = useSearchParams();
-  const { user, session, loading } = useAdminAuth();
+  const { user, session, loading, adminProfile } = useAdminAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
@@ -468,7 +472,7 @@ export default function CRMPage() {
       try {
         const { data, error } = await supabase
           .from("crm_sheets")
-          .select("*")
+          .select("*, crm_staff:created_by_staff(name)")
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -524,8 +528,10 @@ export default function CRMPage() {
           .select("*, crm_staff:added_by(name)")
           .order("created_at", { ascending: false });
 
-        // Filter by selected sheet if not "all"
-        if (selectedSheetId && selectedSheetId !== "all") {
+        // Filter by selected sheet
+        if (selectedSheetId === "staff_leads") {
+          query = query.is("sheet_id", null).not("added_by", "is", null);
+        } else if (selectedSheetId && selectedSheetId !== "all") {
           query = query.eq("sheet_id", selectedSheetId);
         }
 
@@ -564,7 +570,7 @@ export default function CRMPage() {
         (payload) => {
           const newClient = payload.new as CRMClient;
           // Only add if matches current filter (or no filter)
-          if (!selectedSheetId || selectedSheetId === "all" || newClient.sheet_id === selectedSheetId) {
+          if (!selectedSheetId || selectedSheetId === "all" || (selectedSheetId === "staff_leads" && !newClient.sheet_id && newClient.added_by) || newClient.sheet_id === selectedSheetId) {
             setClients((prev) => [newClient, ...prev]);
           }
         }
@@ -605,14 +611,35 @@ export default function CRMPage() {
   // Auto-open client details when navigated from tasks page
   useEffect(() => {
     const clientId = searchParams.get("client_id");
-    if (clientId && clients.length > 0) {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClient(client);
-        setShowDetailsModal(true);
+    if (!clientId || !user) return;
+
+    // First check if client is already loaded
+    const existing = clients.find((c) => c.id === clientId);
+    if (existing) {
+      setSelectedClient(existing);
+      setShowDetailsModal(true);
+      return;
+    }
+
+    // If not found in current view, fetch directly
+    async function fetchClientById() {
+      try {
+        const { data, error } = await supabase
+          .from("crm_clients")
+          .select("*, crm_staff:added_by(name)")
+          .eq("id", clientId!)
+          .single();
+        if (error) throw error;
+        if (data) {
+          setSelectedClient(data);
+          setShowDetailsModal(true);
+        }
+      } catch (err) {
+        console.error("Error fetching client by ID:", err);
       }
     }
-  }, [searchParams, clients]);
+    fetchClientById();
+  }, [searchParams, clients, user]);
 
   // Filter clients
   const filteredClients = clients.filter((client) => {
@@ -668,7 +695,7 @@ export default function CRMPage() {
       expected_visit_date: "",
       deal_status: "open",
       admin_notes: "",
-      sheet_id: selectedSheetId && selectedSheetId !== "all" ? selectedSheetId : (sheets.length > 0 ? sheets[0].id : ""),
+      sheet_id: selectedSheetId && selectedSheetId !== "all" && selectedSheetId !== "staff_leads" ? selectedSheetId : (sheets.length > 0 ? sheets[0].id : ""),
       facing: "",
     });
     setEditingClient(null);
@@ -824,7 +851,9 @@ export default function CRMPage() {
         const newEntry: CallingCommentEntry = {
           comment: formData.new_calling_comment.trim(),
           date: new Date().toISOString(),
-          addedBy: "admin",
+          addedBy: `Admin - ${adminProfile?.name || adminProfile?.email || "Unknown"}`,
+          addedById: user?.id || undefined,
+          addedByRole: "admin",
         };
         // Prepend new comment to history (most recent first)
         updatedHistory = [newEntry, ...updatedHistory];
@@ -876,7 +905,7 @@ export default function CRMPage() {
               calling_comment_history: updatedHistory,
               expected_visit_date: formData.expected_visit_date || null,
               facing: formData.facing || null,
-              sheet_id: formData.sheet_id || (selectedSheetId && selectedSheetId !== "all" ? selectedSheetId : null),
+              sheet_id: formData.sheet_id || (selectedSheetId && selectedSheetId !== "all" && selectedSheetId !== "staff_leads" ? selectedSheetId : null),
             },
           ])
           .select()
@@ -1599,14 +1628,15 @@ export default function CRMPage() {
                   className="crm-sheet-select"
                 >
                   <option value="">All Clients</option>
+                  <option value="staff_leads">Staff Uploaded Leads</option>
                   {sheets.map((sheet) => (
                     <option key={sheet.id} value={sheet.id}>
-                      {sheet.name}
+                      {sheet.name}{sheet.crm_staff?.name ? ` (by ${sheet.crm_staff.name})` : ""}
                     </option>
                   ))}
                 </select>
               </div>
-              {selectedSheetId && (
+              {selectedSheetId && selectedSheetId !== "staff_leads" && (
                 <button
                   className="crm-sheet-delete-btn-dropdown"
                   onClick={() => setDeleteSheetConfirm(selectedSheetId)}

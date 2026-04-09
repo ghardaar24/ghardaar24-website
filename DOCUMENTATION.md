@@ -172,6 +172,7 @@ Stores sheet metadata for organizing imported client data.
 | `description`| TEXT        | Optional sheet description    |
 | `created_at` | TIMESTAMPTZ | Creation timestamp            |
 | `created_by` | UUID        | Admin who created the sheet   |
+| `created_by_staff` | UUID  | Staff who created the sheet (if applicable) |
 
 ### CRM Sheets Access (crm_sheet_access)
 
@@ -202,6 +203,7 @@ Stores client information for the CRM system.
 | `location`          | TEXT        | Preferred location                  |
 | `facing`            | TEXT        | Property facing preference          |
 | `calling_comment`   | TEXT        | Notes from calls                    |
+| `calling_comment_history` | JSONB | History of call notes with timestamps and author details (`addedBy`, `addedById`, `addedByRole`) |
 | `expected_visit`    | DATE        | Expected visit date                 |
 | `assigned_to`       | UUID        | Staff member assigned               |
 | `added_by`          | UUID        | User/Staff who added the lead       |
@@ -664,6 +666,11 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.6.1 (April 2026)
+
+- **CRM Audit & Ownership**: Enhanced caller info tracking in CRM (`addedById`, `addedByRole`) for precise comment attribution.
+- **CRM Deletion Controls**: Staff can now explicitly delete individual CRM leads they added, and CRM sheets they created.
 
 ### v1.6.0 (April 2026)
 

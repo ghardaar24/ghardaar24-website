@@ -22,7 +22,7 @@ import {
   ChevronRight,
   Plus,
   Edit2,
-
+  Trash2,
 } from "lucide-react";
 
 // Types
@@ -30,6 +30,8 @@ interface CallingCommentEntry {
   comment: string;
   date: string;
   addedBy?: string;
+  addedById?: string;
+  addedByRole?: "admin" | "staff";
 }
 
 interface CRMClient {
@@ -55,6 +57,7 @@ interface CRMSheet {
   id: string;
   name: string;
   description: string | null;
+  created_by_staff: string | null;
 }
 
 type FilterState = {
@@ -137,6 +140,10 @@ export default function StaffCRMPage() {
   });
   const [addingLead, setAddingLead] = useState(false);
 
+  // Delete State
+  const [deleteLeadConfirm, setDeleteLeadConfirm] = useState<string | null>(null);
+  const [deleteSheetConfirm, setDeleteSheetConfirm] = useState<string | null>(null);
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addFormData.client_name.trim() || !staffProfile) return;
@@ -156,7 +163,7 @@ export default function StaffCRMPage() {
         facing: addFormData.facing || null,
         calling_comment: addFormData.calling_comment || null,
         calling_comment_history: addFormData.calling_comment
-          ? [{ comment: addFormData.calling_comment, date: new Date().toISOString(), addedBy: "staff" }]
+          ? [{ comment: addFormData.calling_comment, date: new Date().toISOString(), addedBy: `Staff - ${staffProfile?.name || "Unknown"}`, addedById: staffProfile?.id, addedByRole: "staff" as const }]
           : [],
       };
       const { data, error } = await supabaseStaff.from("crm_clients").insert([payload]).select().single();
@@ -201,9 +208,57 @@ export default function StaffCRMPage() {
     }
   };
 
+  // Delete lead handler
+  const handleDeleteLead = async (clientId: string) => {
+    try {
+      const { error } = await supabaseStaff.from("crm_clients").delete().eq("id", clientId);
+      if (error) throw error;
+      setClients((prev) => prev.filter((c) => c.id !== clientId));
+      setDeleteLeadConfirm(null);
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+      alert("Failed to delete lead.");
+    }
+  };
+
+  // Delete sheet handler
+  const handleDeleteSheet = async (sheetId: string) => {
+    try {
+      // Delete all clients in this sheet first
+      const { error: clientsError } = await supabaseStaff
+        .from("crm_clients")
+        .delete()
+        .eq("sheet_id", sheetId);
+      if (clientsError) throw clientsError;
+
+      // Delete sheet access entries
+      const { error: accessError } = await supabaseStaff
+        .from("crm_sheet_access")
+        .delete()
+        .eq("sheet_id", sheetId);
+      if (accessError) throw accessError;
+
+      // Delete the sheet
+      const { error: sheetError } = await supabaseStaff
+        .from("crm_sheets")
+        .delete()
+        .eq("id", sheetId);
+      if (sheetError) throw sheetError;
+
+      setSheets((prev) => prev.filter((s) => s.id !== sheetId));
+      setClients((prev) => prev.filter((c) => c.sheet_id !== sheetId));
+      if (selectedSheetId === sheetId) {
+        setSelectedSheetId("my_leads");
+      }
+      setDeleteSheetConfirm(null);
+    } catch (error) {
+      console.error("Error deleting sheet:", error);
+      alert("Failed to delete sheet.");
+    }
+  };
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-
 
 
   // Inline editing state
@@ -302,6 +357,10 @@ export default function StaffCRMPage() {
     async function fetchSheets() {
       if (accessibleSheets.length === 0) {
         setSheets([]);
+        // If staff can add sheets/own leads, default to "my_leads" tab
+        if (staffProfile?.can_add_sheets && !selectedSheetId) {
+          setSelectedSheetId("my_leads");
+        }
         setIsLoading(false);
         return;
       }
@@ -430,14 +489,35 @@ export default function StaffCRMPage() {
   // Auto-open client details when navigated from tasks page
   useEffect(() => {
     const clientId = searchParams.get("client_id");
-    if (clientId && clients.length > 0) {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClient(client);
-        setShowDetailsModal(true);
+    if (!clientId || !staffProfile) return;
+
+    // First check if client is already loaded
+    const existing = clients.find((c) => c.id === clientId);
+    if (existing) {
+      setSelectedClient(existing);
+      setShowDetailsModal(true);
+      return;
+    }
+
+    // If not found in current view, fetch directly
+    async function fetchClientById() {
+      try {
+        const { data, error } = await supabaseStaff
+          .from("crm_clients")
+          .select("*")
+          .eq("id", clientId!)
+          .single();
+        if (error) throw error;
+        if (data) {
+          setSelectedClient(data);
+          setShowDetailsModal(true);
+        }
+      } catch (err) {
+        console.error("Error fetching client by ID:", err);
       }
     }
-  }, [searchParams, clients]);
+    fetchClientById();
+  }, [searchParams, clients, staffProfile]);
 
   // Filter clients
   const filteredClients = clients.filter((client) => {
@@ -682,7 +762,9 @@ export default function StaffCRMPage() {
       const newEntry: CallingCommentEntry = {
         comment: newCallingComment.trim(),
         date: new Date().toISOString(),
-        addedBy: "staff",
+        addedBy: `Staff - ${staffProfile?.name || "Unknown"}`,
+        addedById: staffProfile?.id,
+        addedByRole: "staff",
       };
       
       // Prepend new entry to history
@@ -747,6 +829,7 @@ export default function StaffCRMPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
           sheetName: newSheetName.trim(),
@@ -870,7 +953,7 @@ export default function StaffCRMPage() {
     );
   }
 
-  if (sheets.length === 0 && !isLoading) {
+  if (sheets.length === 0 && !isLoading && !staffProfile?.can_add_sheets) {
     return (
       <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
@@ -924,14 +1007,24 @@ export default function StaffCRMPage() {
           My Uploaded Leads
         </button>
         {sheets.map((sheet) => (
-          <button
-            key={sheet.id}
-            onClick={() => setSelectedSheetId(sheet.id)}
-            className={`staff-tab ${selectedSheetId === sheet.id ? "active" : ""}`}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            {sheet.name}
-          </button>
+          <div key={sheet.id} className="flex items-center">
+            <button
+              onClick={() => setSelectedSheetId(sheet.id)}
+              className={`staff-tab ${selectedSheetId === sheet.id ? "active" : ""}`}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              {sheet.name}
+            </button>
+            {sheet.created_by_staff === staffProfile?.id && (
+              <button
+                onClick={() => setDeleteSheetConfirm(sheet.id)}
+                className="p-1 ml-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                title="Delete sheet"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         ))}
       </div>
 
@@ -1185,6 +1278,8 @@ export default function StaffCRMPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1366,6 +1461,17 @@ export default function StaffCRMPage() {
                         >
                           {DEAL_STATUS_OPTIONS.find((o) => o.value === client.deal_status)?.label}
                         </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      {(client.added_by === staffProfile?.id || sheets.find(s => s.id === client.sheet_id)?.created_by_staff === staffProfile?.id) && (
+                        <button
+                          onClick={() => setDeleteLeadConfirm(client.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete lead"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -2204,6 +2310,85 @@ export default function StaffCRMPage() {
         )}
       </AnimatePresence>
 
+      {/* Delete Lead Confirmation Modal */}
+      <AnimatePresence>
+        {deleteLeadConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDeleteLeadConfirm(null)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Lead</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                Are you sure you want to delete <strong>&quot;{clients.find(c => c.id === deleteLeadConfirm)?.client_name}&quot;</strong>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteLeadConfirm(null)}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteLead(deleteLeadConfirm)}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Sheet Confirmation Modal */}
+      <AnimatePresence>
+        {deleteSheetConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDeleteSheetConfirm(null)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Sheet</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                This will permanently delete <strong>&quot;{sheets.find(s => s.id === deleteSheetConfirm)?.name}&quot;</strong> and all its leads. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteSheetConfirm(null)}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteSheet(deleteSheetConfirm)}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -57,6 +57,10 @@ const nextConfig: NextConfig = {
             value: "origin-when-cross-origin",
           },
           {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co https://*.supabase.in https://www.googletagmanager.com https://www.google-analytics.com; font-src 'self'; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co wss://*.supabase.in https://generativelanguage.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; frame-src 'self' https://www.google.com https://maps.google.com; frame-ancestors 'none';",

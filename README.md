@@ -68,7 +68,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Inquiry Management** - Track and respond to customer inquiries
 - **Leads Management** - View and manage user profiles and leads
 - **Statistics Dashboard** - Overview of listings, inquiries, and pending approvals
-- **CRM System** - Comprehensive client management with lead tracking, status updates, CSV import/export, analytics dashboard, and activity logs
+- **CRM System** - Comprehensive client management with lead tracking, status updates, caller attribution (audits), deletion controls, CSV import/export, analytics dashboard, and activity logs
 - **Invoice Generator** - Generate professional invoices with saved history (accessible by admin and permitted staff)
 - **Downloads Management** - Manage brochures and resources available for public download
 
