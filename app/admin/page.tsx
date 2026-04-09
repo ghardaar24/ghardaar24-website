@@ -111,7 +111,7 @@ export default function AdminDashboard() {
 
       await refreshProfile();
     } catch (error) {
-      console.error("Error uploading profile picture:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error uploading profile picture:", error);
       alert("Failed to upload profile picture. Please try again.");
     } finally {
       setUploadingPicture(false);
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
 
         setRecentInquiries(inquiriesListRes.data || []);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }

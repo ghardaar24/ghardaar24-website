@@ -221,7 +221,7 @@ export default function AdminSiteVisitsPage() {
         uniqueStaff: uniqueStaffIds.size,
       });
     } catch (err) {
-      console.error("Error fetching data:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
@@ -303,7 +303,7 @@ export default function AdminSiteVisitsPage() {
         }))
       );
     } catch (err) {
-      console.error("Error looking up client history:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error looking up client history:", err);
     } finally {
       setLoadingHistory(false);
     }
@@ -369,7 +369,7 @@ export default function AdminSiteVisitsPage() {
       setShowForm(false);
       fetchData();
     } catch (err) {
-      console.error("Error recording visit:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error recording visit:", err);
       setMessage({
         type: "error",
         text: "Failed to record visit. Please try again.",

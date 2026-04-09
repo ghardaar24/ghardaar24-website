@@ -125,7 +125,7 @@ export default function NewPropertyPage() {
       if (error) throw error;
       setLocations(data || []);
     } catch (err) {
-      console.error("Error fetching locations:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching locations:", err);
     }
   }
 
@@ -431,7 +431,7 @@ export default function NewPropertyPage() {
 
       setFormData((prev) => ({ ...prev, description: data.description }));
     } catch (err) {
-      console.error("Error generating description:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error generating description:", err);
       setError("Failed to generate description. Please try again.");
     } finally {
       setGenerating(false);
@@ -522,7 +522,7 @@ export default function NewPropertyPage() {
 
       router.push("/admin/properties");
     } catch (err) {
-      console.error("Error creating property:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error creating property:", err);
       setError(
         err instanceof Error ? err.message : "Failed to create property"
       );

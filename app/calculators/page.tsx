@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import EMIOnlyCalculator from "@/components/EMICalculator";
+import EMICalculator from "@/components/EMICalculator";
 import ROICalculator from "@/components/ROICalculator";
 import MortgageCalculator from "@/components/MortgageCalculator";
 
@@ -165,7 +165,7 @@ export default function CalculatorsPage() {
                 </div>
               </div>
             </div>
-            <EMIOnlyCalculator />
+            <EMICalculator />
           </div>
         </section>
 

@@ -90,8 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Check if user is an admin
-  // Note: This may fail with 406 if RLS policies block access - that's expected for regular users
+  // Check if user is an admin (UI hint only — NOT for authorization)
+  // This flag is used in the Header to show an admin dashboard link.
+  // Actual admin authorization is handled by AdminAuthProvider (lib/admin-auth.tsx).
+  // May return false for actual admins if RLS blocks the query — that's acceptable
+  // since admins use the dedicated /admin/login flow with useAdminAuth().
   const checkAdminStatus = async (userId: string) => {
     try {
       const { data, error } = await supabase

@@ -217,7 +217,9 @@ export default function CRMPage() {
       const adminList = (adminRes.data || []).map((a: { id: string; name: string; email: string }) => ({ ...a, role: "admin" as const }));
       setStaffOptions([...adminList, ...staffList]);
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching staff options:", e);
+      }
     }
   };
 
@@ -250,7 +252,7 @@ export default function CRMPage() {
         setVisitHistory([]);
       }
     } catch (e) {
-      console.error("Error fetching visit history:", e);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching visit history:", e);
     } finally {
       setIsVisitsLoading(false);
     }
@@ -312,7 +314,9 @@ export default function CRMPage() {
       
       setShowTaskModal(false);
     } catch (err) {
-      console.error(err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating task:", err);
+      }
       alert("Error creating task.");
     } finally {
       setTaskSaving(false);
@@ -335,7 +339,7 @@ export default function CRMPage() {
       const { error: sheetsError } = await supabase.from("crm_sheets").delete().neq("id", "00000000-0000-0000-0000-000000000000");
       
       if (sheetsError) {
-        console.error("Error deleting sheets:", sheetsError);
+        if (process.env.NODE_ENV === "development") console.error("Error deleting sheets:", sheetsError);
       }
       
       setClients([]);
@@ -344,7 +348,7 @@ export default function CRMPage() {
       setShowDeleteAllModal(false);
       alert("All clients and sheets have been permanently deleted.");
     } catch (error) {
-      console.error("Error deleting all clients:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting all clients:", error);
       alert("Failed to delete clients. Please try again.");
     }
   };
@@ -380,7 +384,7 @@ export default function CRMPage() {
       setDeleteSheetConfirm(null);
       alert("Sheet and all its clients have been deleted.");
     } catch (error) {
-      console.error("Error deleting sheet:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting sheet:", error);
       alert("Failed to delete sheet. Please try again.");
     }
   };
@@ -476,13 +480,13 @@ export default function CRMPage() {
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("Error fetching sheets:", error);
+          if (process.env.NODE_ENV === "development") console.error("Error fetching sheets:", error);
           // If table doesn't exist, continue without sheets
           return;
         }
         setSheets(data || []);
       } catch (error) {
-        console.error("Error fetching sheets:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching sheets:", error);
       }
     }
 
@@ -538,7 +542,7 @@ export default function CRMPage() {
         const data = await fetchAllClients(query);
         setClients(data);
       } catch (error) {
-        console.error("Error fetching CRM clients:", error instanceof Error ? error.message : String(error));
+        if (process.env.NODE_ENV === "development") console.error("Error fetching CRM clients:", error instanceof Error ? error.message : String(error));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pgError = error as any;
         if (pgError?.code === '42P01' || pgError?.message?.includes('does not exist')) {
@@ -635,7 +639,7 @@ export default function CRMPage() {
           setShowDetailsModal(true);
         }
       } catch (err) {
-        console.error("Error fetching client by ID:", err);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching client by ID:", err);
       }
     }
     fetchClientById();
@@ -757,7 +761,7 @@ export default function CRMPage() {
       setEditingCommentIndex(null);
       setEditingCommentValue("");
     } catch (error) {
-      console.error("Error updating comment:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error updating comment:", error);
       alert("Failed to update comment. Please try again.");
     }
   };
@@ -810,7 +814,7 @@ export default function CRMPage() {
         });
       }
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting comment:", error);
       alert("Failed to delete comment. Please try again.");
     }
   };
@@ -952,7 +956,7 @@ export default function CRMPage() {
         setShowTaskModal(true);
       }
     } catch (error) {
-      console.error("Error saving client:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error saving client:", error);
       alert("Failed to save client. Please try again.");
     }
   };
@@ -984,7 +988,7 @@ export default function CRMPage() {
             .eq("id", sheetId);
 
           if (sheetError) {
-            console.error("Error deleting empty sheet:", sheetError);
+            if (process.env.NODE_ENV === "development") console.error("Error deleting empty sheet:", sheetError);
           } else {
             // Update local sheets state
             setSheets((prev) => prev.filter((s) => s.id !== sheetId));
@@ -997,7 +1001,7 @@ export default function CRMPage() {
         }
       }
     } catch (error) {
-      console.error("Error deleting client:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting client:", error);
       alert("Failed to delete client. Please try again.");
     }
   };
@@ -1014,7 +1018,7 @@ export default function CRMPage() {
       if (error) throw error;
       setClients((prev) => prev.map((c) => (c.id === client.id ? { ...c, deal_status: newStatus } : c)));
     } catch (error) {
-      console.error("Error updating deal status:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error updating deal status:", error);
     }
   };
 
@@ -1084,7 +1088,7 @@ export default function CRMPage() {
         setShowTaskModal(true);
       }
     } catch (error) {
-      console.error("Error updating field:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
     }
   };
@@ -1380,7 +1384,7 @@ export default function CRMPage() {
       const { data, error } = await supabase.from("crm_clients").insert(uniqueClientsToImport).select();
 
       if (error) {
-        console.error("Supabase import error:", error);
+        if (process.env.NODE_ENV === "development") console.error("Supabase import error:", error);
         throw error;
       }
 
@@ -1396,7 +1400,7 @@ export default function CRMPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
       alert(`Successfully imported ${data?.length || 0} clients to "${importToExistingSheet ? sheets.find(s => s.id === importToExistingSheet)?.name : importSheetName}"! ${duplicateCount > 0 ? `(${duplicateCount} duplicates skipped)` : ""}`);
     } catch (error) {
-      console.error("Error importing clients:", error instanceof Error ? error.message : String(error));
+      if (process.env.NODE_ENV === "development") console.error("Error importing clients:", error instanceof Error ? error.message : String(error));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pgError = error as any;
       alert(`Failed to import clients: ${pgError?.message || pgError?.details || "Unknown error"}. Check console for details.`);

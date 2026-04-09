@@ -28,7 +28,7 @@ export default function StaffPropertiesPage() {
       if (error) throw error;
       setProperties(data || []);
     } catch (error) {
-      console.error("Error fetching properties:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }

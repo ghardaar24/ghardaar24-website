@@ -101,7 +101,7 @@ export default function AdminApprovalsPage() {
 
       setProperties(propertiesWithSubmitters);
     } catch (error) {
-      console.error("Error fetching properties:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ export default function AdminApprovalsPage() {
       setProperties(properties.filter((p) => p.id !== propertyId));
       setActionModal(null);
     } catch (error) {
-      console.error("Error approving property:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error approving property:", error);
       alert("Failed to approve property");
     } finally {
       setProcessing(false);
@@ -148,7 +148,7 @@ export default function AdminApprovalsPage() {
       setActionModal(null);
       setRejectionReason("");
     } catch (error) {
-      console.error("Error rejecting property:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error rejecting property:", error);
       alert("Failed to reject property");
     } finally {
       setProcessing(false);

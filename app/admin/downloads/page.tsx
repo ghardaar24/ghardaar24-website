@@ -44,7 +44,7 @@ export default function DownloadsPage() {
       if (error) throw error;
       setBrochures(data || []);
     } catch (error) {
-      console.error("Error fetching brochures:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching brochures:", error);
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ export default function DownloadsPage() {
       setUploadDescription("");
       fetchBrochures();
     } catch (err) {
-      console.error("Upload error:", err);
+      if (process.env.NODE_ENV === "development") console.error("Upload error:", err);
       setUploadError(err instanceof Error ? err.message : "Failed to upload brochure");
     } finally {
       setIsUploading(false);
@@ -130,7 +130,7 @@ export default function DownloadsPage() {
         b.id === brochure.id ? { ...b, is_active: !b.is_active } : b
       ));
     } catch (err) {
-      console.error("Error updating status:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error updating status:", err);
     }
   };
 
@@ -155,7 +155,7 @@ export default function DownloadsPage() {
 
       setBrochures(brochures.filter(b => b.id !== brochure.id));
     } catch (err) {
-      console.error("Error deleting brochure:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting brochure:", err);
     }
   };
 

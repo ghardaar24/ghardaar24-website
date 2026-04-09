@@ -97,7 +97,9 @@ Budget: ${formData.budget}`;
       });
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (error) {
-      console.error("Error submitting form:", error instanceof Error ? error.message : "Unknown error");
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error submitting form:", error instanceof Error ? error.message : "Unknown error");
+      }
       alert("There was an error submitting your request. Please try again.");
     }
   };

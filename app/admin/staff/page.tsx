@@ -99,17 +99,19 @@ export default function StaffManagementPage() {
           supabase.from("crm_inquiry_access").select("*"),
         ]);
 
-        if (staffRes.error) console.error("Error fetching staff:", staffRes.error);
-        if (sheetsRes.error) console.error("Error fetching sheets:", sheetsRes.error);
-        if (accessRes.error) console.error("Error fetching access:", accessRes.error);
-        if (inquiryAccessRes.error) console.error("Error fetching inquiry access:", inquiryAccessRes.error);
+        if (process.env.NODE_ENV === "development") {
+          if (staffRes.error) console.error("Error fetching staff:", staffRes.error);
+          if (sheetsRes.error) console.error("Error fetching sheets:", sheetsRes.error);
+          if (accessRes.error) console.error("Error fetching access:", accessRes.error);
+          if (inquiryAccessRes.error) console.error("Error fetching inquiry access:", inquiryAccessRes.error);
+        }
 
         setStaff(staffRes.data || []);
         setSheets(sheetsRes.data || []);
         setSheetAccess(accessRes.data || []);
         setInquiryAccess(inquiryAccessRes.data || []);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -148,7 +150,7 @@ export default function StaffManagementPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        console.error("Email lookup failed:", result.error);
+        if (process.env.NODE_ENV === "development") console.error("Email lookup failed:", result.error);
         return;
       }
 
@@ -165,7 +167,7 @@ export default function StaffManagementPage() {
         setFormError("This user is an admin and cannot be added as staff.");
       }
     } catch (error) {
-      console.error("Error looking up email:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error looking up email:", error);
     } finally {
       setLookingUpEmail(false);
     }
@@ -210,7 +212,7 @@ export default function StaffManagementPage() {
         alert("Staff member added successfully! They can use their existing login credentials.");
       }
     } catch (error) {
-      console.error("Error adding staff:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error adding staff:", error);
       setFormError(error instanceof Error ? error.message : "Failed to add staff member.");
     } finally {
       setSaving(false);
@@ -268,7 +270,7 @@ export default function StaffManagementPage() {
 
       setStaff(prev => prev.map(s => s.id === staffMember.id ? { ...s, is_active: !s.is_active } : s));
     } catch (error) {
-      console.error("Error toggling staff status:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error toggling staff status:", error);
       alert("Failed to update staff status.");
     }
   };
@@ -286,7 +288,7 @@ export default function StaffManagementPage() {
       setStaff(prev => prev.map(s => s.id === staffId ? { ...s, [permissionStr]: !currentValue } : s));
       setSelectedStaff(prev => prev && prev.id === staffId ? { ...prev, [permissionStr]: !currentValue } : prev);
     } catch (error) {
-      console.error("Error toggling staff permission:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error toggling staff permission:", error);
       alert(`Failed to update ${permissionStr}.`);
     }
   };
@@ -313,7 +315,7 @@ export default function StaffManagementPage() {
       setSheetAccess(prev => prev.filter(a => a.staff_id !== staffId));
       setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting staff:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting staff:", error);
       alert(error instanceof Error ? error.message : "Failed to delete staff member.");
     }
   };
@@ -342,7 +344,7 @@ export default function StaffManagementPage() {
         setSheetAccess(prev => [...prev, data]);
       }
     } catch (error) {
-      console.error("Error toggling access:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error toggling access:", error);
       alert("Failed to update sheet access.");
     }
   };
@@ -382,7 +384,7 @@ export default function StaffManagementPage() {
         setInquiryAccess(prev => [...prev, data]);
       }
     } catch (error) {
-      console.error("Error toggling inquiry access:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error toggling inquiry access:", error);
       alert("Failed to update inquiry access.");
     }
   };

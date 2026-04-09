@@ -145,7 +145,7 @@ export default function SubmitPropertyPage() {
       setLocations(data || []);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching locations:", err instanceof Error ? err.message : String(err));
+        if (process.env.NODE_ENV === "development") console.error("Error fetching locations:", err instanceof Error ? err.message : String(err));
       }
     }
   }
@@ -450,7 +450,7 @@ export default function SubmitPropertyPage() {
       setFormData((prev) => ({ ...prev, description: data.description }));
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error generating description:", err instanceof Error ? err.message : String(err));
+        if (process.env.NODE_ENV === "development") console.error("Error generating description:", err instanceof Error ? err.message : String(err));
       }
       setError("Failed to generate description. Please try again.");
     } finally {
@@ -579,19 +579,19 @@ export default function SubmitPropertyPage() {
           }),
         }).catch((logError) => {
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to log property to sheets:", logError);
+            if (process.env.NODE_ENV === "development") console.error("Failed to log property to sheets:", logError);
           }
         });
       } catch (logError) {
         // Silent fail - don't block property submission
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to log property to sheets:", logError);
+          if (process.env.NODE_ENV === "development") console.error("Failed to log property to sheets:", logError);
         }
       }
 
       setSuccess(true);
     } catch (err) {
-      console.error("Error submitting property:", err instanceof Error ? err.message : String(err));
+      if (process.env.NODE_ENV === "development") console.error("Error submitting property:", err instanceof Error ? err.message : String(err));
       setError(
         err instanceof Error ? err.message : "Failed to submit property"
       );

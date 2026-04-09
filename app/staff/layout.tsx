@@ -53,7 +53,7 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
 
       await refreshProfile();
     } catch (error) {
-      console.error("Error uploading profile picture:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error uploading profile picture:", error);
       alert("Failed to upload profile picture. Please try again.");
     } finally {
       setUploadingPicture(false);

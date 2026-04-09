@@ -1,6 +1,13 @@
 /**
- * Rate limiting utility using in-memory token bucket algorithm
- * For production at scale, consider using Redis or a dedicated rate limiting service
+ * Rate limiting utility using token bucket algorithm
+ *
+ * Uses globalThis to persist the store across hot reloads (dev) and
+ * within the same serverless function instance (production).
+ *
+ * LIMITATION: In serverless environments (e.g. Vercel), each cold start
+ * creates a new process with its own store. This provides per-instance
+ * rate limiting only. For stricter global rate limiting at scale,
+ * replace this with a Redis-backed store (e.g. Upstash).
  */
 
 interface RateLimitConfig {
@@ -13,8 +20,16 @@ interface RateLimitEntry {
   lastRefill: number;
 }
 
-// In-memory store for rate limiting
-const rateLimitStore = new Map<string, RateLimitEntry>();
+// Persist across hot reloads (dev) and within the same serverless instance
+const globalStore = globalThis as unknown as {
+  __rateLimitStore?: Map<string, RateLimitEntry>;
+};
+
+if (!globalStore.__rateLimitStore) {
+  globalStore.__rateLimitStore = new Map<string, RateLimitEntry>();
+}
+
+const rateLimitStore = globalStore.__rateLimitStore;
 
 // Default configuration: 10 requests per minute
 const DEFAULT_CONFIG: RateLimitConfig = {

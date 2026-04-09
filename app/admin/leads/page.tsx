@@ -39,7 +39,7 @@ export default function LeadsPage() {
         });
 
         if (!excludedIdsRes.ok) {
-          console.error("Failed to fetch excluded IDs:", excludedIdsRes.statusText);
+          if (process.env.NODE_ENV === "development") console.error("Failed to fetch excluded IDs:", excludedIdsRes.statusText);
           // If we fail to get excluded IDs, we shouldn't show the list to avoid leaking admin/staff info mixed in
           // Or we could show an error. For now, let's just log and continue but maybe with empty list? 
           // Safest is to NOT showing potentially internal users if we can't filter them.
@@ -74,7 +74,7 @@ export default function LeadsPage() {
 
         setProfiles(filteredData);
       } catch (error) {
-        console.error("Error fetching profiles:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching profiles:", error);
       } finally {
         setIsLoading(false);
       }

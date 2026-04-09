@@ -151,7 +151,7 @@ export default function StaffTasksPage() {
         setTasks(data.tasks);
       }
     } catch (err) {
-      console.error("Error fetching tasks:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching tasks:", err);
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,7 @@ export default function StaffTasksPage() {
 
       fetchTasks();
     } catch (err) {
-      console.error("Error updating status:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error updating status:", err);
     } finally {
       setUpdating(null);
     }
@@ -238,7 +238,7 @@ export default function StaffTasksPage() {
         alert("Client not found in CRM");
       }
     } catch (err) {
-      console.error("Error fetching client by name:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching client by name:", err);
     }
   };
 
@@ -288,7 +288,7 @@ export default function StaffTasksPage() {
       setClientDetails(updated);
       setShowClientEditModal(false);
     } catch (err) {
-      console.error("Error updating client:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error updating client:", err);
       alert("Failed to update client. Please try again.");
     } finally {
       setClientEditSaving(false);

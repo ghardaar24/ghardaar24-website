@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { motion } from "@/lib/motion";
 import { IndianRupee, Percent, Calendar } from "lucide-react";
 
-export default function EMIOnlyCalculator() {
+export default function EMICalculator() {
   const [loanAmount, setLoanAmount] = useState(5000000);
   const [interestRate, setInterestRate] = useState(8.5);
   const [tenure, setTenure] = useState(20);

@@ -101,10 +101,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      {
-        error: "Failed to log to Google Sheets",
-        details: errorMessage,
-      },
+      { error: "Failed to log to Google Sheets" },
       { status: 500 }
     );
   }

@@ -60,7 +60,7 @@ export default function LocationsPage() {
       if (error) throw error;
       setLocations(data || []);
     } catch (err) {
-      console.error("Error fetching locations:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching locations:", err);
       setError("Failed to load locations");
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ export default function LocationsPage() {
       setNewCity("");
       setAvailableCities([]);
     } catch (err) {
-      console.error("Error adding location:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error adding location:", err);
       setError(err instanceof Error ? err.message : "Failed to add location");
     } finally {
       setAdding(false);
@@ -125,7 +125,7 @@ export default function LocationsPage() {
       setLocations((prev) => prev.filter((loc) => loc.id !== id));
       setSuccess("Location removed successfully");
     } catch (err) {
-      console.error("Error removing location:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error removing location:", err);
       setError("Failed to remove location");
     }
   }

@@ -201,7 +201,7 @@ export default function StaffCRMPage() {
         calling_comment: "",
       });
     } catch (error) {
-      console.error("Error adding lead:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error adding lead:", error);
       alert("Failed to add lead.");
     } finally {
       setAddingLead(false);
@@ -216,7 +216,7 @@ export default function StaffCRMPage() {
       setClients((prev) => prev.filter((c) => c.id !== clientId));
       setDeleteLeadConfirm(null);
     } catch (error) {
-      console.error("Error deleting lead:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting lead:", error);
       alert("Failed to delete lead.");
     }
   };
@@ -252,7 +252,7 @@ export default function StaffCRMPage() {
       }
       setDeleteSheetConfirm(null);
     } catch (error) {
-      console.error("Error deleting sheet:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting sheet:", error);
       alert("Failed to delete sheet.");
     }
   };
@@ -338,7 +338,9 @@ export default function StaffCRMPage() {
       
       setShowTaskModal(false);
     } catch (err) {
-      console.error(err);
+      if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "development") console.error("Error creating task:", err);
+      }
       alert("Error creating task.");
     } finally {
       setTaskSaving(false);
@@ -381,7 +383,7 @@ export default function StaffCRMPage() {
           setSelectedSheetId(data[0].id);
         }
       } catch (error) {
-        console.error("Error fetching sheets:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching sheets:", error);
       }
     }
 
@@ -417,7 +419,7 @@ export default function StaffCRMPage() {
         if (error) throw error;
         setClients(data || []);
       } catch (error) {
-        console.error("Error fetching clients:", error);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching clients:", error);
       } finally {
         setIsLoading(false);
       }
@@ -513,7 +515,7 @@ export default function StaffCRMPage() {
           setShowDetailsModal(true);
         }
       } catch (err) {
-        console.error("Error fetching client by ID:", err);
+        if (process.env.NODE_ENV === "development") console.error("Error fetching client by ID:", err);
       }
     }
     fetchClientById();
@@ -617,7 +619,7 @@ export default function StaffCRMPage() {
           new_value: newValue,
         });
     } catch (error) {
-      console.error("Error logging activity:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error logging activity:", error);
       // Don't block the main operation if logging fails
     }
   };
@@ -742,7 +744,7 @@ export default function StaffCRMPage() {
         setShowTaskModal(true);
       }
     } catch (error) {
-      console.error("Error updating field:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error updating field:", error);
       alert("Failed to update. Please try again.");
     }
   };
@@ -809,7 +811,7 @@ export default function StaffCRMPage() {
       // Clear form
       setNewCallingComment("");
     } catch (error) {
-      console.error("Error adding calling comment:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error adding calling comment:", error);
       alert("Failed to add comment. Please try again.");
     } finally {
       setAddingComment(false);
@@ -853,7 +855,7 @@ export default function StaffCRMPage() {
       setNewSheetName("");
       setNewSheetDescription("");
     } catch (error) {
-      console.error("Error creating sheet:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error creating sheet:", error);
       setSheetError(error instanceof Error ? error.message : "Failed to create sheet");
     } finally {
       setCreatingSheet(false);
@@ -937,7 +939,7 @@ export default function StaffCRMPage() {
         setShowTaskModal(true);
       }
     } catch (error) {
-      console.error("Error saving client:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error saving client:", error);
       alert("Failed to save changes. Please try again.");
     }
   };

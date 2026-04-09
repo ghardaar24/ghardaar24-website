@@ -22,7 +22,9 @@ export default function DownloadsPage() {
 
         if (data) setBrochures(data);
       } catch (error) {
-        console.error("Error fetching brochures:", error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching brochures:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -53,7 +55,9 @@ export default function DownloadsPage() {
           .eq("id", brochure.id);
       }
     } catch (error) {
-      console.error("Error handling download:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error handling download:", error);
+      }
     }
   };
 

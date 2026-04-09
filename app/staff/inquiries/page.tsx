@@ -83,7 +83,7 @@ export default function StaffInquiriesPage() {
       if (error) throw error;
       setInquiries(data || []);
     } catch (error) {
-      console.error("Error fetching inquiries:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching inquiries:", error);
     } finally {
       setLoading(false);
     }

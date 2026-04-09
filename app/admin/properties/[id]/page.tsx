@@ -169,7 +169,7 @@ export default function EditPropertyPage({
       if (error) throw error;
       setLocations(data || []);
     } catch (err) {
-      console.error("Error fetching locations:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching locations:", err);
     }
   }
 
@@ -455,7 +455,7 @@ export default function EditPropertyPage({
 
       setFormData((prev) => ({ ...prev, description: data.description }));
     } catch (err) {
-      console.error("Error generating description:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error generating description:", err);
       setError("Failed to generate description. Please try again.");
     } finally {
       setGenerating(false);
@@ -577,7 +577,7 @@ export default function EditPropertyPage({
 
       router.push("/admin/properties");
     } catch (err) {
-      console.error("Update error:", err);
+      if (process.env.NODE_ENV === "development") console.error("Update error:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to update property";
       const errorDetails = (err as { details?: string })?.details;

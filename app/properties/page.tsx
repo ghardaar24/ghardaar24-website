@@ -87,7 +87,7 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
   const { data, error } = await query.limit(50);
 
   if (error) {
-    console.error("Error fetching properties:", error);
+    if (process.env.NODE_ENV === "development") console.error("Error fetching properties:", error);
     return [];
   }
 

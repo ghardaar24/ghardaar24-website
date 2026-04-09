@@ -23,7 +23,7 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Property Listings** - Browse apartments, houses, villas, plots, and commercial properties
 - **Advanced Search & Filters** - Filter by state, city, price range, property type, listing type, and possession status
 - **State & City Selection** - Dynamic location-based filtering with state and city dropdowns
-- **Property Details** - Comprehensive property pages with image galleries, floor plans, amenities, and location info
+- **Property Details** - Comprehensive property pages with image galleries, floor plans, amenities, property age (for resale), and location info
 - **User Property Submission** - Authenticated users can submit properties for rent/resale (up to 10 images and 2 brochures)
 - **User Dashboard** - Track submitted properties with status (pending/approved/rejected)
 - **Real Estate Guide** - Educational resource explaining real estate concepts in India
@@ -51,11 +51,11 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 
 - **Secure Role-Based Authentication** - Separate auth flows for Admins, Staff, and Users
 - **Staff Portal** - Dedicated environment for staff members to manage CRM tasks, leads, site visits, and (with permissions) properties and invoices
-- **Staff Permissions** - Granular permission flags (`can_manage_properties`, `can_generate_invoices`) for staff access control
+- **Staff Permissions** - Granular permission flags (`can_manage_properties`, `can_generate_invoices`, lead creation access) for staff access control
 - **Staff Management** - Create, update, and manage staff accounts with access control (Admin only)
 - **Inline Client Editing** - Direct client information editing straight from task cards via integrated modals
 - **Site Visits** - Staff and Admins can record site visits with photo proof and client histories (name/mobile); admins can view, filter, and analyze all visits
-- **Task Management** - Unified task assignment allowing tasks to be assigned across roles (Admins/Staff)
+- **Task Management** - Unified task assignment allowing tasks to be assigned across roles (Admins/Staff) with date filtering and overdue tracking
 - **Admin Dashboard** - Full control over properties, users, and platform settings
 - **Password Recovery** - Forgot password and reset password for admin accounts
 - **Property Management** - Full CRUD operations for listings with search bar and floor plan uploads

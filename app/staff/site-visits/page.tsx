@@ -137,7 +137,7 @@ export default function StaffSiteVisitsPage() {
       setProperties((propertiesRes.data || []) as PropertyOption[]);
       setClients((clientsRes.data || []) as ClientOption[]);
     } catch (err) {
-      console.error("Error fetching visits:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching visits:", err);
     } finally {
       setLoading(false);
     }
@@ -219,7 +219,7 @@ export default function StaffSiteVisitsPage() {
         }))
       );
     } catch (err) {
-      console.error("Error looking up client history:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error looking up client history:", err);
     } finally {
       setLoadingHistory(false);
     }
@@ -286,7 +286,7 @@ export default function StaffSiteVisitsPage() {
       setShowForm(false);
       fetchVisits();
     } catch (err) {
-      console.error("Error recording visit:", err);
+      if (process.env.NODE_ENV === "development") console.error("Error recording visit:", err);
       setMessage({
         type: "error",
         text: "Failed to record visit. Please try again.",

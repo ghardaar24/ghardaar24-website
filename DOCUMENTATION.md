@@ -84,7 +84,7 @@ Stores all property listings with their details.
 | `brochure_urls`     | TEXT[]      | Array of brochure URLs                             |
 | `featured`          | BOOLEAN     | Featured listing flag                              |
 | `status`            | TEXT        | active, sold, rented, inactive                     |
-| `builder_developer` | TEXT        | Builder or developer name                          |
+| `builder_name`      | TEXT        | Builder or developer name                          |
 | `floor_plan_url`    | TEXT        | Floor plan image URL                               |
 | `land_parcel`       | NUMERIC     | Land parcel size                                   |
 | `towers`            | NUMERIC     | Number of towers                                   |
@@ -103,6 +103,7 @@ Stores all property listings with their details.
 | `submission_date`   | TIMESTAMPTZ | Date of submission                                 |
 | `approval_date`     | TIMESTAMPTZ | Date of approval                                   |
 | `rejection_reason`  | TEXT        | Reason for rejection (if rejected)                 |
+| `property_age`      | TEXT        | Age of the property (for resale properties)        |
 | `created_at`        | TIMESTAMPTZ | Creation timestamp                                 |
 | `updated_at`        | TIMESTAMPTZ | Last update timestamp                              |
 
@@ -276,6 +277,7 @@ Tasks assigned by admins to staff members.
 | `status`     | TEXT        | pending, in_progress, completed                  |
 | `due_date`   | DATE        | Date task is due                                 |
 | `due_time`   | TIME        | Time task is due                                 |
+| `client_id`  | UUID        | Related CRM client for this task (nullable)      |
 | `completed_at`| TIMESTAMPTZ | When the task was marked completed              |
 | `created_at` | TIMESTAMPTZ | Creation timestamp                               |
 
@@ -666,6 +668,14 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.7.0 (April 2026)
+
+- **CRM Tasks Enhancement**: Added comprehensive date filters and an overdue tasks tracking system for both Admins and Staff.
+- **CRM Client Flow**: Fixed the "View Client" task functionality by accurately redirecting to the CRM details page instead of an outdated modal.
+- **Staff Lead Access**: Expanded staff permissions to include the ability to create new CRM leads. 
+- **Property Additions**: Added `property_age` tracking for resale properties.
+- **Call History**: Optimized and updated the calling history presentation.
 
 ### v1.6.1 (April 2026)
 

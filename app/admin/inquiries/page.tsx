@@ -77,7 +77,7 @@ export default function AdminInquiriesPage() {
       if (error) throw error;
       setInquiries(data || []);
     } catch (error) {
-      console.error("Error fetching inquiries:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching inquiries:", error);
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function AdminInquiriesPage() {
       setDeleteId(null);
       if (selectedInquiry?.id === id) setSelectedInquiry(null);
     } catch (error) {
-      console.error("Error deleting inquiry:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting inquiry:", error);
       alert("Failed to delete inquiry");
     }
   }

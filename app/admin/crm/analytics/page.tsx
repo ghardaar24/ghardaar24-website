@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
         }
         setClients(allData);
       } catch (error) {
-        console.error("Error fetching clients for analytics:", error instanceof Error ? error.message : String(error));
+        if (process.env.NODE_ENV === "development") console.error("Error fetching clients for analytics:", error instanceof Error ? error.message : String(error));
       } finally {
         setIsLoading(false);
       }

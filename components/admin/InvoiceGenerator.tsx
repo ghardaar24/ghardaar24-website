@@ -122,7 +122,9 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
         creator_name: nameMap[d.created_by] || "Unknown"
       })));
     } catch (err) {
-      console.error("Error fetching invoice history:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching invoice history:", err);
+      }
     } finally {
       setHistoryLoading(false);
     }
@@ -288,7 +290,9 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
       setSaveMessage({ type: 'success', text: 'Invoice saved to history!' });
       fetchHistory();
     } catch (err: unknown) {
-      console.error("Error saving invoice:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving invoice:", err);
+      }
       setSaveMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save invoice.' });
     } finally {
       setSavingInvoice(false);

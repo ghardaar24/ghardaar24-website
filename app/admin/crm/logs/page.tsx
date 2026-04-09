@@ -74,7 +74,7 @@ export default function CRMLogsPage() {
         if (error) throw error;
         setSheets(data || []);
       } catch (error) {
-        console.error("Error fetching sheets:", error instanceof Error ? error.message : String(error));
+        if (process.env.NODE_ENV === "development") console.error("Error fetching sheets:", error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -100,7 +100,7 @@ export default function CRMLogsPage() {
         );
         setStaffList(uniqueStaff.map((s) => ({ id: s.staff_id, name: s.staff_name })));
       } catch (error) {
-        console.error("Error fetching staff list:", error instanceof Error ? error.message : String(error));
+        if (process.env.NODE_ENV === "development") console.error("Error fetching staff list:", error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -134,7 +134,7 @@ export default function CRMLogsPage() {
       if (error) throw error;
       setLogs(data || []);
     } catch (error) {
-      console.error("Error fetching logs:", error instanceof Error ? error.message : String(error));
+      if (process.env.NODE_ENV === "development") console.error("Error fetching logs:", error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

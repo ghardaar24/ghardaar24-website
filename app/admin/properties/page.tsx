@@ -28,7 +28,7 @@ export default function AdminPropertiesPage() {
       if (error) throw error;
       setProperties(data || []);
     } catch (error) {
-      console.error("Error fetching properties:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function AdminPropertiesPage() {
       setProperties(properties.filter((p) => p.id !== id));
       setDeleteId(null);
     } catch (error) {
-      console.error("Error deleting property:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error deleting property:", error);
       alert("Failed to delete property");
     }
   }
@@ -60,7 +60,7 @@ export default function AdminPropertiesPage() {
         )
       );
     } catch (error) {
-      console.error("Error updating property:", error);
+      if (process.env.NODE_ENV === "development") console.error("Error updating property:", error);
     }
   }
 

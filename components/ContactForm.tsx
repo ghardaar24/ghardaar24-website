@@ -110,7 +110,9 @@ export default function ContactForm({
         message: "",
       });
     } catch (error) {
-      console.error("Error submitting inquiry:", error instanceof Error ? error.message : "Unknown error");
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error submitting inquiry:", error instanceof Error ? error.message : "Unknown error");
+      }
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);

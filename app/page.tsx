@@ -32,7 +32,7 @@ async function getFeaturedProperties(): Promise<Property[]> {
     .limit(6);
 
   if (featuredError) {
-    console.error("Error fetching featured properties:", featuredError);
+    if (process.env.NODE_ENV === "development") console.error("Error fetching featured properties:", featuredError);
     return [];
   }
 

@@ -343,7 +343,9 @@ export default function ConsultationFormModal({
         setSubmitStatus("idle");
       }, 2000);
     } catch (error) {
-      console.error("Error submitting consultation request:", error instanceof Error ? error.message : "Unknown error");
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error submitting consultation request:", error instanceof Error ? error.message : "Unknown error");
+      }
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
