@@ -413,6 +413,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.7.0   | April 2026    | Staff lead access permissions, CRM task overdue tracking and filtering |
 | 1.6.1   | April 2026    | Enhancements to CRM audits (`addedById`, `addedByRole`) and Deletion controls |
 | 1.6.0   | April 2026    | Admin site visits, Inline CRM client editing, Task assignment enhancement |
 | 1.5.0   | March 2026    | Profile pictures, Staff sheet creation, CRM enhancements, Task timing |

@@ -25,6 +25,25 @@ import {
 import PriceRangeInput from "@/components/PriceRangeInput";
 import AdminCheckbox from "@/components/admin/AdminCheckbox";
 
+const CONFIG_OPTIONS = [
+  "1 RK", "1 BHK", "1.5 BHK", "2 BHK", "2.5 BHK", "3 BHK", "3.5 BHK",
+  "4 BHK", "4.5 BHK", "5 BHK", "5+ BHK", "Duplex", "Penthouse",
+  "Studio", "Shop", "Office", "Showroom", "Plot",
+];
+
+const POSSESSION_MONTHS = (() => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const options: string[] = [];
+  const now = new Date();
+  const startYear = now.getFullYear();
+  for (let y = startYear; y <= startYear + 10; y++) {
+    for (const m of months) {
+      options.push(`${m} ${y}`);
+    }
+  }
+  return options;
+})();
+
 export default function EditPropertyPage({
   params,
 }: {
@@ -244,16 +263,27 @@ export default function EditPropertyPage({
   const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Floor plan must be less than 5MB");
+      const isImage = file.type.startsWith("image/");
+      const isPdf = file.type === "application/pdf";
+      if (!isImage && !isPdf) {
+        setError("Only images and PDF files are allowed for floor plans");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Floor plan file size must be less than 10MB");
         return;
       }
       setFloorPlan(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFloorPlanPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setExistingFloorPlanUrl(null);
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFloorPlanPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFloorPlanPreview("pdf:" + file.name);
+      }
     }
   };
 
@@ -919,16 +949,36 @@ export default function EditPropertyPage({
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="config">Configuration</label>
-              <input
-                type="text"
-                id="config"
-                name="config"
-                value={formData.config}
-                onChange={handleChange}
-                placeholder="e.g., 2, 3 BHK"
-              />
+            <div className="form-group full">
+              <label>Configuration</label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {CONFIG_OPTIONS.map((opt) => {
+                  const selected = formData.config.split(", ").filter(Boolean).includes(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        const current = formData.config.split(", ").filter(Boolean);
+                        const updated = selected
+                          ? current.filter((c) => c !== opt)
+                          : [...current, opt];
+                        setFormData((prev) => ({ ...prev, config: updated.join(", ") }));
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                        selected
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+              {formData.config && (
+                <p className="text-xs text-gray-500 mt-1">Selected: {formData.config}</p>
+              )}
             </div>
 
             <div className="form-group">
@@ -970,14 +1020,17 @@ export default function EditPropertyPage({
 
             <div className="form-group">
               <label htmlFor="rera_possession">RERA Possession</label>
-              <input
-                type="text"
+              <select
                 id="rera_possession"
                 name="rera_possession"
                 value={formData.rera_possession}
                 onChange={handleChange}
-                placeholder="e.g., Dec 2025"
-              />
+              >
+                <option value="">Select Month & Year</option>
+                {POSSESSION_MONTHS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -1001,14 +1054,17 @@ export default function EditPropertyPage({
 
             <div className="form-group">
               <label htmlFor="target_possession">Target Possession</label>
-              <input
-                type="text"
+              <select
                 id="target_possession"
                 name="target_possession"
                 value={formData.target_possession}
                 onChange={handleChange}
-                placeholder="e.g., Jun 2027"
-              />
+              >
+                <option value="">Select Month & Year</option>
+                {POSSESSION_MONTHS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group full pt-2">
@@ -1248,7 +1304,7 @@ export default function EditPropertyPage({
               type="file"
               ref={floorPlanInputRef}
               onChange={handleFloorPlanChange}
-              accept="image/*"
+              accept="image/*,application/pdf"
               hidden
             />
 
@@ -1262,12 +1318,19 @@ export default function EditPropertyPage({
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Image
-                      src={existingFloorPlanUrl}
-                      alt="Existing Floor Plan"
-                      fill
-                      className="object-cover"
-                    />
+                    {existingFloorPlanUrl.toLowerCase().endsWith(".pdf") ? (
+                      <div className="flex flex-col items-center justify-center w-full h-full bg-gray-50 gap-2 p-4">
+                        <FileText className="w-10 h-10 text-red-500" />
+                        <span className="text-xs text-gray-600 text-center">Floor Plan (PDF)</span>
+                      </div>
+                    ) : (
+                      <Image
+                        src={existingFloorPlanUrl}
+                        alt="Existing Floor Plan"
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                     <motion.button
                       type="button"
                       className="remove-image"
@@ -1287,12 +1350,19 @@ export default function EditPropertyPage({
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Image
-                      src={floorPlanPreview}
-                      alt="Floor Plan Preview"
-                      fill
-                      className="object-cover"
-                    />
+                    {floorPlanPreview.startsWith("pdf:") ? (
+                      <div className="flex flex-col items-center justify-center w-full h-full bg-gray-50 gap-2 p-4">
+                        <FileText className="w-10 h-10 text-red-500" />
+                        <span className="text-xs text-gray-600 text-center truncate max-w-full">{floorPlanPreview.replace("pdf:", "")}</span>
+                      </div>
+                    ) : (
+                      <Image
+                        src={floorPlanPreview}
+                        alt="Floor Plan Preview"
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                     <motion.button
                       type="button"
                       className="remove-image"
@@ -1315,7 +1385,7 @@ export default function EditPropertyPage({
                   whileTap={{ scale: 0.98 }}
                 >
                   <Upload className="w-6 h-6" />
-                  <span>Add Floor Plan</span>
+                  <span>Add Floor Plan (Image or PDF)</span>
                 </motion.button>
               )}
             </div>

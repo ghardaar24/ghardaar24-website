@@ -104,7 +104,7 @@ const initialFormData: PropertyFormData = {
   builder_name: "",
 };
 
-export default function NewPropertyPage() {
+export default function StaffNewPropertyPage() {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -553,7 +553,7 @@ export default function NewPropertyPage() {
 
       if (insertError) throw insertError;
 
-      router.push("/admin/properties");
+      router.push("/staff/properties");
     } catch (err) {
       if (process.env.NODE_ENV === "development") console.error("Error creating property:", err);
       setError(
@@ -580,7 +580,7 @@ export default function NewPropertyPage() {
         transition={{ duration: 0.4 }}
       >
         <div>
-          <Link href="/admin/properties" className="back-link-admin">
+          <Link href="/staff/properties" className="back-link-admin">
             <ArrowLeft className="w-4 h-4" /> Back to Properties
           </Link>
           <h1>Add New Property</h1>
@@ -1418,7 +1418,7 @@ export default function NewPropertyPage() {
           transition={{ delay: 0.7 }}
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/admin/properties" className="btn-admin-secondary">
+            <Link href="/staff/properties" className="btn-admin-secondary">
               Cancel
             </Link>
           </motion.div>

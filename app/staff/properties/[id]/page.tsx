@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import {
@@ -44,86 +44,130 @@ const POSSESSION_MONTHS = (() => {
   return options;
 })();
 
-interface PropertyFormData {
-  title: string;
-  description: string;
-  min_price: string;
-  max_price: string;
-  state: string;
-  city: string;
-  area: string;
-  address: string;
-  property_type: "apartment" | "house" | "villa" | "plot" | "commercial";
-  listing_type: "sale" | "rent" | "resale";
-  featured: boolean;
-  // Resale Details
-  property_age: string;
-  // Project Details
-  land_parcel: string;
-  towers: string;
-  floors: string;
-  config: string;
-  carpet_area: string;
-  // RERA & Legal Details
-  rera_no: string;
-  rera_possession: string;
-  possession_status: string;
-  target_possession: string;
-  litigation: boolean;
-  // Builder/Developer
-  builder_name: string;
-}
-
-const initialFormData: PropertyFormData = {
-  title: "",
-  description: "",
-  min_price: "",
-  max_price: "",
-  state: "",
-  city: "",
-  area: "",
-  address: "",
-  property_type: "apartment",
-  listing_type: "sale",
-  featured: false,
-  // Resale Details
-  property_age: "",
-  // Project Details
-  land_parcel: "",
-  towers: "",
-  floors: "",
-  config: "",
-  carpet_area: "",
-  // RERA & Legal Details
-  rera_no: "",
-  rera_possession: "",
-  possession_status: "",
-  target_possession: "",
-  litigation: false,
-  // Builder/Developer
-  builder_name: "",
-};
-
-export default function NewPropertyPage() {
-  const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+export default function StaffEditPropertyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    min_price: "",
+    max_price: "",
+    state: "",
+    city: "",
+    area: "",
+    address: "",
+    property_type: "apartment" as const,
+    listing_type: "sale" as "sale" | "rent" | "resale",
+    featured: false,
+    status: "active",
+    // Resale Details
+    property_age: "",
+    // Project Details
+    land_parcel: "",
+    towers: "",
+    floors: "",
+    config: "",
+    carpet_area: "",
+    // RERA & Legal Details
+    rera_no: "",
+    rera_possession: "",
+    possession_status: "",
+    target_possession: "",
+    litigation: false,
+    // Builder/Developer
+    builder_name: "",
+  });
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [existingFloorPlanUrl, setExistingFloorPlanUrl] = useState<string | null>(null);
+  const [floorPlan, setFloorPlan] = useState<File | null>(null);
+  const [floorPlanPreview, setFloorPlanPreview] = useState<string | null>(null);
+  const [existingVideoUrls, setExistingVideoUrls] = useState<string[]>([]);
+  const [videos, setVideos] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [customAmenity, setCustomAmenity] = useState("");
   const [brochures, setBrochures] = useState<File[]>([]);
   const [brochureNames, setBrochureNames] = useState<string[]>([]);
-  const [floorPlan, setFloorPlan] = useState<File | null>(null);
-  const [floorPlanPreview, setFloorPlanPreview] = useState<string | null>(null);
-  const [videos, setVideos] = useState<File[]>([]);
-  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [existingBrochureUrls, setExistingBrochureUrls] = useState<string[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const brochureInputRef = useRef<HTMLInputElement>(null);
   const floorPlanInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const brochureInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchProperty() {
+      try {
+        const { data, error } = await supabase
+          .from("properties")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        if (!data) throw new Error("Property not found");
+
+        setFormData({
+          title: data.title || "",
+          description: data.description || "",
+          min_price: data.min_price?.toString() || "",
+          max_price: data.max_price?.toString() || "",
+          state: data.state || "",
+          city: data.city || "",
+          area: data.area || "",
+          address: data.address || "",
+          property_type: data.property_type || "apartment",
+          listing_type: data.listing_type || "sale",
+          featured: data.featured || false,
+          status: data.status || "active",
+          // Resale Details
+          property_age: data.property_age || "",
+          // Project Details
+          land_parcel: data.land_parcel?.toString() || "",
+          towers: data.towers?.toString() || "",
+          floors: data.floors || "",
+          config: data.config || "",
+          carpet_area: data.carpet_area || "",
+          // RERA & Legal Details
+          rera_no: data.rera_no || "",
+          rera_possession: data.rera_possession || "",
+          possession_status: data.possession_status || "",
+          target_possession: data.target_possession || "",
+          litigation: data.litigation || false,
+          // Builder/Developer
+          builder_name: data.builder_name || "",
+        });
+        setExistingImages(data.images || []);
+        setAmenities(data.amenities || []);
+        setExistingFloorPlanUrl(data.floor_plan_url || null);
+        setExistingVideoUrls(data.video_urls || []);
+        if (data.brochure_urls && Array.isArray(data.brochure_urls)) {
+          setExistingBrochureUrls(data.brochure_urls);
+        } else if (data.brochure_url) {
+          setExistingBrochureUrls([data.brochure_url]);
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load property"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProperty();
+  }, [id]);
 
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(
     []
@@ -153,16 +197,20 @@ export default function NewPropertyPage() {
     new Set(locations.map((l) => l.state))
   ).sort();
 
+  // Update available cities when locations change or initial city is set
+  useEffect(() => {
+    if (formData.state && locations.length > 0) {
+      const cities = locations
+        .filter((l) => l.state.toLowerCase() === formData.state.toLowerCase())
+        .map((l) => l.city)
+        .sort();
+      setAvailableCities(cities);
+    }
+  }, [formData.state, locations]);
+
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newState = e.target.value;
     setFormData((prev) => ({ ...prev, state: newState, city: "" }));
-
-    // Filter cities for selected state
-    const cities = locations
-      .filter((l) => l.state === newState)
-      .map((l) => l.city)
-      .sort();
-    setAvailableCities(cities);
   };
 
   const handleChange = (
@@ -185,63 +233,105 @@ export default function NewPropertyPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + images.length > 25) {
+    const totalImages = existingImages.length + newImages.length + files.length;
+
+    if (totalImages > 25) {
       setError("Maximum 25 images allowed");
       return;
     }
 
-    setImages((prev) => [...prev, ...files]);
+    setNewImages((prev) => [...prev, ...files]);
 
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result as string]);
+        setNewImagePreviews((prev) => [...prev, reader.result as string]);
       };
       reader.readAsDataURL(file);
     });
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    setNewImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const isImage = file.type.startsWith("image/");
+      const isPdf = file.type === "application/pdf";
+      if (!isImage && !isPdf) {
+        setError("Only images and PDF files are allowed for floor plans");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Floor plan file size must be less than 10MB");
+        return;
+      }
+      setFloorPlan(file);
+      setExistingFloorPlanUrl(null);
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFloorPlanPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFloorPlanPreview("pdf:" + file.name);
+      }
+    }
+  };
+
+  const removeFloorPlan = () => {
+    setFloorPlan(null);
+    setFloorPlanPreview(null);
+    setExistingFloorPlanUrl(null);
+    if (floorPlanInputRef.current) {
+      floorPlanInputRef.current.value = "";
+    }
   };
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + videos.length > 2) {
-      setError("Maximum 2 videos allowed for user submissions");
+    const totalVideos = existingVideoUrls.length + videos.length + files.length;
+
+    if (totalVideos > 2) {
+      setError("Maximum 2 videos allowed");
       return;
     }
 
     const validFiles: File[] = [];
-    const validPreviews: string[] = [];
-
     for (const file of files) {
-      if (!file.type.startsWith("video/")) {
-        setError("Only video files are allowed");
-        return;
-      }
       if (file.size > 50 * 1024 * 1024) {
-        setError("Video size must be less than 50MB");
+        setError(`Video ${file.name} must be less than 50MB`);
         return;
       }
       validFiles.push(file);
-      validPreviews.push(URL.createObjectURL(file));
     }
 
     setVideos((prev) => [...prev, ...validFiles]);
-    setVideoPreviews((prev) => [...prev, ...validPreviews]);
+
+    validFiles.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      setVideoPreviews((prev) => [...prev, url]);
+    });
   };
 
-  const removeVideo = (index: number) => {
+  const removeNewVideo = (index: number) => {
     setVideos((prev) => prev.filter((_, i) => i !== index));
-    setVideoPreviews((prev) => {
-      URL.revokeObjectURL(prev[index]);
-      return prev.filter((_, i) => i !== index);
-    });
+    setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
     if (videoInputRef.current) {
       videoInputRef.current.value = "";
     }
+  };
+
+  const removeExistingVideo = (index: number) => {
+    setExistingVideoUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -262,7 +352,7 @@ export default function NewPropertyPage() {
   const uploadImages = async (): Promise<string[]> => {
     const urls: string[] = [];
 
-    for (const image of images) {
+    for (const image of newImages) {
       const fileName = `${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}-${image.name}`;
@@ -280,48 +370,6 @@ export default function NewPropertyPage() {
     }
 
     return urls;
-  };
-
-  const uploadVideos = async (): Promise<string[]> => {
-    const urls: string[] = [];
-
-    for (const video of videos) {
-      const fileName = `user-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}-${video.name}`;
-      const { data, error } = await supabase.storage
-        .from("property-videos")
-        .upload(fileName, video);
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage
-        .from("property-videos")
-        .getPublicUrl(data.path);
-
-      urls.push(urlData.publicUrl);
-    }
-
-    return urls;
-  };
-
-  const uploadFloorPlan = async (): Promise<string | null> => {
-    if (!floorPlan) return null;
-
-    const fileName = `user-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}-${floorPlan.name}`;
-    const { data, error } = await supabase.storage
-      .from("property-images")
-      .upload(fileName, floorPlan);
-
-    if (error) throw error;
-
-    const { data: urlData } = supabase.storage
-      .from("property-images")
-      .getPublicUrl(data.path);
-
-    return urlData.publicUrl;
   };
 
   const uploadBrochures = async (): Promise<string[]> => {
@@ -349,7 +397,10 @@ export default function NewPropertyPage() {
 
   const handleBrochureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + brochures.length > 5) {
+    const totalBrochures =
+      existingBrochureUrls.length + brochures.length + files.length;
+
+    if (totalBrochures > 5) {
       setError("Maximum 5 brochures allowed");
       return;
     }
@@ -374,7 +425,7 @@ export default function NewPropertyPage() {
     setBrochureNames((prev) => [...prev, ...validNames]);
   };
 
-  const removeBrochure = (index: number) => {
+  const removeNewBrochure = (index: number) => {
     setBrochures((prev) => prev.filter((_, i) => i !== index));
     setBrochureNames((prev) => prev.filter((_, i) => i !== index));
     if (brochureInputRef.current) {
@@ -382,38 +433,8 @@ export default function NewPropertyPage() {
     }
   };
 
-  const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const isImage = file.type.startsWith("image/");
-      const isPdf = file.type === "application/pdf";
-      if (!isImage && !isPdf) {
-        setError("Only images and PDF files are allowed for floor plans");
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        setError("Floor plan file size must be less than 10MB");
-        return;
-      }
-      setFloorPlan(file);
-      if (isImage) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFloorPlanPreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setFloorPlanPreview("pdf:" + file.name);
-      }
-    }
-  };
-
-  const removeFloorPlan = () => {
-    setFloorPlan(null);
-    setFloorPlanPreview(null);
-    if (floorPlanInputRef.current) {
-      floorPlanInputRef.current.value = "";
-    }
+  const removeExistingBrochure = (index: number) => {
+    setExistingBrochureUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleGenerateDescription = async () => {
@@ -474,10 +495,9 @@ export default function NewPropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setUploading(true);
+    setSaving(true);
 
     try {
-      // Validate required fields
       if (
         !formData.title ||
         !formData.min_price ||
@@ -490,86 +510,131 @@ export default function NewPropertyPage() {
         throw new Error("Please fill in all required fields");
       }
 
-      // Upload images
-      let imageUrls: string[] = [];
-      if (images.length > 0) {
-        imageUrls = await uploadImages();
+      let allImages = [...existingImages];
+      if (newImages.length > 0) {
+        const uploadedUrls = await uploadImages();
+        allImages = [...allImages, ...uploadedUrls];
       }
 
-      // Upload floor plan
-      let uploadedFloorPlanUrl: string | null = null;
-      if (floorPlan) {
-        uploadedFloorPlanUrl = await uploadFloorPlan();
-      }
-
-      // Upload brochures
-      let uploadedBrochureUrls: string[] = [];
+      // Handle brochures
+      let allBrochureUrls = [...existingBrochureUrls];
       if (brochures.length > 0) {
-        uploadedBrochureUrls = await uploadBrochures();
+        const uploadedBrochureUrls = await uploadBrochures();
+        allBrochureUrls = [...allBrochureUrls, ...uploadedBrochureUrls];
       }
 
-      // Upload videos
-      let uploadedVideoUrls: string[] = [];
+      let uploadedFloorPlanUrl = existingFloorPlanUrl;
+      if (floorPlan) {
+        const fileExt = floorPlan.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("property-images")
+          .upload(fileName, floorPlan);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(fileName);
+        
+        uploadedFloorPlanUrl = urlData.publicUrl;
+      }
+
+      const allVideoUrls = [...existingVideoUrls];
       if (videos.length > 0) {
-        uploadedVideoUrls = await uploadVideos();
+        for (const video of videos) {
+          const fileExt = video.name.split(".").pop();
+          const fileName = `${Date.now()}-${Math.random()
+            .toString(36)
+            .substr(2, 9)}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from("property-videos")
+            .upload(fileName, video);
+
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase.storage
+            .from("property-videos")
+            .getPublicUrl(fileName);
+            
+          allVideoUrls.push(urlData.publicUrl);
+        }
       }
 
-      // Insert property
-      const { error: insertError } = await supabase.from("properties").insert({
-        title: formData.title,
-        description: formData.description,
-        min_price: parseFloat(formData.min_price),
-        max_price: parseFloat(formData.max_price),
-        price: parseFloat(formData.min_price), // approximate
-        state: formData.state,
-        city: formData.city,
-        address: formData.address,
-        area: formData.area,
-        property_type: formData.property_type,
-        listing_type: formData.listing_type,
-        featured: formData.featured,
-        floor_plan_url: uploadedFloorPlanUrl,
-        images: imageUrls,
-        video_urls: uploadedVideoUrls,
-        amenities: amenities,
-        brochure_urls: uploadedBrochureUrls,
-        // Resale Details
-        property_age: formData.property_age || null,
-        // Project Details
-        land_parcel: parseFloat(formData.land_parcel) || 0,
-        towers: parseFloat(formData.towers) || 0,
-        floors: formData.floors,
-        config: formData.config,
-        carpet_area: formData.carpet_area,
-        // RERA & Legal Details
-        rera_no: formData.rera_no,
-        rera_possession: formData.rera_possession,
-        possession_status: formData.possession_status,
-        target_possession: formData.target_possession,
-        litigation: formData.litigation,
-        // Builder/Developer
-        builder_name: formData.builder_name || null,
-      });
+      const { error: updateError } = await supabase
+        .from("properties")
+        .update({
+          title: formData.title,
+          description: formData.description,
+          min_price: parseFloat(formData.min_price),
+          max_price: parseFloat(formData.max_price),
+          price: parseFloat(formData.min_price), // approximate
+          state: formData.state,
+          city: formData.city,
+          area: formData.area,
+          address: formData.address,
+          property_type: formData.property_type,
+          listing_type: formData.listing_type,
+          featured: formData.featured,
+          status: formData.status,
+          images: allImages,
+          amenities: amenities,
+          brochure_urls: allBrochureUrls,
+          floor_plan_url: uploadedFloorPlanUrl,
+          video_urls: allVideoUrls,
+          // Resale Details
+          property_age: formData.property_age || null,
+          // Project Details
+          land_parcel: parseFloat(formData.land_parcel) || 0,
+          towers: parseFloat(formData.towers) || 0,
+          floors: formData.floors,
+          config: formData.config,
+          carpet_area: formData.carpet_area,
+          // RERA & Legal Details
+          rera_no: formData.rera_no,
+          rera_possession: formData.rera_possession,
+          possession_status: formData.possession_status,
+          target_possession: formData.target_possession,
+          litigation: formData.litigation,
+          // Builder/Developer
+          builder_name: formData.builder_name || null,
+        })
+        .eq("id", id);
 
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
 
-      router.push("/admin/properties");
+      router.push("/staff/properties");
     } catch (err) {
-      if (process.env.NODE_ENV === "development") console.error("Error creating property:", err);
+      if (process.env.NODE_ENV === "development") console.error("Update error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update property";
+      const errorDetails = (err as { details?: string })?.details;
       setError(
-        err instanceof Error ? err.message : "Failed to create property"
+        errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage
       );
-      const pgError = err as { details?: string; hint?: string };
-      if (pgError?.details) {
-        setError((prev) => `${prev} - ${pgError.details}`);
-      }
-      if (pgError?.hint) {
-        setError((prev) => `${prev} (${pgError.hint})`);
-      }
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="admin-page">
+        <motion.div
+          className="admin-loading-inline"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          Loading property...
+        </motion.div>
+      </div>
+    );
+  }
+
+  const totalImages = existingImages.length + newImages.length;
+  const totalBrochures = existingBrochureUrls.length + brochures.length;
 
   return (
     <div className="admin-page">
@@ -580,10 +645,10 @@ export default function NewPropertyPage() {
         transition={{ duration: 0.4 }}
       >
         <div>
-          <Link href="/admin/properties" className="back-link-admin">
+          <Link href="/staff/properties" className="back-link-admin">
             <ArrowLeft className="w-4 h-4" /> Back to Properties
           </Link>
-          <h1>Add New Property</h1>
+          <h1>Edit Property</h1>
         </div>
       </motion.div>
 
@@ -628,7 +693,6 @@ export default function NewPropertyPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="e.g., Modern 3BHK Apartment in Andheri West"
                 required
               />
             </div>
@@ -675,7 +739,6 @@ export default function NewPropertyPage() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                placeholder="Describe the property..."
               />
             </div>
 
@@ -686,7 +749,6 @@ export default function NewPropertyPage() {
                 name="property_type"
                 value={formData.property_type}
                 onChange={handleChange}
-                required
               >
                 <option value="apartment">Apartment</option>
                 <option value="house">House</option>
@@ -703,7 +765,6 @@ export default function NewPropertyPage() {
                 name="listing_type"
                 value={formData.listing_type}
                 onChange={handleChange}
-                required
               >
                 <option value="sale">For Sale</option>
                 <option value="rent">For Rent</option>
@@ -744,6 +805,20 @@ export default function NewPropertyPage() {
                   }))
                 }
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="status">Status</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+              >
+                <option value="active">Active</option>
+                <option value="sold">Sold</option>
+                <option value="rented">Rented</option>
+              </select>
             </div>
           </div>
         </motion.div>
@@ -817,7 +892,6 @@ export default function NewPropertyPage() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                placeholder="e.g., 123, ABC Street, Andheri West"
                 required
               />
             </div>
@@ -1143,9 +1217,9 @@ export default function NewPropertyPage() {
 
             <div className="image-previews">
               <AnimatePresence>
-                {imagePreviews.map((preview, index) => (
+                {existingImages.map((url, index) => (
                   <motion.div
-                    key={index}
+                    key={`existing-${index}`}
                     className="image-preview"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -1153,15 +1227,42 @@ export default function NewPropertyPage() {
                     transition={{ duration: 0.2 }}
                   >
                     <Image
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
+                      src={url}
+                      alt={`Image ${index + 1}`}
                       fill
                       className="object-cover"
                     />
                     <motion.button
                       type="button"
                       className="remove-image"
-                      onClick={() => removeImage(index)}
+                      onClick={() => removeExistingImage(index)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                ))}
+
+                {newImagePreviews.map((preview, index) => (
+                  <motion.div
+                    key={`new-${index}`}
+                    className="image-preview new"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Image
+                      src={preview}
+                      alt={`New ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <motion.button
+                      type="button"
+                      className="remove-image"
+                      onClick={() => removeNewImage(index)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
@@ -1171,7 +1272,7 @@ export default function NewPropertyPage() {
                 ))}
               </AnimatePresence>
 
-              {images.length < 25 && (
+              {totalImages < 10 && (
                 <motion.button
                   type="button"
                   className="upload-trigger"
@@ -1181,7 +1282,7 @@ export default function NewPropertyPage() {
                 >
                   <Upload className="w-6 h-6" />
                   <span>Add Images</span>
-                  <span className="upload-hint">{images.length}/25</span>
+                  <span className="upload-hint">{totalImages}/10</span>
                 </motion.button>
               )}
             </div>
@@ -1209,9 +1310,41 @@ export default function NewPropertyPage() {
 
             <div className="image-previews">
               <AnimatePresence>
-                {floorPlanPreview && (
+                {existingFloorPlanUrl && !floorPlanPreview && (
                   <motion.div
                     className="image-preview"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {existingFloorPlanUrl.toLowerCase().endsWith(".pdf") ? (
+                      <div className="flex flex-col items-center justify-center w-full h-full bg-gray-50 gap-2 p-4">
+                        <FileText className="w-10 h-10 text-red-500" />
+                        <span className="text-xs text-gray-600 text-center">Floor Plan (PDF)</span>
+                      </div>
+                    ) : (
+                      <Image
+                        src={existingFloorPlanUrl}
+                        alt="Existing Floor Plan"
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                    <motion.button
+                      type="button"
+                      className="remove-image"
+                      onClick={removeFloorPlan}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                )}
+                {floorPlanPreview && (
+                  <motion.div
+                    className="image-preview new"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -1243,7 +1376,7 @@ export default function NewPropertyPage() {
                 )}
               </AnimatePresence>
 
-              {!floorPlanPreview && (
+              {!existingFloorPlanUrl && !floorPlanPreview && (
                 <motion.button
                   type="button"
                   className="upload-trigger"
@@ -1281,10 +1414,36 @@ export default function NewPropertyPage() {
 
             <div className="image-previews">
               <AnimatePresence>
+                {existingVideoUrls.map((url, index) => (
+                  <motion.div
+                    key={`existing-video-${index}`}
+                    className="image-preview"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <video
+                      src={url}
+                      className="w-full h-full object-contain bg-black"
+                      controls
+                    />
+                    <motion.button
+                      type="button"
+                      className="remove-image"
+                      onClick={() => removeExistingVideo(index)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                ))}
+
                 {videoPreviews.map((preview, index) => (
                   <motion.div
-                    key={index}
-                    className="image-preview"
+                    key={`new-video-${index}`}
+                    className="image-preview new"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -1298,7 +1457,7 @@ export default function NewPropertyPage() {
                     <motion.button
                       type="button"
                       className="remove-image"
-                      onClick={() => removeVideo(index)}
+                      onClick={() => removeNewVideo(index)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
@@ -1308,7 +1467,7 @@ export default function NewPropertyPage() {
                 ))}
               </AnimatePresence>
 
-              {videos.length < 2 && (
+              {existingVideoUrls.length + videoPreviews.length < 2 && (
                 <motion.button
                   type="button"
                   className="upload-trigger"
@@ -1318,7 +1477,9 @@ export default function NewPropertyPage() {
                 >
                   <Video className="w-6 h-6" />
                   <span>Add Videos</span>
-                  <span className="upload-hint">{videos.length}/2</span>
+                  <span className="upload-hint">
+                    {existingVideoUrls.length + videoPreviews.length}/2
+                  </span>
                 </motion.button>
               )}
             </div>
@@ -1345,11 +1506,37 @@ export default function NewPropertyPage() {
               hidden
             />
 
-            {brochures.length > 0 && (
+            {(existingBrochureUrls.length > 0 || brochures.length > 0) && (
               <div className="brochure-list space-y-2 mb-4">
+                {existingBrochureUrls.map((url, index) => (
+                  <motion.div
+                    key={`existing-${index}`}
+                    className="brochure-preview"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                  >
+                    <FileText className="w-8 h-8 text-primary" />
+                    <div className="brochure-info">
+                      <span className="brochure-name">
+                        {url.split("/").pop() || "Brochure.pdf"}
+                      </span>
+                      <span className="brochure-size">Existing PDF</span>
+                    </div>
+                    <motion.button
+                      type="button"
+                      className="remove-brochure"
+                      onClick={() => removeExistingBrochure(index)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                ))}
+
                 {brochureNames.map((name, index) => (
                   <motion.div
-                    key={index}
+                    key={`new-${index}`}
                     className="brochure-preview"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -1357,12 +1544,12 @@ export default function NewPropertyPage() {
                     <FileText className="w-8 h-8 text-primary" />
                     <div className="brochure-info">
                       <span className="brochure-name">{name}</span>
-                      <span className="brochure-size">PDF Document</span>
+                      <span className="brochure-size">New PDF</span>
                     </div>
                     <motion.button
                       type="button"
                       className="remove-brochure"
-                      onClick={() => removeBrochure(index)}
+                      onClick={() => removeNewBrochure(index)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
@@ -1373,7 +1560,7 @@ export default function NewPropertyPage() {
               </div>
             )}
 
-            {brochures.length < 5 && (
+            {totalBrochures < 5 && (
               <motion.button
                 type="button"
                 className="upload-trigger"
@@ -1384,7 +1571,7 @@ export default function NewPropertyPage() {
                 <Upload className="w-6 h-6" />
                 <span>Add Brochure</span>
                 <span className="upload-hint">
-                  {brochures.length}/5 (Max 10MB PDF)
+                  {totalBrochures}/5 (Max 10MB PDF)
                 </span>
               </motion.button>
             )}
@@ -1418,18 +1605,18 @@ export default function NewPropertyPage() {
           transition={{ delay: 0.7 }}
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/admin/properties" className="btn-admin-secondary">
+            <Link href="/staff/properties" className="btn-admin-secondary">
               Cancel
             </Link>
           </motion.div>
           <motion.button
             type="submit"
             className="btn-admin-primary"
-            disabled={uploading}
-            whileHover={{ scale: uploading ? 1 : 1.02, y: uploading ? 0 : -2 }}
-            whileTap={{ scale: uploading ? 1 : 0.98 }}
+            disabled={saving}
+            whileHover={{ scale: saving ? 1 : 1.02, y: saving ? 0 : -2 }}
+            whileTap={{ scale: saving ? 1 : 0.98 }}
           >
-            {uploading ? (
+            {saving ? (
               <motion.span
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
@@ -1439,7 +1626,7 @@ export default function NewPropertyPage() {
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                Save Property
+                Update Property
               </>
             )}
           </motion.button>

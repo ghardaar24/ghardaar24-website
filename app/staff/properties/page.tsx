@@ -61,7 +61,7 @@ export default function StaffPropertiesPage() {
           </p>
         </div>
         <Link
-          href="/admin/properties/new"
+          href="/staff/properties/new"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -199,7 +199,7 @@ export default function StaffPropertiesPage() {
                     View
                   </Link>
                   <Link
-                    href={`/admin/properties/${property.id}`}
+                    href={`/staff/properties/${property.id}`}
                     style={{
                       flex: 1,
                       display: 'inline-flex',

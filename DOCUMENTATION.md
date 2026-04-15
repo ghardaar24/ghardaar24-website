@@ -92,6 +92,7 @@ Stores all property listings with their details.
 | `config`            | TEXT        | Property configuration                             |
 | `carpet_area`       | TEXT        | Carpet area details                                |
 | `rera_no`           | TEXT        | RERA registration number                           |
+| `rera_possession`   | TEXT        | RERA possession date                               |
 | `possession_status` | TEXT        | Current possession status                          |
 | `target_possession` | TEXT        | Target possession date                             |
 | `litigation`        | BOOLEAN     | Litigation flag                                    |
@@ -119,6 +120,8 @@ Stores customer inquiries submitted through contact forms.
 | `email`       | TEXT        | Customer email                   |
 | `phone`       | TEXT        | Customer phone                   |
 | `message`     | TEXT        | Inquiry message                  |
+| `inquiry_type`| TEXT        | property, home_loan, interior_design |
+| `service_details`| JSONB     | Service-specific details (JSON)  |
 | `state`       | TEXT        | Customer's state                 |
 | `city`        | TEXT        | Customer's city                  |
 | `created_at`  | TIMESTAMPTZ | Submission timestamp             |
@@ -443,7 +446,6 @@ const { data, error } = await query;
 | `TrustIndicators`        | `components/TrustIndicators.tsx`        | Trust badges                               |
 | `FloatingWhatsApp`       | `components/FloatingWhatsApp.tsx`       | WhatsApp chat button                       |
 | `AgentProfile`           | `components/AgentProfile.tsx`           | Agent details with integrated contact form |
-| `PopularLocalities`      | `components/PopularLocalities.tsx`      | Grid of popular locations                  |
 | `InquiryCTA`             | `components/InquiryCTA.tsx`             | Call to action for inquiries               |
 | `ScrollToButton`         | `components/ScrollToButton.tsx`         | Button to scroll to specific section       |
 | `LoginModal`             | `components/LoginModal.tsx`             | User login/signup modal with forgot pass   |
@@ -521,6 +523,7 @@ const { data, error } = await query;
 | Lookup User          | `app/api/lookup-user/route.ts`           | Look up user for auth override     |
 | Staff Tasks          | `app/api/staff/tasks/route.ts`           | Staff CRM task management          |
 | Create Sheet         | `app/api/staff/create-sheet/route.ts`    | Staff: Create new CRM sheet        |
+| Delete Sheet         | `app/api/staff/delete-sheet/route.ts`    | Staff: Delete CRM sheet            |
 
 ### CRM Capabilities
 
@@ -703,6 +706,7 @@ For additional support:
   - Added time tracking to tasks and site visits.
   - Simplified task assignment (now using `auth.users` references).
   - Admins can now assign tasks to other admins or themselves.
+- **Properties**: Added `rera_possession` tracking for RERA dates.
 - **Storage**: Implemented RLS policies for `profile-pictures` bucket.
 - **Security Check**: Removed bedrooms and bathrooms from CRM lead tracking.
 

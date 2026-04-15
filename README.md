@@ -35,7 +35,6 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Vastu Consultation** - Specialized Vastu Shastra consultation service with consultation form modal
 - **Onboarding Tour** - Interactive guided tour for new users (Intro.js)
 - **Agent Profile** - Showcase agent details, expertise, and integrated contact form
-- **Popular Localities** - Explore properties in top trending areas
 - **Trust Indicators** - Badges highlighting reliability and security
 - **WhatsApp Integration** - Instant floating chat button for quick inquiries
 - **Contact Forms** - Direct inquiry submission for properties of interest
@@ -125,7 +124,8 @@ ghardaar24-web/
 │   │   │   └── tasks/             # Admin task management
 │   │   └── staff/
 │   │       ├── tasks/             # Staff CRM task management
-│   │       └── create-sheet/      # Staff: Create new CRM sheet
+│   │       ├── create-sheet/      # Staff: Create new CRM sheet
+│   │       └── delete-sheet/      # Staff: Delete CRM sheet
 │   ├── properties/
 │   │   ├── page.tsx              # Property listings
 │   │   ├── submit/page.tsx       # User property submission
