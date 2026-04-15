@@ -43,8 +43,8 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **User Authentication** - Email/password auth with phone stored in profile; users can sign in with email or phone
 - **Password Recovery** - Forgot password and reset password functionality
 - **Profile Pictures** - Admins and staff can upload and manage their own profile pictures
-- **Google Sheets Logging** - Server-side logging of signups and property submissions (optional)
 - **Social Media Links** - Connect via Instagram, Facebook, and YouTube
+- **Bulk Update** - Staff and Admins can bulk update lead stages and types for selected CRM clients
 
 ### 🔐 Admin & Staff Portals
 
@@ -205,6 +205,7 @@ ghardaar24-web/
 │   ├── google-sheets.ts          # Google Sheets integration
 │   ├── seo.ts                    # SEO configuration
 │   ├── motion.tsx                # Animation utilities
+│   ├── logger.ts                 # Dev-only logger utility
 │   ├── rate-limit.ts             # API rate limiting utilities
 │   ├── amenityIcons.ts           # Amenity icon mappings
 │   ├── indian-cities.ts          # State & city data

@@ -188,6 +188,18 @@ Maps staff members to specific CRM sheets.
 | `staff_id` | UUID | Reference to `crm_staff` |
 | `sheet_id` | UUID | Reference to `crm_sheets`|
 
+### CRM Inquiry Access (crm_inquiry_access)
+
+Links staff members to inquiry types they are permitted to view.
+
+| Column        | Type | Description                                                      |
+| ------------- | ---- | ---------------------------------------------------------------- |
+| `id`          | UUID | Primary key                                                      |
+| `staff_id`    | UUID | Reference to `crm_staff`                                         |
+| `inquiry_type`| TEXT | Type of inquiry: property, home_loan, interior_design, vastu_consultation |
+| `granted_by`  | UUID | Admin who granted access                                         |
+| `granted_at`  | TIMESTAMPTZ | When access was granted                                   |
+
 ### CRM Clients Table (crm_clients)
 
 Stores client information for the CRM system.
@@ -361,6 +373,7 @@ GOOGLE_SHEETS_SPREADSHEET_ID=your_spreadsheet_id
 | `rate-limit`     | `lib/rate-limit.ts`     | API rate limiting utilities            |
 | `amenityIcons`   | `lib/amenityIcons.ts`   | Amenity icon mappings                  |
 | `indian-cities`  | `lib/indian-cities.ts`  | State and city data for India          |
+| `logger`         | `lib/logger.ts`         | Dev-only logger utility                |
 | `utils`          | `lib/utils.ts`          | General helper functions               |
 
 ### Common Queries
@@ -675,10 +688,12 @@ For additional support:
 ### v1.7.0 (April 2026)
 
 - **CRM Tasks Enhancement**: Added comprehensive date filters and an overdue tasks tracking system for both Admins and Staff.
+- **CRM Bulk Actions**: Re-introduced and optimized the **Bulk Update** feature for leads, allowing efficient management of multiple client stages and types.
 - **CRM Client Flow**: Fixed the "View Client" task functionality by accurately redirecting to the CRM details page instead of an outdated modal.
 - **Staff Lead Access**: Expanded staff permissions to include the ability to create new CRM leads. 
 - **Property Additions**: Added `property_age` tracking for resale properties.
 - **Call History**: Optimized and updated the calling history presentation.
+- **CRM Sheet Attribution**: Added `crm_staff` references to CRM sheets for accurate creator tracking.
 
 ### v1.6.1 (April 2026)
 
@@ -725,13 +740,10 @@ For additional support:
 - New components: `ConsultationFormModal`, `PriceRangeInput`, `PropertySectionNavbar`, `ReadMoreText`, `AdminCheckbox`
 - `robots.ts` for dynamic robots.txt generation
 
-### v1.4.0 (February 2026)
-
-- Downloads & Resources page for public brochures tracking
-- Invoice Generator tool for administrators
-- Enhanced CRM with Staff Tasks and Inquiries mapping
 - Recharts integration for Analytics Dashboard Visualizations
 - Data export capabilities using `xlsx`
+
+### v1.4.0 (January 2026)
 
 ### v1.3.1 (January 2026)
 

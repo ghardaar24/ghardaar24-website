@@ -201,6 +201,23 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | `Admins can manage own profile picture` | ALL | Admins can upload/update/delete their own |
 | `Staff can manage own profile picture` | ALL | Staff can upload/update/delete their own |
 
+### CRM Inquiry Access Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Staff can read own inquiry access` | SELECT | Staff can read their permitted types |
+| `Admins can manage inquiry access` | ALL | Only authenticated admins |
+| `Staff can read accessible inquiries` | SELECT | Staff can read inquiries of permitted types |
+
+### CRM Sheet Access Policies
+
+| Policy | Access Level | Description |
+| --- | --- | --- |
+| `Staff can read own access` | SELECT | Staff can read their permitted sheets |
+| `Admins can manage sheet access` | ALL | Only authenticated admins |
+| `Staff can read accessible sheets` | SELECT | Staff can read their permitted sheets' metadata |
+| `Staff can read accessible clients` | SELECT | Staff can read clients in their permitted sheets |
+
 ---
 
 ## Environment Variables
@@ -413,7 +430,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
-| 1.7.0   | April 2026    | Staff lead access permissions, CRM task overdue tracking and filtering |
+| 1.7.0   | April 2026    | Staff lead access permissions, CRM bulk action re-introduction, CRM task overdue tracking and filtering |
 | 1.6.1   | April 2026    | Enhancements to CRM audits (`addedById`, `addedByRole`) and Deletion controls |
 | 1.6.0   | April 2026    | Admin site visits, Inline CRM client editing, Task assignment enhancement |
 | 1.5.0   | March 2026    | Profile pictures, Staff sheet creation, CRM enhancements, Task timing |
