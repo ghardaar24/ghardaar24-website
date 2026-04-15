@@ -1635,7 +1635,7 @@ export default function CRMPage() {
                   <option value="staff_leads">Staff Uploaded Leads</option>
                   {sheets.map((sheet) => (
                     <option key={sheet.id} value={sheet.id}>
-                      {sheet.name}{sheet.crm_staff?.name ? ` (by ${sheet.crm_staff.name})` : ""}
+                      {sheet.name}{sheet.crm_staff?.name ? ` - ${sheet.crm_staff.name}` : ""}
                     </option>
                   ))}
                 </select>
@@ -2141,7 +2141,7 @@ export default function CRMPage() {
                       <option value="" disabled>Select a table...</option>
                       {sheets.map((sheet) => (
                         <option key={sheet.id} value={sheet.id}>
-                          {sheet.name}
+                          {sheet.name}{sheet.crm_staff?.name ? ` - ${sheet.crm_staff.name}` : ""}
                         </option>
                       ))}
                     </select>
@@ -2550,7 +2550,7 @@ export default function CRMPage() {
                               <option value="">Select a sheet...</option>
                               {sheets.map((sheet) => (
                                 <option key={sheet.id} value={sheet.id}>
-                                  {sheet.name}
+                                  {sheet.name}{sheet.crm_staff?.name ? ` - ${sheet.crm_staff.name}` : ""}
                                 </option>
                               ))}
                             </select>
@@ -3236,7 +3236,7 @@ export default function CRMPage() {
                 </div>
                 <h3>Delete Sheet?</h3>
                 <p>
-                  This will permanently delete the sheet <strong>&quot;{sheets.find(s => s.id === deleteSheetConfirm)?.name}&quot;</strong> and all {clients.filter(c => c.sheet_id === deleteSheetConfirm).length} clients in it.
+                  This will permanently delete the sheet <strong>&quot;{(() => { const s = sheets.find(s => s.id === deleteSheetConfirm); return s ? `${s.name}${s.crm_staff?.name ? ` - ${s.crm_staff.name}` : ''}` : ''; })()}&quot;</strong> and all {clients.filter(c => c.sheet_id === deleteSheetConfirm).length} clients in it.
                 </p>
                 <div className="crm-delete-actions">
                   <button
