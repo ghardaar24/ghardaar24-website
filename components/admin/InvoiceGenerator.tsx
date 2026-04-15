@@ -106,14 +106,17 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
           staffData.forEach(s => { nameMap[s.id] = s.name; });
         }
 
-        // Also check admins
-        const { data: adminData } = await supabase
-          .from("admins")
-          .select("user_id, email")
-          .in("user_id", creatorIds);
+        // Also check admins for any IDs not found in staff
+        const unmatchedIds = creatorIds.filter(id => !nameMap[id]);
+        if (unmatchedIds.length > 0) {
+          const { data: adminData } = await supabase
+            .from("admins")
+            .select("id, name, email")
+            .in("id", unmatchedIds);
 
-        if (adminData) {
-          adminData.forEach(a => { nameMap[a.user_id] = a.email; });
+          if (adminData) {
+            adminData.forEach(a => { nameMap[a.id] = a.name || a.email; });
+          }
         }
       }
 
@@ -332,7 +335,11 @@ export default function InvoiceGenerator({ userId }: InvoiceGeneratorProps) {
         taxType: data.taxType || "sgst_cgst",
       });
       if (data.items && Array.isArray(data.items)) {
-        setItems(data.items);
+        setItems(data.items.map((item: Record<string, unknown>, index: number) => ({
+          ...item,
+          id: item.id || Date.now() + index,
+          visibleFields: item.visibleFields || [...defaultVisibleFields],
+        })));
       }
     }
     setViewingInvoice(null);

@@ -23,6 +23,7 @@ import {
   Plus,
   Edit2,
   Trash2,
+  CheckSquare,
 } from "lucide-react";
 
 // Types
@@ -144,9 +145,25 @@ export default function StaffCRMPage() {
   const [deleteLeadConfirm, setDeleteLeadConfirm] = useState<string | null>(null);
   const [deleteSheetConfirm, setDeleteSheetConfirm] = useState<string | null>(null);
 
+  // Bulk Selection State
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+  const [bulkUpdateData, setBulkUpdateData] = useState<{
+    lead_stage: string;
+    lead_type: string;
+    deal_status: string;
+    location_category: string;
+  }>({
+    lead_stage: "",
+    lead_type: "",
+    deal_status: "",
+    location_category: "",
+  });
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addFormData.client_name.trim() || !staffProfile) return;
+    if (!addFormData.client_name.trim() || !staffProfile || !selectedSheetId) return;
     setAddingLead(true);
     try {
       const payload = {
@@ -157,7 +174,7 @@ export default function StaffCRMPage() {
         location_category: addFormData.location_category || null,
         deal_status: addFormData.deal_status,
         added_by: staffProfile.id,
-        sheet_id: null,
+        sheet_id: selectedSheetId,
         expected_visit_date: addFormData.expected_visit_date || null,
         expected_visit_time: addFormData.expected_visit_time || null,
         facing: addFormData.facing || null,
@@ -168,10 +185,8 @@ export default function StaffCRMPage() {
       };
       const { data, error } = await supabaseStaff.from("crm_clients").insert([payload]).select().single();
       if (error) throw error;
-      
-      if (selectedSheetId === "my_leads") {
-        setClients((prev) => [data, ...prev]);
-      }
+
+      setClients((prev) => [data, ...prev]);
       setShowAddModal(false);
 
       // TRIGGER TASK MODAL IF EXPECTED VISIT DATE IS SET ON NEW LEAD
@@ -224,36 +239,29 @@ export default function StaffCRMPage() {
   // Delete sheet handler
   const handleDeleteSheet = async (sheetId: string) => {
     try {
-      // Delete all clients in this sheet first
-      const { error: clientsError } = await supabaseStaff
-        .from("crm_clients")
-        .delete()
-        .eq("sheet_id", sheetId);
-      if (clientsError) throw clientsError;
+      const response = await fetch("/api/staff/delete-sheet", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ sheetId }),
+      });
 
-      // Delete sheet access entries
-      const { error: accessError } = await supabaseStaff
-        .from("crm_sheet_access")
-        .delete()
-        .eq("sheet_id", sheetId);
-      if (accessError) throw accessError;
-
-      // Delete the sheet
-      const { error: sheetError } = await supabaseStaff
-        .from("crm_sheets")
-        .delete()
-        .eq("id", sheetId);
-      if (sheetError) throw sheetError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete sheet");
+      }
 
       setSheets((prev) => prev.filter((s) => s.id !== sheetId));
       setClients((prev) => prev.filter((c) => c.sheet_id !== sheetId));
       if (selectedSheetId === sheetId) {
-        setSelectedSheetId("my_leads");
+        setSelectedSheetId(sheets.length > 1 ? sheets.find(s => s.id !== sheetId)?.id || null : null);
       }
       setDeleteSheetConfirm(null);
     } catch (error) {
       if (process.env.NODE_ENV === "development") console.error("Error deleting sheet:", error);
-      alert("Failed to delete sheet.");
+      alert(error instanceof Error ? error.message : "Failed to delete sheet.");
     }
   };
 
@@ -359,10 +367,6 @@ export default function StaffCRMPage() {
     async function fetchSheets() {
       if (accessibleSheets.length === 0) {
         setSheets([]);
-        // If staff can add sheets/own leads, default to "my_leads" tab
-        if (staffProfile?.can_add_sheets && !selectedSheetId) {
-          setSelectedSheetId("my_leads");
-        }
         setIsLoading(false);
         return;
       }
@@ -408,11 +412,7 @@ export default function StaffCRMPage() {
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (selectedSheetId === "my_leads") {
-          query = query.is("sheet_id", null).eq("added_by", staffProfile?.id);
-        } else {
-          query = query.eq("sheet_id", selectedSheetId);
-        }
+        query = query.eq("sheet_id", selectedSheetId);
 
         const { data, error } = await query;
 
@@ -446,11 +446,7 @@ export default function StaffCRMPage() {
         },
         (payload) => {
           const newClient = payload.new as CRMClient;
-          // Only add if it belongs to the current sheet or my leads
-          if (
-            (selectedSheetId === "my_leads" && !newClient.sheet_id && newClient.added_by === staffProfile?.id) ||
-            (selectedSheetId !== "my_leads" && newClient.sheet_id === selectedSheetId)
-          ) {
+          if (newClient.sheet_id === selectedSheetId) {
             setClients((prev) => [newClient, ...prev]);
           }
         }
@@ -546,9 +542,10 @@ export default function StaffCRMPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Reset page on filter change
+  // Reset page and selection on filter change
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedClientIds(new Set());
   }, [filters, selectedSheetId]);
 
   // Get unique locations for filter
@@ -589,6 +586,73 @@ export default function StaffCRMPage() {
   const cancelEditing = () => {
     setEditingCell(null);
     setEditingValue("");
+  };
+
+  // Bulk selection helpers
+  const toggleSelectClient = (clientId: string) => {
+    setSelectedClientIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedClientIds.size === paginatedClients.length) {
+      setSelectedClientIds(new Set());
+    } else {
+      setSelectedClientIds(new Set(paginatedClients.map((c) => c.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedClientIds(new Set());
+
+  const openBulkUpdateModal = () => {
+    setBulkUpdateData({ lead_stage: "", lead_type: "", deal_status: "", location_category: "" });
+    setShowBulkUpdateModal(true);
+  };
+
+  const handleBulkUpdate = async () => {
+    const ids = Array.from(selectedClientIds);
+    if (ids.length === 0) return;
+
+    const updateData: Record<string, string | null> = {};
+    if (bulkUpdateData.lead_stage) updateData.lead_stage = bulkUpdateData.lead_stage;
+    if (bulkUpdateData.lead_type) updateData.lead_type = bulkUpdateData.lead_type;
+    if (bulkUpdateData.deal_status) updateData.deal_status = bulkUpdateData.deal_status;
+    if (bulkUpdateData.location_category) updateData.location_category = bulkUpdateData.location_category;
+
+    if (Object.keys(updateData).length === 0) {
+      alert("Please select at least one field to update.");
+      return;
+    }
+
+    setBulkUpdating(true);
+    try {
+      const { error } = await supabaseStaff
+        .from("crm_clients")
+        .update(updateData)
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setClients((prev) =>
+        prev.map((c) =>
+          selectedClientIds.has(c.id)
+            ? { ...c, ...updateData }
+            : c
+        )
+      );
+
+      setShowBulkUpdateModal(false);
+      clearSelection();
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") console.error("Bulk update error:", error);
+      alert("Failed to update contacts. Please try again.");
+    } finally {
+      setBulkUpdating(false);
+    }
   };
 
   // Log activity to the database
@@ -980,13 +1044,15 @@ export default function StaffCRMPage() {
           <p className="text-gray-500">View and search client data</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            Add Lead
-          </button>
+          {selectedSheetId && sheets.length > 0 && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              Add Lead
+            </button>
+          )}
           {staffProfile?.can_add_sheets && (
             <button
               onClick={() => setShowAddSheetModal(true)}
@@ -1001,13 +1067,6 @@ export default function StaffCRMPage() {
 
       {/* Sheet Tabs */}
       <div className="staff-tabs-container">
-        <button
-          onClick={() => setSelectedSheetId("my_leads")}
-          className={`staff-tab ${selectedSheetId === "my_leads" ? "active" : ""}`}
-        >
-          <Users className="w-4 h-4" />
-          My Uploaded Leads
-        </button>
         {sheets.map((sheet) => (
           <div key={sheet.id} className="flex items-center">
             <button
@@ -1029,6 +1088,14 @@ export default function StaffCRMPage() {
           </div>
         ))}
       </div>
+
+      {/* No Sheets Empty State */}
+      {!authLoading && sheets.length === 0 && !selectedSheetId && (
+        <div className="staff-empty-state" style={{ marginTop: "2rem" }}>
+          <FileSpreadsheet className="w-12 h-12 text-gray-300" />
+          <p className="text-gray-500 mt-2">No sheets available.{staffProfile?.can_add_sheets ? " Create a new sheet to start adding leads." : " Ask your admin to assign a sheet to you."}</p>
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="staff-stats-row">
@@ -1235,6 +1302,33 @@ export default function StaffCRMPage() {
         Showing {filteredClients.length} of {clients.length} clients
       </div>
 
+      {/* Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedClientIds.size > 0 && (
+          <motion.div
+            className="crm-bulk-bar"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="crm-bulk-bar-inner">
+              <div className="crm-bulk-bar-info">
+                <CheckSquare className="w-5 h-5" />
+                <span><strong>{selectedClientIds.size}</strong> contact{selectedClientIds.size > 1 ? "s" : ""} selected</span>
+              </div>
+              <div className="crm-bulk-bar-actions">
+                <button className="crm-bulk-btn primary" onClick={openBulkUpdateModal}>
+                  <Edit2 className="w-4 h-4" /> Update Fields
+                </button>
+                <button className="crm-bulk-btn secondary" onClick={clearSelection}>
+                  <X className="w-4 h-4" /> Clear
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Table */}
       <div className="staff-table-container">
         {isLoading ? (
@@ -1255,7 +1349,14 @@ export default function StaffCRMPage() {
             <table className="w-full min-w-[1050px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-
+                  <th className="px-3 py-3 w-[40px]">
+                    <input
+                      type="checkbox"
+                      className="crm-bulk-checkbox"
+                      checked={paginatedClients.length > 0 && selectedClientIds.size === paginatedClients.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Client Name
                   </th>
@@ -1288,12 +1389,20 @@ export default function StaffCRMPage() {
                 {paginatedClients.map((client) => (
                   <tr
                     key={client.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""}`}
                     onClick={() => {
                       setSelectedClient(client);
                       setShowDetailsModal(true);
                     }}
                   >
+                    <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="crm-bulk-checkbox"
+                        checked={selectedClientIds.has(client.id)}
+                        onChange={() => toggleSelectClient(client.id)}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-900">{client.client_name}</span>
                     </td>
@@ -1540,6 +1649,91 @@ export default function StaffCRMPage() {
           </div>
         )}
       </div>
+
+      {/* Bulk Update Modal */}
+      <AnimatePresence>
+        {showBulkUpdateModal && (
+          <div className="modal-overlay" onClick={() => setShowBulkUpdateModal(false)}>
+            <motion.div
+              className="modal-content"
+              style={{ maxWidth: "520px" }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h3>Bulk Update {selectedClientIds.size} Contact{selectedClientIds.size > 1 ? "s" : ""}</h3>
+                <button onClick={() => setShowBulkUpdateModal(false)} className="modal-close-btn">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <p className="text-sm text-gray-500 mb-4">Only the fields you select will be updated. Leave a field empty to keep its current value.</p>
+                <div className="flex flex-col gap-4">
+                  <div className="crm-bulk-field">
+                    <label>Lead Stage</label>
+                    <select
+                      value={bulkUpdateData.lead_stage}
+                      onChange={(e) => setBulkUpdateData((prev) => ({ ...prev, lead_stage: e.target.value }))}
+                    >
+                      <option value="">-- No change --</option>
+                      {LEAD_STAGE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="crm-bulk-field">
+                    <label>Lead Type</label>
+                    <select
+                      value={bulkUpdateData.lead_type}
+                      onChange={(e) => setBulkUpdateData((prev) => ({ ...prev, lead_type: e.target.value }))}
+                    >
+                      <option value="">-- No change --</option>
+                      {LEAD_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="crm-bulk-field">
+                    <label>Deal Status</label>
+                    <select
+                      value={bulkUpdateData.deal_status}
+                      onChange={(e) => setBulkUpdateData((prev) => ({ ...prev, deal_status: e.target.value }))}
+                    >
+                      <option value="">-- No change --</option>
+                      {DEAL_STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="crm-bulk-field">
+                    <label>Location</label>
+                    <input
+                      type="text"
+                      placeholder="-- No change --"
+                      value={bulkUpdateData.location_category}
+                      onChange={(e) => setBulkUpdateData((prev) => ({ ...prev, location_category: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button className="btn-admin-secondary" onClick={() => setShowBulkUpdateModal(false)}>
+                    Cancel
+                  </button>
+                  <button
+                    className="btn-admin-primary"
+                    onClick={handleBulkUpdate}
+                    disabled={bulkUpdating}
+                  >
+                    {bulkUpdating ? "Updating..." : `Update ${selectedClientIds.size} Contact${selectedClientIds.size > 1 ? "s" : ""}`}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Client Details Modal */}
       <AnimatePresence>

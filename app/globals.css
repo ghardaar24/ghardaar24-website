@@ -22793,6 +22793,205 @@ body {
   justify-content: center;
 }
 
+/* Bulk Selection Styles */
+.crm-bulk-checkbox {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  margin: 0;
+  position: relative;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crm-bulk-checkbox:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+.crm-bulk-checkbox:checked {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.crm-bulk-checkbox:checked::after {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -1px;
+}
+
+.crm-row-selected {
+  background-color: #eef2ff !important;
+}
+
+.crm-row-selected td:first-child {
+  position: relative;
+}
+
+.crm-row-selected td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #6366f1;
+  border-radius: 0 3px 3px 0;
+}
+
+.crm-bulk-bar {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  width: auto;
+  max-width: calc(100vw - 2rem);
+}
+
+.crm-bulk-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  background: #1e1b4b;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+
+.crm-bulk-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  color: #c7d2fe;
+}
+
+.crm-bulk-bar-info strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.crm-bulk-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crm-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.crm-bulk-btn.primary {
+  background: #6366f1;
+  color: #fff;
+}
+
+.crm-bulk-btn.primary:hover {
+  background: #818cf8;
+}
+
+.crm-bulk-btn.danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.crm-bulk-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #fecaca;
+}
+
+.crm-bulk-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #c7d2fe;
+}
+
+.crm-bulk-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.crm-bulk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.crm-bulk-field label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.crm-bulk-field select,
+.crm-bulk-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.crm-bulk-field select:focus,
+.crm-bulk-field input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+@media (max-width: 640px) {
+  .crm-bulk-bar {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+    max-width: none;
+    width: auto;
+  }
+
+  .crm-bulk-bar-inner {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .crm-bulk-bar-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 .crm-form {
   display: flex;
   flex-direction: column;
