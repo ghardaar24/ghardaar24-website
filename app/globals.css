@@ -286,12 +286,16 @@ html {
 }
 
 /* Smooth scrolling containers */
-.staff-table-wrapper,
 .staff-modal-body,
 .staff-comment-history {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+.staff-table-wrapper {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Prevent iOS tap highlight flicker */
