@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
@@ -99,6 +100,7 @@ const DEAL_STATUS_OPTIONS = [
 ];
 
 export default function StaffTasksPage() {
+  const router = useRouter();
   const { staffProfile, session, loading: authLoading } = useStaffAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -221,7 +223,7 @@ export default function StaffTasksPage() {
   const overdueCount = tasks.filter(isOverdue).length;
 
   const handleViewClient = (clientId: string) => {
-    window.location.href = `/staff/crm?client_id=${clientId}&from=tasks`;
+    router.push(`/staff/crm?client_id=${clientId}&from=tasks`);
   };
 
   const handleViewClientByName = async (name: string) => {
@@ -233,7 +235,7 @@ export default function StaffTasksPage() {
         .ilike("client_name", name)
         .limit(1);
       if (data?.length) {
-        window.location.href = `/staff/crm?client_id=${data[0].id}&from=tasks`;
+        router.push(`/staff/crm?client_id=${data[0].id}&from=tasks`);
       } else {
         alert("Client not found in CRM");
       }

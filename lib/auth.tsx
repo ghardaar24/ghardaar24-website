@@ -346,7 +346,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(false);
     
     // Then sign out from Supabase
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     
     // Redirect admin users to admin login, regular users to home
     if (pathname?.startsWith("/admin")) {

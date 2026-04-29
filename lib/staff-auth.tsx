@@ -177,6 +177,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
+    let initialLoadDone = false;
 
     const getSession = async () => {
       try {
@@ -190,13 +191,15 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user && session.access_token) {
-          fetchStaffProfile(session.user.id);
+          // Await profile fetch so loading stays true until profile is resolved
+          await fetchStaffProfile(session.user.id);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
           console.error("Error getting staff session:", error);
         }
       } finally {
+        initialLoadDone = true;
         if (isMounted) {
           setLoading(false);
         }
@@ -225,7 +228,11 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
         setAccessibleInquiryTypes([]);
       }
 
-      setLoading(false);
+      // Only set loading false here if initial load already completed
+      // Otherwise getSession's finally block will handle it
+      if (initialLoadDone) {
+        setLoading(false);
+      }
     });
 
     return () => {
@@ -251,7 +258,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
         const isStaff = await fetchStaffProfile(data.user.id);
         if (!isStaff) {
           // Sign out if not a staff member
-          await supabaseStaff.auth.signOut();
+          await supabaseStaff.auth.signOut({ scope: 'local' });
           return {
             error: new Error("This account is not authorized as staff."),
           };
@@ -274,7 +281,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabaseStaff.auth.signOut();
+    await supabaseStaff.auth.signOut({ scope: 'local' });
     setStaffProfile(null);
     setAccessibleSheets([]);
     setAccessibleInquiryTypes([]);

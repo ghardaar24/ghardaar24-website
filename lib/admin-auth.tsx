@@ -170,7 +170,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         const isAdmin = await fetchAdminProfile(data.user.id);
         if (!isAdmin) {
           // Sign out if not an admin
-          await supabaseAdmin.auth.signOut();
+          await supabaseAdmin.auth.signOut({ scope: 'local' });
           return {
             error: new Error("This account is not authorized as an admin."),
           };
@@ -187,7 +187,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabaseAdmin.auth.signOut();
+    await supabaseAdmin.auth.signOut({ scope: 'local' });
     setAdminProfile(null);
     router.push("/admin/login");
   };
