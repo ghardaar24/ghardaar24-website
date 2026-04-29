@@ -94,6 +94,21 @@ const DEAL_STATUS_OPTIONS = [
 
 const ITEMS_PER_PAGE = 50;
 
+interface SiteVisit {
+  id: string;
+  property_title: string;
+  location: string;
+  visit_date: string;
+  visit_time: string | null;
+  notes: string | null;
+  photo_url: string;
+  created_at: string;
+  client_name: string | null;
+  client_mobile: string | null;
+  crm_staff?: { name: string } | null;
+  admins?: { name: string } | null;
+}
+
 export default function StaffCRMPage() {
   const searchParams = useSearchParams();
   const { staffProfile, session, accessibleSheets, loading: authLoading } = useStaffAuth();
@@ -160,6 +175,9 @@ export default function StaffCRMPage() {
     location_category: "",
   });
   const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  // Visit History State
+  const [visitHistory, setVisitHistory] = useState<SiteVisit[]>([]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -494,6 +512,7 @@ export default function StaffCRMPage() {
     if (existing) {
       setSelectedClient(existing);
       setShowDetailsModal(true);
+      fetchVisitHistory(existing);
       return;
     }
 
@@ -509,6 +528,7 @@ export default function StaffCRMPage() {
         if (data) {
           setSelectedClient(data);
           setShowDetailsModal(true);
+          fetchVisitHistory(data);
         }
       } catch (err) {
         if (process.env.NODE_ENV === "development") console.error("Error fetching client by ID:", err);
@@ -596,6 +616,30 @@ export default function StaffCRMPage() {
       else next.add(clientId);
       return next;
     });
+  };
+
+  const fetchVisitHistory = async (client: CRMClient) => {
+    if (!client.customer_number) return;
+    try {
+      const { data, error } = await supabaseStaff
+        .from('site_visits')
+        .select(`
+          *,
+          crm_staff(name),
+          admins(name)
+        `)
+        .eq('client_mobile', client.customer_number)
+        .order('visit_date', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        setVisitHistory(data as unknown as SiteVisit[] || []);
+      } else {
+        setVisitHistory([]);
+      }
+    } catch (e) {
+      if (process.env.NODE_ENV === "development") console.error("Error fetching visit history:", e);
+    }
   };
 
   const toggleSelectAll = () => {
@@ -1744,7 +1788,7 @@ export default function StaffCRMPage() {
             onClick={() => setShowDetailsModal(false)}
           >
             <motion.div
-              className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -1825,9 +1869,77 @@ export default function StaffCRMPage() {
                   </div>
                 </div>
 
-                {/* Comments */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                  <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Visit History Section */}
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                        <MapPin className="w-3 h-3" />
+                        Visit History
+                      </label>
+                      {selectedClient.customer_number && (
+                        <button
+                          onClick={() => {
+                            window.location.href = `/staff/site-visits?mobile=${encodeURIComponent(selectedClient.customer_number || "")}`;
+                          }}
+                          className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100 transition-colors"
+                        >
+                          <Plus className="w-3 h-3" />
+                          Add Visit
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      {!selectedClient.customer_number ? (
+                        <p className="text-gray-500 italic text-sm">Cannot fetch visit history without phone number.</p>
+                      ) : visitHistory.length > 0 ? (
+                        <div className="space-y-3">
+                          {visitHistory.map((visit) => (
+                            <div key={visit.id} className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden">
+                              <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-semibold text-sm text-gray-900">{visit.property_title}</h4>
+                                <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full flex items-center gap-1">
+                                  {visit.crm_staff?.name || visit.admins?.name || "Unknown"}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500 space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <MapPin className="w-3 h-3" />
+                                  {visit.location}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="w-3 h-3" />
+                                  {new Date(visit.visit_date + "T00:00:00").toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                  {visit.visit_time && ` at ${(() => {
+                                    const [h, m] = visit.visit_time.split(':');
+                                    const t = new Date();
+                                    t.setHours(parseInt(h, 10), parseInt(m, 10));
+                                    return t.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
+                                  })()}`}
+                                </div>
+                              </div>
+                              {visit.notes && (
+                                <p className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-50 italic">
+                                  &quot;{visit.notes}&quot;
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 italic text-sm">No site visits recorded yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-4">
+                    <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
                       <MessageSquare className="w-3 h-3" /> Calling History
                     </label>
@@ -1887,6 +1999,7 @@ export default function StaffCRMPage() {
                       <p className="text-gray-700 whitespace-pre-wrap">{selectedClient.admin_notes}</p>
                     </div>
                   )}
+                </div>
                 </div>
 
                 <div className="flex gap-3">

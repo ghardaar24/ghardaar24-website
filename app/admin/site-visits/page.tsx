@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { useAdminAuth } from "@/lib/admin-auth";
@@ -27,6 +28,7 @@ import {
   Loader2,
   History,
   Shield,
+  Trash2,
 } from "lucide-react";
 
 interface PropertyOption {
@@ -94,6 +96,8 @@ export default function AdminSiteVisitsPage() {
   const [loading, setLoading] = useState(true);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<SiteVisit | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -225,6 +229,38 @@ export default function AdminSiteVisitsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resolveSiteVisitPhotoUrl = (photoUrl: string | null | undefined) => {
+    if (!photoUrl) return "";
+    const trimmed = photoUrl.trim();
+    if (!trimmed) return "";
+
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+    const normalizedPath = trimmed.replace(/^\/+/, "");
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("site-visit-photos").getPublicUrl(normalizedPath);
+    return publicUrl;
+  };
+
+  const getSiteVisitPhotoPath = (photoUrl: string | null | undefined) => {
+    if (!photoUrl) return null;
+    const trimmed = photoUrl.trim();
+    if (!trimmed) return null;
+
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return decodeURIComponent(trimmed.replace(/^\/+/, ""));
+    }
+
+    const marker = "/site-visit-photos/";
+    const markerIndex = trimmed.indexOf(marker);
+    if (markerIndex === -1) return null;
+
+    const pathWithParams = trimmed.slice(markerIndex + marker.length);
+    const cleanPath = pathWithParams.split("?")[0];
+    return decodeURIComponent(cleanPath);
   };
 
   // Form handlers
@@ -376,6 +412,39 @@ export default function AdminSiteVisitsPage() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (visit: SiteVisit) => {
+    setDeleting(true);
+    try {
+      // Try to delete the photo from storage
+      if (visit.photo_url) {
+        const filePath = getSiteVisitPhotoPath(visit.photo_url);
+        if (filePath) {
+          await supabase.storage.from("site-visit-photos").remove([filePath]);
+        }
+      }
+
+      // Delete the visit record
+      const { error } = await supabase
+        .from("site_visits")
+        .delete()
+        .eq("id", visit.id);
+
+      if (error) throw error;
+
+      setMessage({ type: "success", text: "Site visit deleted successfully." });
+      setDeleteConfirm(null);
+      fetchData();
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") console.error("Error deleting visit:", err);
+      setMessage({
+        type: "error",
+        text: "Failed to delete visit. Please try again.",
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -1110,7 +1179,9 @@ export default function AdminSiteVisitsPage() {
             )}
           </motion.div>
         ) : (
-          filteredVisits.map((visit, index) => (
+          filteredVisits.map((visit, index) => {
+            const visitPhotoUrl = resolveSiteVisitPhotoUrl(visit.photo_url);
+            return (
             <motion.div
               key={visit.id}
               className="admin-sv-visit-card"
@@ -1120,10 +1191,23 @@ export default function AdminSiteVisitsPage() {
             >
               <div
                 className="admin-sv-visit-photo"
-                onClick={() => setExpandedPhoto(visit.photo_url)}
+                onClick={() => visitPhotoUrl && setExpandedPhoto(visitPhotoUrl)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={visit.photo_url} alt={visit.property_title} />
+                {visitPhotoUrl ? (
+                  <Image
+                    src={visitPhotoUrl}
+                    alt={visit.property_title}
+                    fill
+                    unoptimized={true}
+                    sizes="(max-width: 640px) 100vw, 160px"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="sv-photo-placeholder">
+                    <ImageIcon className="w-10 h-10" />
+                    <span>No photo</span>
+                  </div>
+                )}
                 <div className="admin-sv-visit-photo-zoom">
                   <ImageIcon className="w-5 h-5" />
                 </div>
@@ -1169,9 +1253,20 @@ export default function AdminSiteVisitsPage() {
                 {visit.notes && (
                   <p className="admin-sv-visit-notes">{visit.notes}</p>
                 )}
+                <div className="admin-sv-visit-actions">
+                  <button
+                    className="admin-sv-delete-btn"
+                    onClick={() => setDeleteConfirm(visit)}
+                    title="Delete this visit"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </button>
+                </div>
               </div>
             </motion.div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -1198,8 +1293,73 @@ export default function AdminSiteVisitsPage() {
               >
                 <X className="w-6 h-6" />
               </button>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={expandedPhoto} alt="Site visit photo" />
+              <div style={{ position: 'relative', width: '100%', height: '80vh' }}>
+                <Image 
+                  src={expandedPhoto} 
+                  alt="Site visit photo" 
+                  fill
+                  unoptimized={true}
+                  style={{ objectFit: "contain" }}
+                  sizes="100vw"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            className="sv-photo-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !deleting && setDeleteConfirm(null)}
+          >
+            <motion.div
+              className="admin-sv-delete-modal"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="admin-sv-delete-modal-icon">
+                <Trash2 className="w-7 h-7" />
+              </div>
+              <h3>Delete Site Visit?</h3>
+              <p>
+                This will permanently delete the visit to{" "}
+                <strong>{deleteConfirm.property_title}</strong> on{" "}
+                {formatDate(deleteConfirm.visit_date)} and its photo.
+              </p>
+              <div className="admin-sv-delete-modal-actions">
+                <button
+                  className="sv-btn-secondary"
+                  onClick={() => setDeleteConfirm(null)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="admin-sv-delete-confirm-btn"
+                  onClick={() => handleDelete(deleteConfirm)}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sv-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Visit
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

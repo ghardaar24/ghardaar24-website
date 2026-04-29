@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -142,6 +143,19 @@ export default function StaffSiteVisitsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Auto-populate from URL if coming from CRM
+    const searchParams = new URLSearchParams(window.location.search);
+    const mobileParam = searchParams.get("mobile");
+    if (mobileParam && !loading) {
+      setClientMobile(mobileParam);
+      setShowForm(true);
+      lookupClientHistory(mobileParam);
+      // Clean up URL to avoid re-triggering on reload
+      window.history.replaceState({}, '', '/staff/site-visits');
+    }
+  }, [loading]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -822,8 +836,14 @@ export default function StaffSiteVisitsPage() {
                 className="sv-visit-photo"
                 onClick={() => setExpandedPhoto(visit.photo_url)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={visit.photo_url} alt={visit.property_title} />
+                <Image 
+                  src={visit.photo_url} 
+                  alt={visit.property_title} 
+                  fill
+                  unoptimized={true}
+                  sizes="(max-width: 480px) 100vw, 140px"
+                  style={{ objectFit: "cover" }}
+                />
                 <div className="sv-visit-photo-zoom">
                   <ImageIcon className="w-5 h-5" />
                 </div>
@@ -892,8 +912,16 @@ export default function StaffSiteVisitsPage() {
               >
                 <X className="w-6 h-6" />
               </button>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={expandedPhoto} alt="Site visit photo" />
+              <div style={{ position: 'relative', width: '100%', height: '80vh' }}>
+                <Image 
+                  src={expandedPhoto} 
+                  alt="Site visit photo" 
+                  fill
+                  unoptimized={true}
+                  style={{ objectFit: "contain" }}
+                  sizes="100vw"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
