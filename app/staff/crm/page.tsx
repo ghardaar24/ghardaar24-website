@@ -61,6 +61,10 @@ interface CRMSheet {
   created_by_staff: string | null;
 }
 
+interface CRMClientHistoryRow {
+  calling_comment_history: CallingCommentEntry[] | null;
+}
+
 type FilterState = {
   search: string;
   leadStage: string;
@@ -178,6 +182,7 @@ export default function StaffCRMPage() {
 
   // Visit History State
   const [visitHistory, setVisitHistory] = useState<SiteVisit[]>([]);
+  const [callingHistory, setCallingHistory] = useState<CallingCommentEntry[]>([]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -513,6 +518,7 @@ export default function StaffCRMPage() {
       setSelectedClient(existing);
       setShowDetailsModal(true);
       fetchVisitHistory(existing);
+      fetchCallingHistory(existing);
       return;
     }
 
@@ -529,6 +535,7 @@ export default function StaffCRMPage() {
           setSelectedClient(data);
           setShowDetailsModal(true);
           fetchVisitHistory(data);
+          fetchCallingHistory(data);
         }
       } catch (err) {
         if (process.env.NODE_ENV === "development") console.error("Error fetching client by ID:", err);
@@ -619,18 +626,28 @@ export default function StaffCRMPage() {
   };
 
   const fetchVisitHistory = async (client: CRMClient) => {
-    if (!client.customer_number) return;
+    if (!client.customer_number && !client.client_name) {
+      setVisitHistory([]);
+      return;
+    }
     try {
-      const { data, error } = await supabaseStaff
+      let query = supabaseStaff
         .from('site_visits')
         .select(`
           *,
           crm_staff(name),
           admins(name)
         `)
-        .eq('client_mobile', client.customer_number)
         .order('visit_date', { ascending: false });
 
+      const filterParts: string[] = [];
+      if (client.customer_number) filterParts.push(`client_mobile.eq.${client.customer_number}`);
+      if (client.client_name) filterParts.push(`client_name.eq.${client.client_name}`);
+      if (filterParts.length > 0) {
+        query = query.or(filterParts.join(','));
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       if (data) {
         setVisitHistory(data as unknown as SiteVisit[] || []);
@@ -640,6 +657,52 @@ export default function StaffCRMPage() {
     } catch (e) {
       if (process.env.NODE_ENV === "development") console.error("Error fetching visit history:", e);
     }
+  };
+
+  const fetchCallingHistory = async (client: CRMClient) => {
+    if (!client.customer_number && !client.client_name) {
+      setCallingHistory(client.calling_comment_history || []);
+      return;
+    }
+
+    try {
+      let query = supabaseStaff
+        .from("crm_clients")
+        .select("calling_comment_history")
+        .order("updated_at", { ascending: false });
+
+      const filterParts: string[] = [];
+      if (client.customer_number) filterParts.push(`customer_number.eq.${client.customer_number}`);
+      if (client.client_name) filterParts.push(`client_name.eq.${client.client_name}`);
+      if (filterParts.length > 0) {
+        query = query.or(filterParts.join(","));
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const merged = (data || [])
+        .flatMap((row: CRMClientHistoryRow) => row.calling_comment_history || [])
+        .filter((entry: CallingCommentEntry) => Boolean(entry?.comment && entry?.date));
+
+      const deduped = merged.filter((entry, index, arr) => {
+        const key = `${entry.comment}|${entry.date}|${entry.addedById || ""}|${entry.addedBy || ""}`;
+        return arr.findIndex((e) => `${e.comment}|${e.date}|${e.addedById || ""}|${e.addedBy || ""}` === key) === index;
+      });
+
+      deduped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setCallingHistory(deduped);
+    } catch (e) {
+      if (process.env.NODE_ENV === "development") console.error("Error fetching calling history:", e);
+      setCallingHistory(client.calling_comment_history || []);
+    }
+  };
+
+  const openClientDetails = (client: CRMClient) => {
+    setSelectedClient(client);
+    setShowDetailsModal(true);
+    fetchVisitHistory(client);
+    fetchCallingHistory(client);
   };
 
   const toggleSelectAll = () => {
@@ -915,6 +978,7 @@ export default function StaffCRMPage() {
         calling_comment: latestComment,
         calling_comment_history: updatedHistory,
       });
+      setCallingHistory((prev) => [newEntry, ...prev]);
       
       // Clear form
       setNewCallingComment("");
@@ -1231,8 +1295,7 @@ export default function StaffCRMPage() {
                     key={c.id}
                     className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 hover:border-indigo-200 transition-colors cursor-pointer"
                     onClick={() => {
-                      setSelectedClient(c);
-                      setShowDetailsModal(true);
+                      openClientDetails(c);
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -1435,8 +1498,7 @@ export default function StaffCRMPage() {
                     key={client.id}
                     className={`hover:bg-gray-50 cursor-pointer transition-colors ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""}`}
                     onClick={() => {
-                      setSelectedClient(client);
-                      setShowDetailsModal(true);
+                      openClientDetails(client);
                     }}
                   >
                     <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
@@ -1943,9 +2005,9 @@ export default function StaffCRMPage() {
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
                       <MessageSquare className="w-3 h-3" /> Calling History
                     </label>
-                    {selectedClient.calling_comment_history && selectedClient.calling_comment_history.length > 0 ? (
+                    {callingHistory.length > 0 ? (
                       <div className="space-y-3">
-                        {selectedClient.calling_comment_history.map((entry, index) => (
+                        {callingHistory.map((entry, index) => (
                           <div key={index} className="relative pl-3 border-l-2 border-indigo-200">
                             <div className="absolute -left-1 top-1 w-2 h-2 rounded-full bg-indigo-400"></div>
                             <div className="text-xs text-indigo-600 font-medium mb-1">
