@@ -228,14 +228,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       city?: string;
     }
   ) => {
-    // First, check if phone already exists
-    const { data: existingPhone } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("phone", phone)
-      .single();
+    // Normalize phone to last 10 digits to catch +91/0 prefix variations
+    const normalizePhone = (p: string) => {
+      const digits = p.replace(/\D/g, "");
+      return digits.length > 10 ? digits.slice(-10) : digits;
+    };
+    const normalizedPhone = normalizePhone(phone);
 
-    if (existingPhone) {
+    // Fetch all phones and check normalized (handles +91, leading 0, spaces)
+    const { data: allPhones } = await supabase
+      .from("user_profiles")
+      .select("phone");
+
+    const phoneTaken = normalizedPhone.length >= 10 &&
+      (allPhones || []).some((p) => normalizePhone(p.phone || "") === normalizedPhone);
+
+    if (phoneTaken) {
       return { error: new Error("This phone number is already registered") };
     }
 
