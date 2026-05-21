@@ -24,6 +24,7 @@ import {
   Edit2,
   Trash2,
   CheckSquare,
+  Copy,
 } from "lucide-react";
 
 // Types
@@ -71,6 +72,7 @@ type FilterState = {
   leadType: string;
   dealStatus: string;
   locationCategory: string;
+  duplicates: boolean;
 };
 
 const LEAD_STAGE_OPTIONS = [
@@ -126,8 +128,10 @@ export default function StaffCRMPage() {
     leadType: "",
     dealStatus: "",
     locationCategory: "",
+    duplicates: false,
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [duplicateIds, setDuplicateIds] = useState<Set<string>>(new Set());
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -440,7 +444,24 @@ export default function StaffCRMPage() {
         const { data, error } = await query;
 
         if (error) throw error;
-        setClients(data || []);
+        const clientData = data || [];
+        setClients(clientData);
+
+        // Detect duplicates by normalized phone
+        const phoneMap = new Map<string, string[]>();
+        for (const c of clientData) {
+          if (!c.customer_number) continue;
+          const key = c.customer_number.replace(/\D/g, "").slice(-10);
+          if (key.length < 7) continue;
+          const group = phoneMap.get(key) ?? [];
+          group.push(c.id);
+          phoneMap.set(key, group);
+        }
+        const dupIds = new Set<string>();
+        for (const group of phoneMap.values()) {
+          if (group.length > 1) group.forEach((id) => dupIds.add(id));
+        }
+        setDuplicateIds(dupIds);
       } catch (error) {
         if (process.env.NODE_ENV === "development") console.error("Error fetching clients:", error);
       } finally {
@@ -559,7 +580,9 @@ export default function StaffCRMPage() {
       !filters.locationCategory ||
       client.location_category?.toLowerCase().includes(filters.locationCategory.toLowerCase());
 
-    return matchesSearch && matchesStage && matchesType && matchesStatus && matchesLocation;
+    const matchesDuplicate = !filters.duplicates || duplicateIds.has(client.id);
+
+    return matchesSearch && matchesStage && matchesType && matchesStatus && matchesLocation && matchesDuplicate;
   });
 
   // Pagination Logic
@@ -1399,6 +1422,17 @@ export default function StaffCRMPage() {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => setFilters((prev) => ({ ...prev, duplicates: !prev.duplicates }))}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                  filters.duplicates
+                    ? "bg-red-600 text-white border-red-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-red-300 hover:text-red-600"
+                }`}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                {filters.duplicates ? `Dups (${duplicateIds.size})` : "Show Dups"}
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1424,6 +1458,15 @@ export default function StaffCRMPage() {
                 <span><strong>{selectedClientIds.size}</strong> contact{selectedClientIds.size > 1 ? "s" : ""} selected</span>
               </div>
               <div className="crm-bulk-bar-actions">
+                {duplicateIds.size > 0 && (
+                  <button
+                    className="crm-bulk-btn"
+                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5" }}
+                    onClick={() => setSelectedClientIds(new Set([...duplicateIds].filter((id) => filteredClients.some((c) => c.id === id))))}
+                  >
+                    <Copy className="w-4 h-4" /> Select All Dups
+                  </button>
+                )}
                 <button className="crm-bulk-btn primary" onClick={openBulkUpdateModal}>
                   <Edit2 className="w-4 h-4" /> Update Fields
                 </button>
@@ -1496,7 +1539,7 @@ export default function StaffCRMPage() {
                 {paginatedClients.map((client) => (
                   <tr
                     key={client.id}
-                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""}`}
+                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""} ${duplicateIds.has(client.id) ? "bg-red-50/40" : ""}`}
                     onClick={() => {
                       openClientDetails(client);
                     }}
@@ -1510,7 +1553,14 @@ export default function StaffCRMPage() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-gray-900">{client.client_name}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-gray-900">{client.client_name}</span>
+                        {duplicateIds.has(client.id) && (
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-xs font-medium flex-shrink-0">
+                            <Copy className="w-3 h-3" />dup
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       {client.customer_number && (

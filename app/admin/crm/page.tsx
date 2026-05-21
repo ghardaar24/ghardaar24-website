@@ -35,6 +35,8 @@ import {
   Eye,
   EyeOff,
   CheckSquare,
+  Copy,
+  AlertTriangle,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
@@ -102,6 +104,7 @@ type FilterState = {
   leadType: string;
   dealStatus: string;
   locationCategory: string;
+  duplicates: boolean;
 };
 
 const LEAD_STAGE_OPTIONS = [
@@ -140,7 +143,9 @@ export default function CRMPage() {
     leadType: "",
     dealStatus: "",
     locationCategory: "",
+    duplicates: false,
   });
+  const [duplicateIds, setDuplicateIds] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -556,6 +561,22 @@ export default function CRMPage() {
 
         const data = await fetchAllClients(query);
         setClients(data);
+
+        // Detect duplicates by normalized phone
+        const phoneMap = new Map<string, string[]>();
+        for (const c of data) {
+          if (!c.customer_number) continue;
+          const key = c.customer_number.replace(/\D/g, "").slice(-10);
+          if (key.length < 7) continue;
+          const group = phoneMap.get(key) ?? [];
+          group.push(c.id);
+          phoneMap.set(key, group);
+        }
+        const dupIds = new Set<string>();
+        for (const group of phoneMap.values()) {
+          if (group.length > 1) group.forEach((id) => dupIds.add(id));
+        }
+        setDuplicateIds(dupIds);
       } catch (error) {
         if (process.env.NODE_ENV === "development") console.error("Error fetching CRM clients:", error instanceof Error ? error.message : String(error));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -675,7 +696,9 @@ export default function CRMPage() {
       !filters.locationCategory ||
       client.location_category?.toLowerCase().includes(filters.locationCategory.toLowerCase());
 
-    return matchesSearch && matchesStage && matchesType && matchesStatus && matchesLocation;
+    const matchesDuplicate = !filters.duplicates || duplicateIds.has(client.id);
+
+    return matchesSearch && matchesStage && matchesType && matchesStatus && matchesLocation && matchesDuplicate;
   });
 
   // Get unique locations for filter
@@ -1716,6 +1739,22 @@ export default function CRMPage() {
                 <span className="crm-stat-value">{stats.locked}</span>
               </div>
             </div>
+            {duplicateIds.size > 0 && (
+              <div
+                className="crm-stat-card cursor-pointer hover:shadow-md transition-shadow"
+                style={{ borderColor: "#fca5a5", background: "#fff7f7" }}
+                onClick={() => { setFilters(prev => ({ ...prev, duplicates: true })); setShowFilters(true); }}
+                title="Click to filter duplicates"
+              >
+                <div className="crm-stat-icon" style={{ background: "rgba(220, 38, 38, 0.1)", color: "#dc2626" }}>
+                  <Copy className="w-6 h-6" />
+                </div>
+                <div className="crm-stat-info">
+                  <span className="crm-stat-label">Duplicates</span>
+                  <span className="crm-stat-value" style={{ color: "#dc2626" }}>{duplicateIds.size}</span>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -1848,10 +1887,24 @@ export default function CRMPage() {
                   ))}
                 </select>
               </div>
+              <div className="crm-filter-group">
+                <label>Duplicates</label>
+                <button
+                  onClick={() => setFilters((prev) => ({ ...prev, duplicates: !prev.duplicates }))}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                    filters.duplicates
+                      ? "bg-red-600 text-white border-red-600"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-red-300 hover:text-red-600"
+                  }`}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {filters.duplicates ? `Showing ${duplicateIds.size} dups` : "Show Duplicates"}
+                </button>
+              </div>
               <button
                 className="btn-admin-text"
                 onClick={() =>
-                  setFilters({ search: "", leadStage: "", leadType: "", dealStatus: "", locationCategory: "" })
+                  setFilters({ search: "", leadStage: "", leadType: "", dealStatus: "", locationCategory: "", duplicates: false })
                 }
               >
                 Clear Filters
@@ -1886,6 +1939,15 @@ export default function CRMPage() {
                 <span><strong>{selectedClientIds.size}</strong> contact{selectedClientIds.size > 1 ? "s" : ""} selected</span>
               </div>
               <div className="crm-bulk-bar-actions">
+                {duplicateIds.size > 0 && (
+                  <button
+                    className="crm-bulk-btn"
+                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5" }}
+                    onClick={() => setSelectedClientIds(new Set([...duplicateIds].filter((id) => filteredClients.some((c) => c.id === id))))}
+                  >
+                    <Copy className="w-4 h-4" /> Select All Dups
+                  </button>
+                )}
                 <button className="crm-bulk-btn primary" onClick={openBulkUpdateModal}>
                   <Edit2 className="w-4 h-4" /> Update Fields
                 </button>
@@ -1945,7 +2007,7 @@ export default function CRMPage() {
                         setShowDetailsModal(true);
                         fetchVisitHistory(client);
                       }}
-                      className={`hover:bg-gray-50 cursor-pointer ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""}`}
+                      className={`hover:bg-gray-50 cursor-pointer ${selectedClientIds.has(client.id) ? "crm-row-selected" : ""} ${duplicateIds.has(client.id) ? "bg-red-50/40" : ""}`}
                     >
                       <td onClick={(e) => e.stopPropagation()}>
                         <input
@@ -1958,6 +2020,11 @@ export default function CRMPage() {
                       <td className="table-property-title max-w-0">
                         <div className="crm-client-name cursor-pointer hover:text-indigo-600 transition-colors truncate block w-full">
                           <span className="truncate">{client.client_name}</span>
+                          {duplicateIds.has(client.id) && (
+                            <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-xs font-medium flex-shrink-0">
+                              <Copy className="w-3 h-3" />dup
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td>
