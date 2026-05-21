@@ -447,19 +447,22 @@ export default function StaffCRMPage() {
         const clientData = data || [];
         setClients(clientData);
 
-        // Detect duplicates by normalized phone
-        const phoneMap = new Map<string, string[]>();
+        // Detect duplicates by normalized phone — keep oldest, mark newer ones
+        const phoneMap = new Map<string, { id: string; created_at: string }[]>();
         for (const c of clientData) {
           if (!c.customer_number) continue;
           const key = c.customer_number.replace(/\D/g, "").slice(-10);
           if (key.length < 7) continue;
           const group = phoneMap.get(key) ?? [];
-          group.push(c.id);
+          group.push({ id: c.id, created_at: c.created_at });
           phoneMap.set(key, group);
         }
         const dupIds = new Set<string>();
         for (const group of phoneMap.values()) {
-          if (group.length > 1) group.forEach((id) => dupIds.add(id));
+          if (group.length > 1) {
+            const sorted = [...group].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            sorted.slice(1).forEach((entry) => dupIds.add(entry.id));
+          }
         }
         setDuplicateIds(dupIds);
       } catch (error) {

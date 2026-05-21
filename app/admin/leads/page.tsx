@@ -24,32 +24,38 @@ function normalizePhone(phone: string): string {
 }
 
 function findDuplicateIds(profiles: UserProfile[]): Set<string> {
-  const phoneMap = new Map<string, string[]>();
+  // Keep oldest entry per phone/email group, mark newer ones as duplicates
+  const addDupsFromMap = (map: Map<string, { id: string; created_at: string }[]>, dupIds: Set<string>) => {
+    for (const group of map.values()) {
+      if (group.length > 1) {
+        const sorted = [...group].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        sorted.slice(1).forEach((entry) => dupIds.add(entry.id));
+      }
+    }
+  };
+
+  const phoneMap = new Map<string, { id: string; created_at: string }[]>();
   for (const p of profiles) {
     if (!p.phone) continue;
     const key = normalizePhone(p.phone);
     if (!key) continue;
     const group = phoneMap.get(key) ?? [];
-    group.push(p.id);
+    group.push({ id: p.id, created_at: p.created_at });
     phoneMap.set(key, group);
   }
 
-  const emailMap = new Map<string, string[]>();
+  const emailMap = new Map<string, { id: string; created_at: string }[]>();
   for (const p of profiles) {
     if (!p.email) continue;
     const key = p.email.toLowerCase().trim();
     const group = emailMap.get(key) ?? [];
-    group.push(p.id);
+    group.push({ id: p.id, created_at: p.created_at });
     emailMap.set(key, group);
   }
 
   const dupIds = new Set<string>();
-  for (const group of phoneMap.values()) {
-    if (group.length > 1) group.forEach((id) => dupIds.add(id));
-  }
-  for (const group of emailMap.values()) {
-    if (group.length > 1) group.forEach((id) => dupIds.add(id));
-  }
+  addDupsFromMap(phoneMap, dupIds);
+  addDupsFromMap(emailMap, dupIds);
   return dupIds;
 }
 
