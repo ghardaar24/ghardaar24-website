@@ -45,8 +45,22 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
     }
 
+    // Verify all IDs belong to leads (not admins or staff)
+    const [{ data: admins }, { data: staff }] = await Promise.all([
+      supabaseAdmin.from("admins").select("id"),
+      supabaseAdmin.from("crm_staff").select("id"),
+    ]);
+    const protectedIds = new Set([
+      ...(admins || []).map((a: { id: string }) => a.id),
+      ...(staff || []).map((s: { id: string }) => s.id),
+    ]);
+
     const errors: string[] = [];
     for (const id of ids) {
+      if (protectedIds.has(id)) {
+        errors.push(`${id}: Cannot delete admin or staff accounts`);
+        continue;
+      }
       const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(id);
       if (deleteError) {
         errors.push(`${id}: ${deleteError.message}`);

@@ -17,7 +17,8 @@ function LoginForm() {
   const { signIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
+  const rawRedirect = searchParams.get("redirect") || "/";
+  const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -83,22 +83,18 @@ export default function CRMLogsPage() {
     }
   }, [user]);
 
-  // Fetch unique staff from logs for filter dropdown
+  // Fetch all staff for filter dropdown
   useEffect(() => {
     async function fetchStaff() {
       try {
         const { data, error } = await supabase
-          .from("crm_activity_logs")
-          .select("staff_id, staff_name")
-          .order("staff_name");
+          .from("crm_staff")
+          .select("id, name")
+          .eq("is_active", true)
+          .order("name");
 
         if (error) throw error;
-
-        // Get unique staff
-        const uniqueStaff = Array.from(
-          new Map((data || []).map((s) => [s.staff_id, s])).values()
-        );
-        setStaffList(uniqueStaff.map((s) => ({ id: s.staff_id, name: s.staff_name })));
+        setStaffList((data || []).map((s) => ({ id: s.id, name: s.name })));
       } catch (error) {
         if (process.env.NODE_ENV === "development") console.error("Error fetching staff list:", error instanceof Error ? error.message : String(error));
       }
