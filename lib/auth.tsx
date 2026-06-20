@@ -235,15 +235,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     const normalizedPhone = normalizePhone(phone);
 
-    // Fetch all phones and check normalized (handles +91, leading 0, spaces)
-    const { data: allPhones } = await supabase
-      .from("user_profiles")
-      .select("phone");
+    // Query only phones that end with the normalized 10 digits — catches +91, 0, and bare formats
+    const { data: phoneMatches } = normalizedPhone.length >= 10
+      ? await supabase
+          .from("user_profiles")
+          .select("id")
+          .like("phone", `%${normalizedPhone}`)
+      : { data: null };
 
-    const phoneTaken = normalizedPhone.length >= 10 &&
-      (allPhones || []).some((p) => normalizePhone(p.phone || "") === normalizedPhone);
-
-    if (phoneTaken) {
+    if (phoneMatches && phoneMatches.length > 0) {
       return { error: new Error("This phone number is already registered") };
     }
 
@@ -283,13 +283,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: authError as Error };
     }
 
-    // Log signup to Google Sheets immediately (regardless of email confirmation)
-    // This ensures we capture all signups
-    if (authData.user) {
+    // Log signup to Google Sheets (only when session is immediately available)
+    if (authData.user && authData.session) {
       try {
         fetch("/api/log-to-sheets", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authData.session.access_token}`,
+          },
           body: JSON.stringify({
             type: "signup",
             data: {

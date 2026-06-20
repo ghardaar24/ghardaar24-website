@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
   getClientIdentifier,
   getRateLimitHeaders,
 } from "@/lib/rate-limit";
 import { appendUserSignup, appendPropertyListing } from "@/lib/google-sheets";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 interface SignupData {
   name: string;
@@ -39,6 +43,25 @@ export async function POST(req: NextRequest) {
           headers: getRateLimitHeaders(rateLimit.remaining, rateLimit.resetIn),
         }
       );
+    }
+
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     // Check if credentials are configured

@@ -96,7 +96,7 @@ const initialFormData: PropertyFormData = {
 
 
 export default function SubmitPropertyPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -561,7 +561,10 @@ export default function SubmitPropertyPage() {
       try {
         fetch("/api/log-to-sheets", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(session?.access_token && { "Authorization": `Bearer ${session.access_token}` }),
+          },
           body: JSON.stringify({
             type: "property",
             data: {
