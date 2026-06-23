@@ -209,6 +209,14 @@ All database tables have Row Level Security enabled to ensure data access is pro
 | `Admins can manage inquiry access` | ALL | Only authenticated admins |
 | `Staff can read accessible inquiries` | SELECT | Staff can read inquiries of permitted types |
 
+### Revenue Entries Table Policies
+
+| Policy                              | Access Level | Description                          |
+| ----------------------------------- | ------------ | ------------------------------------ |
+| `Admins can manage revenue entries` | ALL          | Admin-only; staff have zero access   |
+
+> **Note**: Revenue data (earnings, expenses) is sensitive financial information. Staff cannot read, insert, update, or delete any revenue entries. No public access.
+
 ### CRM Sheet Access Policies
 
 | Policy | Access Level | Description |
@@ -430,6 +438,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.8.0   | June 2026     | Revenue tracking: `revenue_entries` table with admin-only RLS; staff fully excluded from financial data |
 | 1.7.0   | April 2026    | Staff lead access permissions, CRM bulk action re-introduction, CRM task overdue tracking and filtering |
 | 1.6.1   | April 2026    | Enhancements to CRM audits (`addedById`, `addedByRole`) and Deletion controls |
 | 1.6.0   | April 2026    | Admin site visits, Inline CRM client editing, Task assignment enhancement |

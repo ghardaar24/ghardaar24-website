@@ -69,6 +69,8 @@ A modern, responsive real estate platform built with cutting-edge technologies.
 - **Statistics Dashboard** - Overview of listings, inquiries, and pending approvals
 - **CRM System** - Comprehensive client management with lead tracking, status updates, caller attribution (audits), deletion controls, CSV import/export, analytics dashboard, and activity logs
 - **Invoice Generator** - Generate professional invoices with saved history (accessible by admin and permitted staff)
+- **Revenue Tracking** - Log earnings and expenses with custom types and categories; view net profit summary and link to analytics dashboard
+- **Revenue Analytics** - Interactive charts (monthly bar, profit trend line, category pie charts) with time-range filtering (3m / 6m / 1y / all)
 - **Downloads Management** - Manage brochures and resources available for public download
 
 ### 🛠️ Technical Features
@@ -175,7 +177,9 @@ ghardaar24-web/
 │       ├── tasks/                # CRM Tasks Management
 │       ├── site-visits/          # View all staff site visits
 │       ├── downloads/            # Downloads Management
-│       └── invoice-generator/    # Professional Invoice Generator
+│       ├── invoice-generator/    # Professional Invoice Generator
+│       └── revenue/              # Revenue Tracking & Analytics
+│           └── analytics/        # Revenue Analytics Dashboard
 ├── components/                   # Reusable React components
 │   ├── Header.tsx                # Navigation header
 │   ├── Footer.tsx                # Site footer

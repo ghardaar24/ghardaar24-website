@@ -296,6 +296,22 @@ Tasks assigned by admins to staff members.
 | `completed_at`| TIMESTAMPTZ | When the task was marked completed              |
 | `created_at` | TIMESTAMPTZ | Creation timestamp                               |
 
+### Revenue Entries Table (revenue_entries)
+
+Stores admin-logged earnings and expenses for financial tracking.
+
+| Column        | Type        | Description                                         |
+| ------------- | ----------- | --------------------------------------------------- |
+| `id`          | UUID        | Primary key                                         |
+| `type`        | TEXT        | Entry type (e.g. Earning, Expense, or custom value) |
+| `amount`      | NUMERIC     | Amount in INR (must be > 0)                         |
+| `description` | TEXT        | Optional note or context                            |
+| `category`    | TEXT        | Category (e.g. Commission, Salaries, or custom)     |
+| `date`        | DATE        | Date of the transaction                             |
+| `created_at`  | TIMESTAMPTZ | Record creation timestamp                           |
+
+> **Access**: Admin-only via RLS policy. Staff cannot read or write revenue entries.
+
 ### CRM Activity Logs (crm_activity_logs)
 
 Audit log of all staff actions on CRM clients.
@@ -514,6 +530,8 @@ const { data, error } = await query;
 | Admin Site Visits       | `app/admin/site-visits/page.tsx`          | View and filter all staff site visits      |
 | Invoice Generator       | `app/admin/invoice-generator/page.tsx`    | Generate professional invoices             |
 | Manage Downloads        | `app/admin/downloads/page.tsx`            | Manage brochures & public downloads        |
+| Revenue Tracking        | `app/admin/revenue/page.tsx`              | Log earnings & expenses, view net summary  |
+| Revenue Analytics       | `app/admin/revenue/analytics/page.tsx`    | Charts: monthly bar, profit line, category pies |
 | User Login              | `app/auth/login/page.tsx`                 | User authentication page                   |
 | User Signup             | `app/auth/signup/page.tsx`                | User registration page                     |
 | User Forgot Password    | `app/auth/forgot-password/page.tsx`       | User password reset request                |
@@ -684,6 +702,12 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.8.0 (June 2026)
+
+- **Revenue Tracking**: New admin page (`/admin/revenue`) to log earnings and expenses with custom types and categories via native `<datalist>` combo inputs. Shows net profit summary stats.
+- **Revenue Analytics**: Dedicated analytics page (`/admin/revenue/analytics`) with time-range filter (3m / 6m / 1y / all time), monthly earnings vs expenses bar chart, net profit trend line chart, and category breakdown pie charts (Recharts).
+- **revenue_entries DB table**: New Supabase table with admin-only RLS. Type field accepts free-form text (no CHECK constraint) so admins can define custom entry types.
 
 ### v1.7.0 (April 2026)
 
