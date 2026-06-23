@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import {
   TrendingUp,
@@ -67,6 +67,7 @@ export default function RevenuePage() {
 
   const [crmClients, setCrmClients] = useState<CrmClient[]>([]);
   const [showCrmDropdown, setShowCrmDropdown] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { fetchEntries(); fetchCrmClients(); }, []);
 
@@ -151,7 +152,7 @@ export default function RevenuePage() {
       client_phone: entry.client_phone || "",
     });
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }
 
   async function handleDelete(id: string) {
@@ -285,6 +286,7 @@ export default function RevenuePage() {
       <AnimatePresence>
         {showForm && (
           <motion.div
+            ref={formRef}
             style={{ background: "#fff", borderRadius: "0.75rem", padding: "1.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e5e7eb", overflow: "hidden", marginBottom: "1.5rem" }}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
