@@ -23,11 +23,14 @@ import Link from "next/link";
 
 interface RevenueEntry {
   id: string;
-  type: "earning" | "expense";
+  type: string;
   amount: number;
   category: string;
   date: string;
 }
+
+const isEarning = (type: string) => type.toLowerCase() === "earning";
+const isExpense = (type: string) => type.toLowerCase() === "expense";
 
 const EARNING_COLOR = "#22c55e";
 const EXPENSE_COLOR = "#ef4444";
@@ -62,8 +65,8 @@ export default function RevenueAnalyticsPage() {
   });
 
   // Summary
-  const totalEarnings = filtered.filter((e) => e.type === "earning").reduce((s, e) => s + e.amount, 0);
-  const totalExpenses = filtered.filter((e) => e.type === "expense").reduce((s, e) => s + e.amount, 0);
+  const totalEarnings = filtered.filter((e) => isEarning(e.type)).reduce((s, e) => s + e.amount, 0);
+  const totalExpenses = filtered.filter((e) => isExpense(e.type)).reduce((s, e) => s + e.amount, 0);
   const netProfit = totalEarnings - totalExpenses;
   const margin = totalEarnings > 0 ? ((netProfit / totalEarnings) * 100).toFixed(1) : "0.0";
 
@@ -74,8 +77,8 @@ export default function RevenueAnalyticsPage() {
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const label = d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
     if (!monthlyMap[key]) monthlyMap[key] = { month: label, earnings: 0, expenses: 0, profit: 0 };
-    if (e.type === "earning") monthlyMap[key].earnings += e.amount;
-    else monthlyMap[key].expenses += e.amount;
+    if (isEarning(e.type)) monthlyMap[key].earnings += e.amount;
+    else if (isExpense(e.type)) monthlyMap[key].expenses += e.amount;
     monthlyMap[key].profit = monthlyMap[key].earnings - monthlyMap[key].expenses;
   });
   const monthlyData = Object.values(monthlyMap);
@@ -83,12 +86,12 @@ export default function RevenueAnalyticsPage() {
   // Category breakdown
   const categoryMap: Record<string, { name: string; value: number; type: string }> = {};
   filtered.forEach((e) => {
-    const key = `${e.type}:${e.category}`;
+    const key = `${e.type.toLowerCase()}:${e.category}`;
     if (!categoryMap[key]) categoryMap[key] = { name: e.category, value: 0, type: e.type };
     categoryMap[key].value += e.amount;
   });
-  const earningCategories = Object.values(categoryMap).filter((c) => c.type === "earning").sort((a, b) => b.value - a.value);
-  const expenseCategories = Object.values(categoryMap).filter((c) => c.type === "expense").sort((a, b) => b.value - a.value);
+  const earningCategories = Object.values(categoryMap).filter((c) => isEarning(c.type)).sort((a, b) => b.value - a.value);
+  const expenseCategories = Object.values(categoryMap).filter((c) => isExpense(c.type)).sort((a, b) => b.value - a.value);
 
   const PIE_COLORS = ["#22c55e", "#16a34a", "#4ade80", "#86efac", "#bbf7d0", "#dcfce7"];
   const PIE_EXPENSE_COLORS = ["#ef4444", "#dc2626", "#f87171", "#fca5a5", "#fecaca", "#fee2e2"];

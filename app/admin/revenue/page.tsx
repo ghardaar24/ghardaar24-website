@@ -24,6 +24,15 @@ interface RevenueEntry {
   category: string;
   date: string;
   created_at: string;
+  client_name?: string;
+  client_email?: string;
+  client_phone?: string;
+}
+
+interface CrmClient {
+  id: string;
+  client_name: string;
+  customer_number: string | null;
 }
 
 const DEFAULT_TYPES = ["Earning", "Expense", "Refund", "Investment", "Transfer"];
@@ -51,9 +60,23 @@ export default function RevenuePage() {
     description: "",
     category: "",
     date: new Date().toISOString().split("T")[0],
+    client_name: "",
+    client_email: "",
+    client_phone: "",
   });
 
-  useEffect(() => { fetchEntries(); }, []);
+  const [crmClients, setCrmClients] = useState<CrmClient[]>([]);
+  const [showCrmDropdown, setShowCrmDropdown] = useState(false);
+
+  useEffect(() => { fetchEntries(); fetchCrmClients(); }, []);
+
+  async function fetchCrmClients() {
+    const { data } = await supabase
+      .from("crm_clients")
+      .select("id, client_name, customer_number")
+      .order("client_name", { ascending: true });
+    if (data) setCrmClients(data);
+  }
 
   async function fetchEntries() {
     try {
@@ -81,31 +104,29 @@ export default function RevenuePage() {
     setError("");
     setSuccess("");
     try {
+      const payload = {
+        type: form.type.trim(),
+        amount: parseFloat(form.amount),
+        description: form.description.trim(),
+        category: form.category.trim(),
+        date: form.date,
+        client_name: form.client_name.trim() || null,
+        client_email: form.client_email.trim() || null,
+        client_phone: form.client_phone.trim() || null,
+      };
       if (editingId) {
         const { error } = await supabase
           .from("revenue_entries")
-          .update({
-            type: form.type.trim(),
-            amount: parseFloat(form.amount),
-            description: form.description.trim(),
-            category: form.category.trim(),
-            date: form.date,
-          })
+          .update(payload)
           .eq("id", editingId);
         if (error) throw error;
         setSuccess("Entry updated successfully.");
       } else {
-        const { error } = await supabase.from("revenue_entries").insert({
-          type: form.type.trim(),
-          amount: parseFloat(form.amount),
-          description: form.description.trim(),
-          category: form.category.trim(),
-          date: form.date,
-        });
+        const { error } = await supabase.from("revenue_entries").insert(payload);
         if (error) throw error;
         setSuccess("Entry added successfully.");
       }
-      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
       setEditingId(null);
       setShowForm(false);
       await fetchEntries();
@@ -125,6 +146,9 @@ export default function RevenuePage() {
       description: entry.description || "",
       category: entry.category,
       date: entry.date,
+      client_name: entry.client_name || "",
+      client_email: entry.client_email || "",
+      client_phone: entry.client_phone || "",
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -200,7 +224,7 @@ export default function RevenuePage() {
             className="btn-primary"
             onClick={() => {
               if (showForm) {
-                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
                 setEditingId(null);
                 setShowForm(false);
               } else {
@@ -317,14 +341,86 @@ export default function RevenuePage() {
                   />
                 </div>
               </div>
+              {/* Client Details */}
+              <div className="admin-form-row">
+                <div className="admin-form-group" style={{ position: "relative" }}>
+                  <label className="admin-form-label">Client Name</label>
+                  <input
+                    type="text"
+                    className="admin-form-input"
+                    placeholder="Type to search CRM or enter custom name..."
+                    value={form.client_name}
+                    onChange={(e) => {
+                      setForm((f) => ({ ...f, client_name: e.target.value }));
+                      setShowCrmDropdown(true);
+                    }}
+                    onFocus={() => setShowCrmDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowCrmDropdown(false), 150)}
+                    autoComplete="off"
+                  />
+                  {showCrmDropdown && form.client_name && (() => {
+                    const matches = crmClients.filter((c) =>
+                      c.client_name.toLowerCase().includes(form.client_name.toLowerCase())
+                    ).slice(0, 10);
+                    return matches.length > 0 ? (
+                      <div style={{
+                        position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
+                        background: "#fff", border: "1px solid #e5e7eb", borderRadius: "0.5rem",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)", maxHeight: "200px", overflowY: "auto",
+                      }}>
+                        {matches.map((c) => (
+                          <div
+                            key={c.id}
+                            style={{ padding: "0.625rem 1rem", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }}
+                            onMouseDown={() => {
+                              setForm((f) => ({ ...f, client_name: c.client_name, client_phone: c.customer_number || f.client_phone }));
+                              setShowCrmDropdown(false);
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >
+                            <div style={{ fontWeight: 500, fontSize: "0.875rem" }}>{c.client_name}</div>
+                            {c.customer_number && <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{c.customer_number}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                    Select from CRM to autofill details, or enter a custom client name.
+                  </p>
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Client Phone</label>
+                  <input
+                    type="text"
+                    className="admin-form-input"
+                    placeholder="Phone number..."
+                    value={form.client_phone}
+                    onChange={(e) => setForm((f) => ({ ...f, client_phone: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Client Email</label>
+                <input
+                  type="email"
+                  className="admin-form-input"
+                  placeholder="client@email.com"
+                  value={form.client_email}
+                  onChange={(e) => setForm((f) => ({ ...f, client_email: e.target.value }))}
+                />
+              </div>
+
               <div className="admin-form-group">
                 <label className="admin-form-label">Description</label>
-                <input
-                  type="text"
+                <textarea
                   className="admin-form-input"
                   placeholder="Optional note..."
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={3}
+                  style={{ resize: "vertical", lineHeight: "1.5" }}
                 />
               </div>
               <div className="admin-form-actions" style={{ display: "flex", gap: "0.5rem" }}>
@@ -336,7 +432,7 @@ export default function RevenuePage() {
                     type="button"
                     className="btn-secondary"
                     onClick={() => {
-                      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+                      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
                       setEditingId(null);
                       setShowForm(false);
                     }}
@@ -381,6 +477,7 @@ export default function RevenuePage() {
                 <th>Date</th>
                 <th>Type</th>
                 <th>Category</th>
+                <th>Client</th>
                 <th>Description</th>
                 <th>Amount</th>
                 <th>Actions</th>
@@ -392,7 +489,15 @@ export default function RevenuePage() {
                   <td>{new Date(entry.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
                   <td><span style={typeBadgeStyle(entry.type)}>{entry.type}</span></td>
                   <td>{entry.category}</td>
-                  <td style={{ color: "#6b7280" }}>{entry.description || "—"}</td>
+                  <td>
+                    {entry.client_name ? (
+                      <div>
+                        <div style={{ fontWeight: 500, fontSize: "0.875rem" }}>{entry.client_name}</div>
+                        {entry.client_phone && <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{entry.client_phone}</div>}
+                      </div>
+                    ) : "—"}
+                  </td>
+                  <td style={{ color: "#6b7280", whiteSpace: "pre-wrap", maxWidth: "200px" }}>{entry.description || "—"}</td>
                   <td style={{ fontWeight: 600, color: isEarning(entry.type) ? "#16a34a" : isExpense(entry.type) ? "#dc2626" : "#374151" }}>
                     {isExpense(entry.type) ? "−" : "+"}{fmt(entry.amount)}
                   </td>
