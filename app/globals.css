@@ -27341,7 +27341,6 @@ body {
   display: block;
   width: 160px;
   min-height: 130px;
-  height: 100%;
   flex-shrink: 0;
   cursor: pointer;
   overflow: hidden;

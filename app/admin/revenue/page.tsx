@@ -67,7 +67,9 @@ export default function RevenuePage() {
 
   const [crmClients, setCrmClients] = useState<CrmClient[]>([]);
   const [showCrmDropdown, setShowCrmDropdown] = useState(false);
+  const [clientAutoFilled, setClientAutoFilled] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const phoneDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => { fetchEntries(); fetchCrmClients(); }, []);
 
@@ -77,6 +79,25 @@ export default function RevenuePage() {
       .select("id, client_name, customer_number")
       .order("client_name", { ascending: true });
     if (data) setCrmClients(data);
+  }
+
+  function handlePhoneChange(value: string) {
+    const cleaned = value.replace(/\D/g, "").slice(0, 10);
+    setForm((f) => ({ ...f, client_phone: cleaned }));
+    setClientAutoFilled(false);
+    if (phoneDebounceRef.current) clearTimeout(phoneDebounceRef.current);
+    if (cleaned.length < 10) return;
+    phoneDebounceRef.current = setTimeout(async () => {
+      const { data } = await supabase
+        .from("crm_clients")
+        .select("client_name")
+        .eq("customer_number", cleaned)
+        .limit(1);
+      if (data && data.length > 0) {
+        setForm((f) => ({ ...f, client_name: data[0].client_name }));
+        setClientAutoFilled(true);
+      }
+    }, 500);
   }
 
   async function fetchEntries() {
@@ -127,7 +148,7 @@ export default function RevenuePage() {
         if (error) throw error;
         setSuccess("Entry added successfully.");
       }
-      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
+      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" }); setClientAutoFilled(false);
       setEditingId(null);
       setShowForm(false);
       await fetchEntries();
@@ -225,7 +246,7 @@ export default function RevenuePage() {
             className="btn-primary"
             onClick={() => {
               if (showForm) {
-                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
+                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" }); setClientAutoFilled(false);
                 setEditingId(null);
                 setShowForm(false);
               } else {
@@ -346,7 +367,14 @@ export default function RevenuePage() {
               {/* Client Details */}
               <div className="admin-form-row">
                 <div className="admin-form-group" style={{ position: "relative" }}>
-                  <label className="admin-form-label">Client Name</label>
+                  <label className="admin-form-label">
+                    Client Name
+                    {clientAutoFilled && (
+                      <span style={{ marginLeft: "0.5rem", fontSize: "0.7rem", background: "#dcfce7", color: "#16a34a", padding: "0.1rem 0.4rem", borderRadius: "999px", fontWeight: 600 }}>
+                        Auto-detected
+                      </span>
+                    )}
+                  </label>
                   <input
                     type="text"
                     className="admin-form-input"
@@ -355,6 +383,7 @@ export default function RevenuePage() {
                     onChange={(e) => {
                       setForm((f) => ({ ...f, client_name: e.target.value }));
                       setShowCrmDropdown(true);
+                      setClientAutoFilled(false);
                     }}
                     onFocus={() => setShowCrmDropdown(true)}
                     onBlur={() => setTimeout(() => setShowCrmDropdown(false), 150)}
@@ -377,6 +406,7 @@ export default function RevenuePage() {
                             onMouseDown={() => {
                               setForm((f) => ({ ...f, client_name: c.client_name, client_phone: c.customer_number || f.client_phone }));
                               setShowCrmDropdown(false);
+                              setClientAutoFilled(false);
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -395,12 +425,18 @@ export default function RevenuePage() {
                 <div className="admin-form-group">
                   <label className="admin-form-label">Client Phone</label>
                   <input
-                    type="text"
+                    type="tel"
                     className="admin-form-input"
-                    placeholder="Phone number..."
+                    placeholder="10-digit number..."
                     value={form.client_phone}
-                    onChange={(e) => setForm((f) => ({ ...f, client_phone: e.target.value }))}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    maxLength={10}
                   />
+                  {form.client_phone.length > 0 && form.client_phone.length < 10 && (
+                    <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                      {10 - form.client_phone.length} more digit{10 - form.client_phone.length !== 1 ? "s" : ""} to auto-detect client
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="admin-form-group">
@@ -434,7 +470,7 @@ export default function RevenuePage() {
                     type="button"
                     className="btn-secondary"
                     onClick={() => {
-                      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" });
+                      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "" }); setClientAutoFilled(false);
                       setEditingId(null);
                       setShowForm(false);
                     }}
