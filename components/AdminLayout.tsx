@@ -23,6 +23,7 @@ import {
   ClipboardList,
   Receipt,
   Eye,
+  TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/admin/staff", icon: UserCog, label: "Staff Management" },
   { href: "/admin/downloads", icon: Download, label: "Downloads" },
   { href: "/admin/invoice-generator", icon: Receipt, label: "Invoice Gen" },
+  { href: "/admin/revenue", icon: TrendingUp, label: "Revenue" },
 ];
 
 export default function AdminLayout({
