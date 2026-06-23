@@ -48,59 +48,54 @@ export default async function HomePage() {
       <IntroTour />
 
       {/* Hero Section */}
-      <section className="hero-new hero-with-bg">
-        <div className="hero-overlay" />
+      <section className="hero-v2">
+        <div className="hero-v2-overlay" />
+        <div className="hero-v2-grain" aria-hidden="true" />
 
-        <div className="container hero-content-new">
-          <div className="hero-main hero-centered">
-            <MotionSection className="hero-text-new">
-              <h1 className="hero-title-new hero-title-light">
-                <span className="hero-title-gradient">Ghardaar 24</span>
-              </h1>
-              <p className="hero-subtitle-new hero-subtitle-light !text-xl md:!text-2xl !font-semibold !mb-3">
-                Where Every Door Leads Home.
-              </p>
-              <p className="hero-subtitle-new hero-subtitle-light !mt-0">
-                Elevating the Art of Fine Living.
-              </p>
+        <div className="container hero-v2-container">
+          <MotionSection className="hero-v2-content">
+            <h1 className="hero-v2-heading">
+              <span className="hero-v2-heading-line1">Where Every</span>
+              <span className="hero-v2-heading-line2">Door Leads Home.</span>
+            </h1>
 
-              <div className="hero-cta-group">
-                <Link href="/properties" className="hero-btn-primary">
-                  <Search className="w-5 h-5" />
-                  Browse Properties
-                </Link>
-                <Link
-                  href="#consultation"
-                  className="hero-btn-secondary hero-btn-light"
-                >
-                  Talk to an Expert
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
+            <p className="hero-v2-sub">
+              Zero brokerage · Verified properties across Pune · 10+ years of trust
+            </p>
+
+            <div className="hero-v2-cta-group">
+              <Link href="/properties" className="hero-v2-btn-primary">
+                <Search className="w-5 h-5" />
+                Browse Properties
+              </Link>
+              <Link href="#consultation" className="hero-v2-btn-ghost">
+                Talk to an Expert
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+
+            <div className="hero-v2-stats">
+              <div className="hero-v2-stat">
+                <span className="hero-v2-stat-num">500+</span>
+                <span className="hero-v2-stat-label">Properties</span>
               </div>
-
-              <div className="hero-trust-badges hero-trust-light">
-                <div className="hero-trust-item">
-                  <span className="hero-trust-value">500+</span>
-                  <span className="hero-trust-label">Properties</span>
-                </div>
-                <div className="hero-trust-divider" />
-                <div className="hero-trust-item">
-                  <span className="hero-trust-value">100%</span>
-                  <span className="hero-trust-label">Satisfaction</span>
-                </div>
-                <div className="hero-trust-divider" />
-                <div className="hero-trust-item">
-                  <span className="hero-trust-value">10+</span>
-                  <span className="hero-trust-label">Years Trust</span>
-                </div>
+              <div className="hero-v2-stat-divider" />
+              <div className="hero-v2-stat">
+                <span className="hero-v2-stat-num">100%</span>
+                <span className="hero-v2-stat-label">Satisfaction</span>
               </div>
-            </MotionSection>
-          </div>
+              <div className="hero-v2-stat-divider" />
+              <div className="hero-v2-stat">
+                <span className="hero-v2-stat-num">10+</span>
+                <span className="hero-v2-stat-label">Years Trust</span>
+              </div>
+            </div>
+          </MotionSection>
 
-          {/* Hero Search Bar with Login Modal */}
-          <div id="intro-search">
-            <HeroSearchBar />
-          </div>
+        </div>
+
+        <div id="intro-search" className="hero-v2-search-wrapper">
+          <HeroSearchBar />
         </div>
       </section>
 
@@ -122,26 +117,31 @@ export default async function HomePage() {
       </div>
 
       {/* CTA Section */}
-      <MotionSection className="section cta-section-new">
+      <MotionSection className="cta-v2">
+        <div className="cta-v2-glow" aria-hidden="true" />
         <div className="container">
-          <StaggerContainer>
+          <StaggerContainer className="cta-v2-inner">
             <StaggerItem>
-              <div className="cta-card-new">
-                <div className="cta-content">
-                  <h2>Ready to find your perfect home?</h2>
-                  <p>Browse thousands of verified properties across India</p>
-                </div>
-                <div className="cta-actions">
-                  <Link href="/properties" className="btn-primary-new">
-                    Browse Properties
-                  </Link>
-                  <Link
-                    href="/properties?listing_type=rent"
-                    className="btn-secondary-new"
-                  >
-                    Explore Rentals
-                  </Link>
-                </div>
+              <span className="cta-v2-eyebrow">Your New Home Awaits</span>
+            </StaggerItem>
+            <StaggerItem>
+              <h2 className="cta-v2-title">
+                Ready to Find Your<br />Perfect Home?
+              </h2>
+            </StaggerItem>
+            <StaggerItem>
+              <p className="cta-v2-sub">
+                Verified properties · Zero brokerage · Expert guidance every step of the way
+              </p>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="cta-v2-buttons">
+                <Link href="/properties" className="cta-v2-btn-primary">
+                  Browse Properties
+                </Link>
+                <Link href="/properties?listing_type=rent" className="cta-v2-btn-outline">
+                  Explore Rentals
+                </Link>
               </div>
             </StaggerItem>
           </StaggerContainer>

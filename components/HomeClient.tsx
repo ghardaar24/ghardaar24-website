@@ -14,7 +14,6 @@ import {
   Maximize,
   MapPin,
   ChevronRight,
-  ArrowRight,
   Home,
   Castle,
   Ruler,
@@ -67,87 +66,76 @@ function HomePropertyCard({
     router.push(`/properties/${property.id}`);
   };
 
+  const badgeLabel =
+    property.listing_type === "sale"
+      ? "For Sale"
+      : property.listing_type === "resale"
+      ? "Resale"
+      : "For Rent";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.4,
-        delay: Math.min(index * 0.08, 0.4),
+        duration: 0.5,
+        delay: Math.min(index * 0.1, 0.4),
         ease: [0.22, 1, 0.36, 1],
       }}
-      style={{ height: "100%" }}
     >
-      <div
-        className="property-card-new group"
-        onClick={handleClick}
-        style={{ cursor: "pointer" }}
-      >
-        <div className="property-card-image-new">
-          <div className="w-full h-full relative">
-            {!imageLoaded && (
-              <div
-                className="absolute inset-0 skeleton"
-                style={{ background: "var(--gray-100)" }}
-              />
-            )}
-            <Image
-              src={mainImage}
-              alt={property.title}
-              fill
-              className={`object-cover transition-opacity duration-300 ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              onLoad={() => setImageLoaded(true)}
-              loading={index < 3 ? "eager" : "lazy"}
-            />
-          </div>
-          <div className="property-card-badges">
-            <span
-              className={`property-badge-new ${
-                property.listing_type === "sale"
-                  ? "sale"
-                  : property.listing_type === "resale"
-                  ? "resale"
-                  : "rent"
-              }`}
-            >
-              {property.listing_type === "sale"
-                ? "For Sale"
-                : property.listing_type === "resale"
-                ? "Resale"
-                : "For Rent"}
-            </span>
-            {property.featured && (
-              <span className="property-badge-new featured">Featured</span>
-            )}
-          </div>
+      <div className="prop-card-v2" onClick={handleClick}>
+        {/* Full-bleed image */}
+        <div className="prop-card-v2-image">
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
+          )}
+          <Image
+            src={mainImage}
+            alt={property.title}
+            fill
+            className={`object-cover transition-all duration-700 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onLoad={() => setImageLoaded(true)}
+            loading={index < 3 ? "eager" : "lazy"}
+          />
         </div>
 
-        <div className="property-card-body">
-          <div className="property-card-location">
-            <MapPin className="w-3.5 h-3.5" />
+        {/* Dark gradient overlay */}
+        <div className="prop-card-v2-gradient" />
+
+        {/* Badges top-left */}
+        <div className="prop-card-v2-badges">
+          <span className={`prop-card-v2-badge ${property.listing_type}`}>
+            {badgeLabel}
+          </span>
+          {property.featured && (
+            <span className="prop-card-v2-badge featured">Featured</span>
+          )}
+        </div>
+
+        {/* Content overlay at bottom */}
+        <div className="prop-card-v2-body">
+          <div className="prop-card-v2-location">
+            <MapPin className="w-3 h-3" />
             <span>{property.area}</span>
           </div>
-
-          <h3 className="property-card-title">{property.title}</h3>
-
-          <div className="property-card-features-new">
-            <div className="feature-item-new">
-              <Maximize className="w-4 h-4" />
-              <span>{property.carpet_area || "N/A"}</span>
-            </div>
-          </div>
-
-          <div className="property-card-footer">
-            <span className="property-card-price">
+          <h3 className="prop-card-v2-title">{property.title}</h3>
+          <div className="prop-card-v2-footer">
+            <span className="prop-card-v2-price">
               {formatPrice(property.price)}
               {property.listing_type === "rent" && (
-                <span className="price-period">/mo</span>
+                <span className="text-xs font-normal opacity-70">/mo</span>
               )}
             </span>
+            {property.carpet_area && (
+              <span className="prop-card-v2-area">
+                <Maximize className="w-3 h-3" />
+                {property.carpet_area}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -187,73 +175,22 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
   if (!mounted) {
     return (
       <>
-        {/* Featured Properties Skeleton */}
         {featuredProperties.length > 0 && (
-          <section className="section featured-section-new">
+          <section className="featured-v2">
             <div className="container">
-              <div className="section-header">
-                <div
-                  className="skeleton-title"
-                  style={{
-                    width: "200px",
-                    height: "32px",
-                    background: "var(--gray-200)",
-                    borderRadius: "var(--radius)",
-                    animation: "pulse 2s infinite",
-                  }}
-                />
+              <div className="featured-v2-header">
+                <div className="featured-v2-title-block">
+                  <div className="w-28 h-3 bg-neutral-200 rounded animate-pulse mb-2" />
+                  <div className="w-48 h-8 bg-neutral-200 rounded animate-pulse" />
+                </div>
               </div>
               <div className="properties-grid">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="property-card-skeleton"
-                    style={{
-                      background: "white",
-                      borderRadius: "var(--radius-xl)",
-                      overflow: "hidden",
-                      border: "1px solid var(--border)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "220px",
-                        background: "var(--gray-100)",
-                        animation: "pulse 2s infinite",
-                      }}
-                    />
-                    <div style={{ padding: "1.5rem" }}>
-                      <div
-                        style={{
-                          width: "60%",
-                          height: "14px",
-                          background: "var(--gray-200)",
-                          borderRadius: "var(--radius)",
-                          marginBottom: "0.75rem",
-                          animation: "pulse 2s infinite",
-                        }}
-                      />
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "20px",
-                          background: "var(--gray-200)",
-                          borderRadius: "var(--radius)",
-                          marginBottom: "1rem",
-                          animation: "pulse 2s infinite",
-                        }}
-                      />
-                      <div
-                        style={{
-                          width: "80%",
-                          height: "16px",
-                          background: "var(--gray-200)",
-                          borderRadius: "var(--radius)",
-                          animation: "pulse 2s infinite",
-                        }}
-                      />
-                    </div>
-                  </div>
+                    className="prop-card-v2 animate-pulse"
+                    style={{ background: "#e5e7eb" }}
+                  />
                 ))}
               </div>
             </div>
@@ -267,49 +204,37 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
   if (!isReady) {
     return (
       <>
-        {/* Featured Properties Skeleton */}
         {featuredProperties.length > 0 && (
-          <MotionSection className="section featured-section-new">
+          <MotionSection className="featured-v2">
             <div className="container">
-              <StaggerContainer className="section-header">
-                <StaggerItem>
-                  <h2 className="section-title-new">Featured Properties</h2>
-                </StaggerItem>
-              </StaggerContainer>
-
+              <div className="featured-v2-header">
+                <div className="featured-v2-title-block">
+                  <span className="featured-v2-eyebrow">Handpicked for You</span>
+                  <h2 className="featured-v2-title">Featured Properties</h2>
+                </div>
+              </div>
               <div className="properties-grid">
                 {featuredProperties.map((property, index) => (
-                  <HomePropertyCard
-                    key={property.id}
-                    property={property}
-                    index={index}
-                  />
+                  <HomePropertyCard key={property.id} property={property} index={index} />
                 ))}
               </div>
             </div>
           </MotionSection>
         )}
 
-        {/* Property Types */}
-        <MotionSection className="section types-section">
+        <MotionSection className="types-v2">
           <div className="container">
-            <StaggerContainer className="section-header">
-              <StaggerItem>
-                <h2 className="section-title-new">Browse by Property Type</h2>
-              </StaggerItem>
-            </StaggerContainer>
-
-            <StaggerContainer className="types-grid">
+            <div className="section-header section-header-center">
+              <h2 className="featured-v2-title">Browse by Property Type</h2>
+            </div>
+            <div className="types-v2-grid">
               {propertyTypes.map((item) => (
-                <StaggerItem key={item.type}>
-                  <div className="type-card-new" style={{ cursor: "pointer" }}>
-                    <span className="type-icon">{item.icon}</span>
-                    <span className="type-label">{item.label}</span>
-                    <ArrowRight className="w-4 h-4 type-arrow" />
-                  </div>
-                </StaggerItem>
+                <div key={item.type} className="type-card-v2">
+                  <span className="type-card-v2-icon">{item.icon}</span>
+                  <span className="type-card-v2-label">{item.label}</span>
+                </div>
               ))}
-            </StaggerContainer>
+            </div>
           </div>
         </MotionSection>
       </>
@@ -320,21 +245,17 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
     <>
       {/* Featured Properties */}
       {featuredProperties.length > 0 && (
-        <MotionSection className="section featured-section-new">
+        <MotionSection className="featured-v2">
           <div className="container">
-            <StaggerContainer className="section-header">
-              <StaggerItem>
-                <h2 className="section-title-new">Featured Properties</h2>
-              </StaggerItem>
-              <StaggerItem>
-                <Link
-                  href="/properties?featured=true"
-                  className="btn-outline-new"
-                >
-                  View all <ChevronRight className="w-4 h-4" />
-                </Link>
-              </StaggerItem>
-            </StaggerContainer>
+            <div className="featured-v2-header">
+              <div className="featured-v2-title-block">
+                <span className="featured-v2-eyebrow">Handpicked for You</span>
+                <h2 className="featured-v2-title">Featured Properties</h2>
+              </div>
+              <Link href="/properties?featured=true" className="btn-outline-new">
+                View all <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
 
             <div className="properties-grid">
               {featuredProperties.map((property, index) => (
@@ -350,27 +271,29 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
       )}
 
       {/* Property Types */}
-      <MotionSection className="section types-section">
+      <MotionSection className="types-v2">
         <div className="container">
-          <StaggerContainer className="section-header">
+          <StaggerContainer className="section-header section-header-center">
             <StaggerItem>
-              <h2 className="section-title-new">Browse by Property Type</h2>
+              <span className="featured-v2-eyebrow">Explore</span>
+            </StaggerItem>
+            <StaggerItem>
+              <h2 className="featured-v2-title">Browse by Property Type</h2>
             </StaggerItem>
           </StaggerContainer>
 
-          <StaggerContainer className="types-grid">
+          <StaggerContainer className="types-v2-grid">
             {propertyTypes.map((item) => (
               <StaggerItem key={item.type}>
                 <Link
                   href={`/properties?type=${item.type}`}
-                  className="type-card-new"
+                  className="type-card-v2"
                   onClick={(e) =>
                     handleLinkClick(e, `/properties?type=${item.type}`)
                   }
                 >
-                  <span className="type-icon">{item.icon}</span>
-                  <span className="type-label">{item.label}</span>
-                  <ArrowRight className="w-4 h-4 type-arrow" />
+                  <span className="type-card-v2-icon">{item.icon}</span>
+                  <span className="type-card-v2-label">{item.label}</span>
                 </Link>
               </StaggerItem>
             ))}

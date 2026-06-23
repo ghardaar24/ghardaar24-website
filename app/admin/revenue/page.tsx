@@ -11,6 +11,7 @@ import {
   AlertCircle,
   CheckCircle,
   Filter,
+  Pencil,
 } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 import Link from "next/link";
@@ -42,6 +43,7 @@ export default function RevenuePage() {
   const [success, setSuccess] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     type: "Earning",
@@ -79,16 +81,32 @@ export default function RevenuePage() {
     setError("");
     setSuccess("");
     try {
-      const { error } = await supabase.from("revenue_entries").insert({
-        type: form.type.trim(),
-        amount: parseFloat(form.amount),
-        description: form.description.trim(),
-        category: form.category.trim(),
-        date: form.date,
-      });
-      if (error) throw error;
-      setSuccess("Entry added successfully.");
+      if (editingId) {
+        const { error } = await supabase
+          .from("revenue_entries")
+          .update({
+            type: form.type.trim(),
+            amount: parseFloat(form.amount),
+            description: form.description.trim(),
+            category: form.category.trim(),
+            date: form.date,
+          })
+          .eq("id", editingId);
+        if (error) throw error;
+        setSuccess("Entry updated successfully.");
+      } else {
+        const { error } = await supabase.from("revenue_entries").insert({
+          type: form.type.trim(),
+          amount: parseFloat(form.amount),
+          description: form.description.trim(),
+          category: form.category.trim(),
+          date: form.date,
+        });
+        if (error) throw error;
+        setSuccess("Entry added successfully.");
+      }
       setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+      setEditingId(null);
       setShowForm(false);
       await fetchEntries();
     } catch (err) {
@@ -97,6 +115,19 @@ export default function RevenuePage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleStartEdit(entry: RevenueEntry) {
+    setEditingId(entry.id);
+    setForm({
+      type: entry.type,
+      amount: entry.amount.toString(),
+      description: entry.description || "",
+      category: entry.category,
+      date: entry.date,
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleDelete(id: string) {
@@ -167,7 +198,15 @@ export default function RevenuePage() {
           </Link>
           <motion.button
             className="btn-primary"
-            onClick={() => setShowForm((v) => !v)}
+            onClick={() => {
+              if (showForm) {
+                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+                setEditingId(null);
+                setShowForm(false);
+              } else {
+                setShowForm(true);
+              }
+            }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
@@ -227,7 +266,7 @@ export default function RevenuePage() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <h2 style={{ marginBottom: "1.25rem", fontWeight: 600 }}>New Entry</h2>
+            <h2 style={{ marginBottom: "1.25rem", fontWeight: 600 }}>{editingId ? "Edit Entry" : "New Entry"}</h2>
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
@@ -288,10 +327,23 @@ export default function RevenuePage() {
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 />
               </div>
-              <div className="admin-form-actions">
+              <div className="admin-form-actions" style={{ display: "flex", gap: "0.5rem" }}>
                 <button type="submit" className="btn-primary" disabled={saving}>
-                  {saving ? "Saving..." : "Save Entry"}
+                  {saving ? "Saving..." : editingId ? "Update Entry" : "Save Entry"}
                 </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0] });
+                      setEditingId(null);
+                      setShowForm(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                )}
               </div>
             </form>
           </motion.div>
@@ -345,14 +397,24 @@ export default function RevenuePage() {
                     {isExpense(entry.type) ? "−" : "+"}{fmt(entry.amount)}
                   </td>
                   <td>
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      className="btn-danger"
-                      style={{ padding: "0.375rem 0.625rem" }}
-                      title="Delete entry"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button
+                        onClick={() => handleStartEdit(entry)}
+                        className="btn-secondary"
+                        style={{ padding: "0.375rem 0.625rem" }}
+                        title="Edit entry"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="btn-danger"
+                        style={{ padding: "0.375rem 0.625rem" }}
+                        title="Delete entry"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}

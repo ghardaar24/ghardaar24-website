@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Poppins, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import {
   defaultMetadata,
@@ -14,6 +14,14 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -86,7 +94,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${poppins.variable} antialiased`}>
+      <body className={`${poppins.variable} ${cormorant.variable} antialiased`}>
         <AuthProvider>
           <StaffAuthProvider>
             {children}
