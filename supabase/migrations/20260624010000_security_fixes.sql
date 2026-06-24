@@ -38,7 +38,7 @@ REVOKE SELECT ON TABLE public.properties FROM anon;
 GRANT SELECT (
   id, title, description, price, min_price, max_price,
   state, city, area, address,
-  bedrooms, bathrooms, property_type, listing_type, featured, status,
+  property_type, listing_type, featured, status,
   images, video_urls, amenities, brochure_urls,
   land_parcel, towers, floors, config, carpet_area,
   rera_no, rera_possession, possession_status, target_possession, litigation,
