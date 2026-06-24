@@ -1,4 +1,4 @@
-import { supabase, Property } from "@/lib/supabase";
+import { supabase, Property, PUBLIC_PROPERTY_COLUMNS } from "@/lib/supabase";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
@@ -38,7 +38,7 @@ export async function generateMetadata({
 async function getProperties(searchParams: SearchParams): Promise<Property[]> {
   let query = supabase
     .from("properties")
-    .select("*")
+    .select(PUBLIC_PROPERTY_COLUMNS)
     .or("approval_status.eq.approved,approval_status.is.null")
     .order("created_at", { ascending: false });
 
@@ -91,7 +91,7 @@ async function getProperties(searchParams: SearchParams): Promise<Property[]> {
     return [];
   }
 
-  return data || [];
+  return (data as unknown as Property[]) || [];
 }
 
 function getPageTitle(searchParams: SearchParams): string {

@@ -1,4 +1,4 @@
-import { supabase, Property } from "@/lib/supabase";
+import { supabase, Property, PUBLIC_PROPERTY_COLUMNS } from "@/lib/supabase";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TrustIndicators from "@/components/TrustIndicators";
@@ -25,7 +25,7 @@ async function getFeaturedProperties(): Promise<Property[]> {
   // Get only explicitly featured properties (approved ones)
   const { data: featured, error: featuredError } = await supabase
     .from("properties")
-    .select("*")
+    .select(PUBLIC_PROPERTY_COLUMNS)
     .eq("featured", true)
     .or("approval_status.eq.approved,approval_status.is.null")
     .order("created_at", { ascending: false })
@@ -36,7 +36,7 @@ async function getFeaturedProperties(): Promise<Property[]> {
     return [];
   }
 
-  return featured || [];
+  return (featured as unknown as Property[]) || [];
 }
 
 export default async function HomePage() {

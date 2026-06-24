@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, Expand } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Expand, Images } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/motion";
 
 interface ImageGalleryProps {
@@ -121,6 +121,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
+            <Images className="w-3.5 h-3.5 opacity-80" />
             {currentIndex + 1} / {displayImages.length}
           </motion.div>
         </div>

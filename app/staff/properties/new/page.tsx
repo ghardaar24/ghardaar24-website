@@ -559,12 +559,10 @@ export default function StaffNewPropertyPage() {
       setError(
         err instanceof Error ? err.message : "Failed to create property"
       );
-      const pgError = err as { details?: string; hint?: string };
-      if (pgError?.details) {
-        setError((prev) => `${prev} - ${pgError.details}`);
-      }
-      if (pgError?.hint) {
-        setError((prev) => `${prev} (${pgError.hint})`);
+      if (process.env.NODE_ENV === "development") {
+        const pgError = err as { details?: string; hint?: string };
+        if (pgError?.details) setError((prev) => `${prev} - ${pgError.details}`);
+        if (pgError?.hint) setError((prev) => `${prev} (${pgError.hint})`);
       }
     } finally {
       setUploading(false);

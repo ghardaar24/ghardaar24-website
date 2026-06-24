@@ -1,4 +1,4 @@
-import { supabase, Property } from "@/lib/supabase";
+import { supabase, Property, PUBLIC_PROPERTY_COLUMNS } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Header from "@/components/Header";
@@ -27,7 +27,8 @@ import {
   Ruler,
   FileCheck,
   Scale,
-  FileDown,
+  FileText,
+  Download,
   Clock,
 } from "lucide-react";
 import Link from "next/link";
@@ -40,7 +41,7 @@ import PropertySectionNavbar from "@/components/PropertySectionNavbar";
 async function getProperty(id: string): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")
-    .select("*")
+    .select(PUBLIC_PROPERTY_COLUMNS)
     .eq("id", id)
     .single();
 
@@ -49,7 +50,7 @@ async function getProperty(id: string): Promise<Property | null> {
   }
 
   // Normalize brochures for backward compatibility
-  const propertyData = data as Property & { brochure_url?: string };
+  const propertyData = data as unknown as Property & { brochure_url?: string };
   if (!propertyData.brochure_urls && propertyData.brochure_url) {
     propertyData.brochure_urls = [propertyData.brochure_url];
   }
@@ -75,13 +76,13 @@ export async function generateMetadata({
 async function getSimilarProperties(property: Property): Promise<Property[]> {
   const { data } = await supabase
     .from("properties")
-    .select("*")
+    .select(PUBLIC_PROPERTY_COLUMNS)
     .eq("area", property.area)
     .eq("property_type", property.property_type)
     .neq("id", property.id)
     .limit(4);
 
-  return data || [];
+  return (data as unknown as Property[]) || [];
 }
 
 export default async function PropertyDetailsPage({
@@ -554,7 +555,7 @@ export default async function PropertyDetailsPage({
                       <MotionSection delay={0.52}>
                         <div className="property-section">
                           <h2 className="section-heading">Brochures</h2>
-                          <div className="space-y-3">
+                          <div className="brochure-list">
                             {property.brochure_urls.map((url, index) => (
                               <a
                                 key={index}
@@ -563,12 +564,18 @@ export default async function PropertyDetailsPage({
                                 rel="noopener noreferrer"
                                 className="brochure-download-btn"
                               >
-                                <FileDown className="w-5 h-5" />
-                                <span>
-                                  Download Brochure{" "}
-                                  {property.brochure_urls!.length > 1
-                                    ? index + 1
-                                    : ""}
+                                <span className="brochure-icon-wrap">
+                                  <FileText className="w-5 h-5" />
+                                </span>
+                                <span className="brochure-info">
+                                  <span className="brochure-title">
+                                    Property Brochure{property.brochure_urls!.length > 1 ? ` ${index + 1}` : ""}
+                                  </span>
+                                  <span className="brochure-meta">PDF Document · Tap to open</span>
+                                </span>
+                                <span className="brochure-cta">
+                                  <Download className="w-3.5 h-3.5" />
+                                  Download
                                 </span>
                               </a>
                             ))}

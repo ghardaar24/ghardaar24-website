@@ -79,6 +79,8 @@ export default function EditPropertyPage({
     litigation: false,
     // Builder/Developer
     builder_name: "",
+    // Admin-only
+    cp_slab: "",
   });
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
@@ -147,6 +149,8 @@ export default function EditPropertyPage({
           litigation: data.litigation || false,
           // Builder/Developer
           builder_name: data.builder_name || "",
+          // Admin-only
+          cp_slab: data.cp_slab || "",
         });
         setExistingImages(data.images || []);
         setAmenities(data.amenities || []);
@@ -600,6 +604,8 @@ export default function EditPropertyPage({
           litigation: formData.litigation,
           // Builder/Developer
           builder_name: formData.builder_name || null,
+          // Admin-only
+          cp_slab: formData.cp_slab || null,
         })
         .eq("id", id);
 
@@ -1587,6 +1593,20 @@ export default function EditPropertyPage({
           <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
             Options
           </h2>
+
+          <div className="form-grid mb-4">
+            <div className="form-group">
+              <label htmlFor="cp_slab">CP Slab</label>
+              <input
+                type="text"
+                id="cp_slab"
+                name="cp_slab"
+                value={formData.cp_slab}
+                onChange={handleChange}
+                placeholder="e.g., 2%, 3.5%, 1.5 Lakh"
+              />
+            </div>
+          </div>
 
           <AdminCheckbox
             label="Mark as Featured Property"

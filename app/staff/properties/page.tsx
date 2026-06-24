@@ -6,13 +6,14 @@ import { formatPrice } from "@/lib/utils";
 import { useStaffAuth } from "@/lib/staff-auth";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit, Star, Eye, Search, Building } from "lucide-react";
+import { Plus, Edit, Star, Eye, Search, Building, Trash2 } from "lucide-react";
 
 export default function StaffPropertiesPage() {
   const { staffProfile } = useStaffAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProperties();
@@ -31,6 +32,18 @@ export default function StaffPropertiesPage() {
       if (process.env.NODE_ENV === "development") console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      const { error } = await supabase.from("properties").delete().eq("id", id);
+      if (error) throw error;
+      setProperties(properties.filter((p) => p.id !== id));
+      setDeleteId(null);
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") console.error("Error deleting property:", error);
+      alert("Failed to delete property");
     }
   }
 
@@ -176,7 +189,7 @@ export default function StaffPropertiesPage() {
                 <p style={{ fontSize: '1.125rem', fontWeight: 700, color: '#3b82f6' }}>
                   {formatPrice(property.price)}
                 </p>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                   <Link
                     href={`/properties/${property.id}`}
                     style={{
@@ -219,10 +232,78 @@ export default function StaffPropertiesPage() {
                     <Edit className="w-3.5 h-3.5" />
                     Edit
                   </Link>
+                  <button
+                    onClick={() => setDeleteId(property.id)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.375rem',
+                      padding: '0.5rem 0.75rem',
+                      border: '1px solid #fca5a5',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      color: '#dc2626',
+                      background: 'white',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteId && (
+        <div
+          onClick={() => setDeleteId(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 50, padding: '1rem',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: '0.75rem', padding: '1.5rem',
+              maxWidth: '400px', width: '100%',
+            }}
+          >
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#111827', marginBottom: '0.5rem' }}>
+              Delete Property?
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.25rem' }}>
+              This cannot be undone. All property data will be permanently deleted.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setDeleteId(null)}
+                style={{
+                  padding: '0.5rem 1rem', border: '1px solid #d1d5db',
+                  borderRadius: '0.5rem', fontSize: '0.875rem', cursor: 'pointer', background: 'white',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteId)}
+                style={{
+                  padding: '0.5rem 1rem', border: 'none',
+                  borderRadius: '0.5rem', fontSize: '0.875rem', cursor: 'pointer',
+                  background: '#dc2626', color: 'white', fontWeight: 500,
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

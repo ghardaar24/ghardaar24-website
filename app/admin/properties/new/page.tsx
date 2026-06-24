@@ -72,6 +72,8 @@ interface PropertyFormData {
   litigation: boolean;
   // Builder/Developer
   builder_name: string;
+  // Admin-only
+  cp_slab: string;
 }
 
 const initialFormData: PropertyFormData = {
@@ -102,6 +104,8 @@ const initialFormData: PropertyFormData = {
   litigation: false,
   // Builder/Developer
   builder_name: "",
+  // Admin-only
+  cp_slab: "",
 };
 
 export default function NewPropertyPage() {
@@ -549,6 +553,8 @@ export default function NewPropertyPage() {
         litigation: formData.litigation,
         // Builder/Developer
         builder_name: formData.builder_name || null,
+        // Admin-only
+        cp_slab: formData.cp_slab || null,
       });
 
       if (insertError) throw insertError;
@@ -559,12 +565,10 @@ export default function NewPropertyPage() {
       setError(
         err instanceof Error ? err.message : "Failed to create property"
       );
-      const pgError = err as { details?: string; hint?: string };
-      if (pgError?.details) {
-        setError((prev) => `${prev} - ${pgError.details}`);
-      }
-      if (pgError?.hint) {
-        setError((prev) => `${prev} (${pgError.hint})`);
+      if (process.env.NODE_ENV === "development") {
+        const pgError = err as { details?: string; hint?: string };
+        if (pgError?.details) setError((prev) => `${prev} - ${pgError.details}`);
+        if (pgError?.hint) setError((prev) => `${prev} (${pgError.hint})`);
       }
     } finally {
       setUploading(false);
@@ -1400,6 +1404,20 @@ export default function NewPropertyPage() {
           <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
             Options
           </h2>
+
+          <div className="form-grid mb-4">
+            <div className="form-group">
+              <label htmlFor="cp_slab">CP Slab</label>
+              <input
+                type="text"
+                id="cp_slab"
+                name="cp_slab"
+                value={formData.cp_slab}
+                onChange={handleChange}
+                placeholder="e.g., 2%, 3.5%, 1.5 Lakh"
+              />
+            </div>
+          </div>
 
           <AdminCheckbox
             label="Mark as Featured Property"
