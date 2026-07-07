@@ -167,6 +167,16 @@ export default function Footer() {
           <p>
             &copy; {new Date().getFullYear()} Ghardaar24. All rights reserved.
           </p>
+          <p>
+            Made by{" "}
+            <a
+              href="https://anahat-entertainment.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Anahat Entertainment
+            </a>
+          </p>
         </motion.div>
       </div>
     </motion.footer>
