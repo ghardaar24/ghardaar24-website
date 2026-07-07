@@ -115,7 +115,7 @@ All database tables have Row Level Security enabled to ensure data access is pro
 
 | Policy                                      | Access Level | Description                     |
 | ------------------------------------------- | ------------ | ------------------------------- |
-| `Public can view active properties`         | SELECT       | Anyone can view active listings |
+| `Public can view active properties`         | SELECT       | Anyone can view active listings; `anon` has column-level GRANT excluding `owner_name`, `owner_phone`, `owner_email`, `cp_slab` |
 | `Authenticated users can insert properties` | INSERT       | Only admins can create          |
 | `Authenticated users can update properties` | UPDATE       | Only admins can modify          |
 | `Authenticated users can delete properties` | DELETE       | Only admins can delete          |
@@ -438,6 +438,7 @@ Use this checklist before deploying to production:
 
 | Version | Date          | Changes                                             |
 | ------- | ------------- | --------------------------------------------------- |
+| 1.8.1   | June 2026     | Column-level SELECT grant on `properties` for `anon` (excludes owner contact fields, `cp_slab`); `approval_status` default changed to `pending`; removed open `user_profiles` uniqueness-check policy in favor of `SECURITY DEFINER` functions |
 | 1.8.0   | June 2026     | Revenue tracking: `revenue_entries` table with admin-only RLS; staff fully excluded from financial data |
 | 1.7.0   | April 2026    | Staff lead access permissions, CRM bulk action re-introduction, CRM task overdue tracking and filtering |
 | 1.6.1   | April 2026    | Enhancements to CRM audits (`addedById`, `addedByRole`) and Deletion controls |

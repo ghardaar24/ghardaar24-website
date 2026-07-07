@@ -105,6 +105,7 @@ Stores all property listings with their details.
 | `approval_date`     | TIMESTAMPTZ | Date of approval                                   |
 | `rejection_reason`  | TEXT        | Reason for rejection (if rejected)                 |
 | `property_age`      | TEXT        | Age of the property (for resale properties)        |
+| `cp_slab`           | TEXT        | Channel partner commission slab                    |
 | `created_at`        | TIMESTAMPTZ | Creation timestamp                                 |
 | `updated_at`        | TIMESTAMPTZ | Last update timestamp                              |
 
@@ -702,6 +703,12 @@ For additional support:
 ---
 
 ## Changelog
+
+### v1.8.1 (June 2026)
+
+- **Channel Partner Slab**: Added `cp_slab` field to properties for tracking CP commission slabs; surfaced in admin/staff property forms and detail pages.
+- **CRM Activity Logs Date Filter**: Added from/to date range filter to `/admin/crm/logs`, filtering server-side on `created_at`.
+- **Security Fixes**: Hardened RLS policies (see `supabase/migrations/20260624010000_security_fixes.sql`).
 
 ### v1.8.0 (June 2026)
 

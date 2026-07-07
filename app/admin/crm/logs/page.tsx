@@ -57,6 +57,8 @@ export default function CRMLogsPage() {
   const [selectedSheet, setSelectedSheet] = useState("");
   const [selectedStaff, setSelectedStaff] = useState("");
   const [selectedActionType, setSelectedActionType] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   
   // Pagination
@@ -124,6 +126,12 @@ export default function CRMLogsPage() {
       if (selectedActionType) {
         query = query.eq("action_type", selectedActionType);
       }
+      if (fromDate) {
+        query = query.gte("created_at", `${fromDate}T00:00:00`);
+      }
+      if (toDate) {
+        query = query.lte("created_at", `${toDate}T23:59:59`);
+      }
 
       const { data, error } = await query;
 
@@ -141,7 +149,7 @@ export default function CRMLogsPage() {
       fetchLogs();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentPage, selectedSheet, selectedStaff, selectedActionType]);
+  }, [user, currentPage, selectedSheet, selectedStaff, selectedActionType, fromDate, toDate]);
 
   // Filter logs by search query (client-side)
   const filteredLogs = logs.filter((log) => {
@@ -246,7 +254,7 @@ export default function CRMLogsPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 mt-4 border-t border-gray-100"
+              className="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-4 mt-4 border-t border-gray-100"
             >
               <select
                 value={selectedStaff}
@@ -290,6 +298,26 @@ export default function CRMLogsPage() {
                 <option value="update_field">Field Updates</option>
                 <option value="add_comment">Comments Added</option>
               </select>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                title="From date"
+              />
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                title="To date"
+              />
             </motion.div>
           )}
         </AnimatePresence>
