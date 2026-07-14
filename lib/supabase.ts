@@ -32,7 +32,7 @@ export const supabaseStaff = createClient(supabaseUrl, supabaseAnonKey, {
 // Columns safe for unauthenticated public queries — excludes owner PII and cp_slab
 export const PUBLIC_PROPERTY_COLUMNS =
   "id, title, description, price, min_price, max_price, state, city, area, address, " +
-  "bedrooms, bathrooms, property_type, listing_type, featured, status, " +
+  "property_type, listing_type, featured, status, " +
   "images, video_urls, amenities, brochure_urls, " +
   "land_parcel, towers, floors, config, carpet_area, " +
   "rera_no, rera_possession, possession_status, target_possession, litigation, " +
