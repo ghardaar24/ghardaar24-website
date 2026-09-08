@@ -21953,6 +21953,7 @@ body {
 
 .introjs-tooltip-header {
   padding: 0;
+  padding-right: 1.75rem;
   margin-bottom: 0.5rem;
 }
 
@@ -21967,6 +21968,7 @@ body {
   line-height: 1.6;
   color: var(--text-secondary);
   padding: 0;
+  padding-right: 1.75rem;
 }
 
 .introjs-tooltiptext strong {
@@ -22056,10 +22058,21 @@ body {
 }
 
 .introjs-skipbutton {
-  font-size: 0.813rem;
-  color: var(--text-muted);
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 1.125rem;
   font-weight: 500;
-  padding: 0.5rem;
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  padding: 0;
+  z-index: 1;
 }
 
 .introjs-skipbutton:hover {
