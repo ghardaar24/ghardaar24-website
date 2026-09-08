@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Cormorant_Garamond } from "next/font/google";
+import "intro.js/introjs.css"; // must load before globals.css so our overrides win
 import "./globals.css";
 import {
   defaultMetadata,
@@ -7,6 +8,7 @@ import {
   generateWebsiteSchema,
 } from "@/lib/seo";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import MotionConfigProvider from "@/components/MotionConfigProvider";
 import { AuthProvider } from "@/lib/auth";
 import { StaffAuthProvider } from "@/lib/staff-auth";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -97,15 +99,17 @@ export default function RootLayout({
         />
       </head>
       <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
-        <TooltipProvider>
-          <AuthProvider>
-            <StaffAuthProvider>
-              {children}
-              <FloatingWhatsApp />
-              <Toaster />
-            </StaffAuthProvider>
-          </AuthProvider>
-        </TooltipProvider>
+        <MotionConfigProvider>
+          <TooltipProvider>
+            <AuthProvider>
+              <StaffAuthProvider>
+                {children}
+                <FloatingWhatsApp />
+                <Toaster />
+              </StaffAuthProvider>
+            </AuthProvider>
+          </TooltipProvider>
+        </MotionConfigProvider>
       </body>
     </html>
   );

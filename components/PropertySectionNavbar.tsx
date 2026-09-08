@@ -16,34 +16,44 @@ export default function PropertySectionNavbar({ sections }: PropertySectionNavba
   const [activeSection, setActiveSection] = useState<string>(sections[0]?.id || "");
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // isScrolled: rAF-throttled, no layout reads
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 500);
-
-      const sectionElements = sections
-        .map((s) => ({ id: s.id, element: document.getElementById(s.id) }))
-        .filter((s) => s.element !== null);
-
-      let currentActive = "";
-      for (const section of sectionElements) {
-        if (section.element) {
-          const rect = section.element.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
-            currentActive = section.id;
-            break;
-          }
-        }
-      }
-
-      if (currentActive && currentActive !== activeSection) {
-        setActiveSection(currentActive);
-      }
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 500);
+        ticking = false;
+      });
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [sections, activeSection]);
+  }, []);
+
+  // activeSection: IntersectionObserver instead of getBoundingClientRect per scroll
+  useEffect(() => {
+    const els = sections
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (els.length === 0) return;
+
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        const firstVisible = sections.find((s) => visible.has(s.id));
+        if (firstVisible) setActiveSection(firstVisible.id);
+      },
+      { rootMargin: "-120px 0px -60% 0px" }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [sections]);
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();

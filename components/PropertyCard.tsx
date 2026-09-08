@@ -6,7 +6,6 @@ import { Maximize, MapPin } from "lucide-react";
 import { Property } from "@/lib/supabase";
 import { formatPrice, formatPriceRange } from "@/lib/utils";
 import { motion } from "@/lib/motion";
-import { useState } from "react";
 
 interface PropertyCardProps {
   property: Property;
@@ -18,7 +17,6 @@ export default function PropertyCard({
   index = 0,
 }: PropertyCardProps) {
   const mainImage = property.images?.[0] || "/placeholder-property.svg";
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const badgeLabel =
     property.listing_type === "sale"
@@ -33,26 +31,21 @@ export default function PropertyCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.4,
-        delay: Math.min(index * 0.08, 0.4),
+        duration: 0.35,
+        delay: Math.min(index * 0.04, 0.16),
         ease: [0.22, 1, 0.36, 1],
       }}
       style={{ height: "100%" }}
     >
       <Link href={`/properties/${property.id}`} className="prop-card-v2">
         <div className="prop-card-v2-image">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
-          )}
+          <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
           <Image
             src={mainImage}
             alt={property.title}
             fill
-            className={`object-cover transition-all duration-700 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
+            className="object-cover"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            onLoad={() => setImageLoaded(true)}
             loading={index < 3 ? "eager" : "lazy"}
           />
         </div>

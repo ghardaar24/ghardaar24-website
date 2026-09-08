@@ -30,11 +30,9 @@ export default function IntroTour() {
   }, [mounted, loading, user]);
 
   const startIntro = async () => {
-    // Dynamically import intro.js only on client-side
+    // Dynamically import intro.js only on client-side (CSS loaded in layout)
     const introJs = (await import("intro.js")).default;
-    // @ts-expect-error - CSS import doesn't have types
-    await import("intro.js/introjs.css");
-    
+
     const intro = introJs.tour();
 
     // Minimal, professional tour steps
