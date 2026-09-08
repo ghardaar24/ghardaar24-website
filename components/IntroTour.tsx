@@ -35,7 +35,7 @@ export default function IntroTour() {
     // @ts-expect-error - CSS import doesn't have types
     await import("intro.js/introjs.css");
     
-    const intro = introJs();
+    const intro = introJs.tour();
 
     // Minimal, professional tour steps
     const steps = [
@@ -102,11 +102,11 @@ export default function IntroTour() {
       overlayOpacity: 0.6,
     });
 
-    intro.oncomplete(() => {
+    intro.onComplete(() => {
       localStorage.setItem(INTRO_STORAGE_KEY, "true");
     });
 
-    intro.onexit(() => {
+    intro.onExit(() => {
       localStorage.setItem(INTRO_STORAGE_KEY, "true");
     });
 
