@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toPng } from "html-to-image";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function StaffIdCardPage() {
   const { staffProfile, loading } = useStaffAuth();
@@ -55,16 +56,19 @@ export default function StaffIdCardPage() {
 
   return (
     <div className="admin-page">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-        <div>
-          <h1>My ID Card</h1>
-          <p>Your official Ghardaar24 employee ID</p>
-        </div>
-        <Button onClick={handleDownload} disabled={downloading} className="btn-admin-primary">
-          {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          {downloading ? "Preparing..." : "Download"}
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Account"
+        title="My ID card"
+        description="Your official Ghardaar24 employee ID."
+        actions={
+          <>
+            <Button onClick={handleDownload} disabled={downloading} className="btn-admin-primary">
+              {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {downloading ? "Preparing..." : "Download"}
+            </Button>
+          </>
+        }
+      />
 
       <motion.div
         ref={cardRef}

@@ -7,7 +7,6 @@ import {
   Upload,
   X,
   Save,
-  ArrowLeft,
   Plus,
   FileText,
   Sparkles,
@@ -37,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import PageHeader from "@/components/admin/PageHeader";
 
 const CONFIG_OPTIONS = [
   "1 RK", "1 BHK", "1.5 BHK", "2 BHK", "2.5 BHK", "3 BHK", "3.5 BHK",
@@ -692,19 +692,11 @@ export default function EditPropertyPage({
 
   return (
     <div className="admin-page">
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <Link href="/admin/properties" className="back-link-admin">
-            <ArrowLeft className="w-4 h-4" /> Back to Properties
-          </Link>
-          <h1>Edit Property</h1>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Listings"
+        title="Edit property"
+        back={{ href: "/admin/properties", label: "All properties" }}
+      />
 
       <AnimatePresence>
         {error && (

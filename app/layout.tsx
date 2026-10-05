@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans, Cormorant_Garamond } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "intro.js/introjs.css"; // must load before globals.css so our overrides win
 import "./globals.css";
 import {
+  jsonLd,
   defaultMetadata,
   generateOrganizationSchema,
   generateWebsiteSchema,
@@ -16,13 +17,6 @@ import { Toaster } from "@/components/ui/sonner";
 
 const dmSans = DM_Sans({
   variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -81,24 +75,23 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="geo.region" content="IN-MH" />
         <meta name="geo.placename" content="Pune" />
-        <link rel="canonical" href="https://ghardaar24.com" />
 
 
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(generateOrganizationSchema()),
+            __html: jsonLd(generateOrganizationSchema()),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(generateWebsiteSchema()),
+            __html: jsonLd(generateWebsiteSchema()),
           }}
         />
       </head>
-      <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
+      <body className={`${dmSans.variable} antialiased`}>
         <MotionConfigProvider>
           <TooltipProvider>
             <AuthProvider>

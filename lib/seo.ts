@@ -109,8 +109,8 @@ export const defaultMetadata: Metadata = {
     images: [
       {
         url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
+        width: 1733,
+        height: 907,
         alt: siteConfig.name,
       },
     ],
@@ -124,12 +124,8 @@ export const defaultMetadata: Metadata = {
   verification: {
     google: "P6EJyLO6A_t98WjwyHAxioQPJm0LxdQSvTQ24MCbS5A",
   },
-  alternates: {
-    canonical: siteConfig.url,
-    languages: {
-      "en-IN": siteConfig.url,
-    },
-  },
+  // No site-wide canonical: it would be inherited by every page and mark them
+  // all as duplicates of the homepage. Each indexable page sets its own.
   category: "Real Estate",
 };
 
@@ -384,3 +380,12 @@ export function generatePropertiesListMetadata(filters: {
 }
 
 export default siteConfig;
+
+/**
+ * Serialize JSON-LD for a <script> tag. JSON.stringify leaves "<" as-is, so a
+ * listing title containing "</script>" would break out of the tag (XSS);
+ * escaping "<" keeps the JSON valid and inert.
+ */
+export function jsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}

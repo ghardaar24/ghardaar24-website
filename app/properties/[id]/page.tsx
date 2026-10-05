@@ -9,13 +9,13 @@ import InquiryCTA from "@/components/InquiryCTA";
 import ScrollToButton from "@/components/ScrollToButton";
 import { formatPrice, formatPriceRange } from "@/lib/utils";
 import {
+  jsonLd,
   generatePropertyMetadata,
   generatePropertySchema,
   generateBreadcrumbSchema,
 } from "@/lib/seo";
 import { getAmenityIcon } from "@/lib/amenityIcons";
 import {
-  Maximize,
   MapPin,
   Calendar,
   Building,
@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
+import PropertyCard from "@/components/PropertyCard";
 import PropertyDetailsClient from "@/components/PropertyDetailsClient";
 import ReadMoreText from "@/components/ReadMoreText";
 import PropertySectionNavbar from "@/components/PropertySectionNavbar";
@@ -45,6 +45,8 @@ async function getProperty(id: string): Promise<Property | null> {
     .from("properties")
     .select(PUBLIC_PROPERTY_COLUMNS)
     .eq("id", id)
+    // only approved listings are public (null = created by admin before approvals existed)
+    .or("approval_status.eq.approved,approval_status.is.null")
     .single();
 
   if (error || !data) {
@@ -82,6 +84,7 @@ async function getSimilarProperties(property: Property): Promise<Property[]> {
     .eq("area", property.area)
     .eq("property_type", property.property_type)
     .neq("id", property.id)
+    .or("approval_status.eq.approved,approval_status.is.null")
     .limit(4);
 
   return (data as unknown as Property[]) || [];
@@ -101,14 +104,50 @@ export default async function PropertyDetailsPage({
 
   const similarProperties = await getSimilarProperties(property);
 
+  const listingLabel =
+    property.listing_type === "sale"
+      ? "For sale"
+      : property.listing_type === "resale"
+      ? "Resale"
+      : "For rent";
+  const typeLabel =
+    property.property_type.charAt(0).toUpperCase() +
+    property.property_type.slice(1);
+  const price =
+    property.min_price || property.max_price
+      ? formatPriceRange(property.min_price, property.max_price)
+      : formatPrice(property.price);
+
+  // Spec sheet rows; empty values are dropped.
+  const specs = [
+    { icon: LayoutGrid, label: "Configuration", value: property.config },
+    { icon: Ruler, label: "Carpet area", value: property.carpet_area },
+    { icon: LandPlot, label: "Land parcel", value: property.land_parcel ? String(property.land_parcel) : "" },
+    { icon: TowerControl, label: "Towers", value: property.towers ? String(property.towers) : "" },
+    { icon: Layers, label: "Floors", value: property.floors },
+    { icon: Building, label: "Possession status", value: property.possession_status },
+    { icon: Calendar, label: "Target possession", value: property.target_possession },
+    { icon: Calendar, label: "RERA possession", value: property.rera_possession },
+    { icon: Clock, label: "Property age", value: property.property_age },
+    { icon: FileCheck, label: "RERA no.", value: property.rera_no },
+  ].filter((s) => s.value);
+
   const sections = [
     { id: "overview", label: "Overview" },
     { id: "description", label: "Description" },
-    ...(property.land_parcel || property.towers || property.floors || property.config || property.carpet_area || property.rera_no || property.possession_status || property.target_possession || property.litigation !== undefined || property.property_age ? [{ id: "project-overview", label: "Project Details" }] : []),
+    ...(specs.length > 0 || property.litigation !== undefined ? [{ id: "project-overview", label: "Project details" }] : []),
     ...(property.amenities && property.amenities.length > 0 ? [{ id: "amenities", label: "Amenities" }] : []),
-    ...(property.floor_plan_url ? [{ id: "floor-plan", label: "Floor Plan" }] : []),
+    ...(property.floor_plan_url ? [{ id: "floor-plan", label: "Floor plan" }] : []),
     ...(property.video_urls && property.video_urls.length > 0 ? [{ id: "videos", label: "Videos" }] : []),
+    { id: "property-map", label: "Location" },
   ];
+
+  const quickFacts = [
+    { label: "Type", value: typeLabel },
+    { label: "Carpet area", value: property.carpet_area },
+    { label: "Configuration", value: property.config },
+    { label: "Possession", value: property.possession_status || property.target_possession },
+  ].filter((f) => f.value);
 
   return (
     <>
@@ -116,7 +155,7 @@ export default async function PropertyDetailsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generatePropertySchema(property)),
+          __html: jsonLd(generatePropertySchema(property)),
         }}
       />
 
@@ -124,562 +163,235 @@ export default async function PropertyDetailsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateBreadcrumbSchema(property)),
+          __html: jsonLd(generateBreadcrumbSchema(property)),
         }}
       />
 
       <Header />
 
       <PropertyDetailsClient propertyTitle={property.title}>
-        <main className="property-details-page">
-          {/* Breadcrumb */}
-          <MotionSection className="details-header">
+        <main className="hlx-page pdx-page">
+          {/* Dusk header: title, price and quick facts */}
+          <section className="plx-head pdx-head">
             <div className="container">
-              <Link href="/properties" className="back-link">
+              <Link href="/properties" className="pdx-back">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Properties
+                All properties
               </Link>
-            </div>
-          </MotionSection>
 
-          {/* Image Gallery */}
-          <MotionSection className="gallery-section" delay={0.1}>
-            <div className="container">
-              <ImageGallery
-                images={property.images || []}
-                title={property.title}
-              />
-            </div>
-          </MotionSection>
-
-          {/* Property Info */}
-          <section className="property-info-section">
-            <div className="container">
-              <div className="property-layout">
-                {/* Main Content */}
-                <div className="property-main">
-                  {/* Title & Badges */}
-                  <MotionSection delay={0.2}>
-                    <div className="property-title-block">
-                      <StaggerContainer className="property-badges">
-                        <StaggerItem>
-                          <span
-                            className={`listing-badge ${
-                              property.listing_type === "sale" ? "sale" : "rent"
-                            }`}
-                          >
-                            For{" "}
-                            {property.listing_type === "sale" ? "Sale" : "Rent"}
-                          </span>
-                        </StaggerItem>
-                        <StaggerItem>
-                          <span className="type-badge">
-                            {property.property_type.charAt(0).toUpperCase() +
-                              property.property_type.slice(1)}
-                          </span>
-                        </StaggerItem>
-                        <StaggerItem>
-                          <span className="date-badge">
-                            <Calendar className="w-3 h-3 inline mr-1" />
-                            {new Date(property.created_at).toLocaleDateString()}
-                          </span>
-                        </StaggerItem>
-                        {property.featured && (
-                          <StaggerItem>
-                            <span className="featured-badge">Featured</span>
-                          </StaggerItem>
-                        )}
-                      </StaggerContainer>
-
-                      <h1 className="property-title">{property.title}</h1>
-
-                      <div className="property-location-visual">
-                        <div className="location-icon-box">
-                          <MapPin className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="location-details">
-                          <span className="location-address">
-                            {property.address}
-                          </span>
-                          <span className="location-city">{property.area}</span>
-                        </div>
-                        <ScrollToButton
-                          targetId="property-map"
-                          block="center"
-                          className="view-map-btn"
-                        >
-                          View on Map
-                        </ScrollToButton>
-                      </div>
-
-                      <div className="property-price-block">
-                        <span className="property-price">
-                          {property.min_price || property.max_price
-                            ? formatPriceRange(
-                                property.min_price,
-                                property.max_price
-                              )
-                            : formatPrice(property.price)}
-                        </span>
-                        {property.listing_type === "rent" && (
-                          <span className="price-suffix">/month</span>
-                        )}
-                      </div>
-                    </div>
-                  </MotionSection>
-
-                  <PropertySectionNavbar sections={sections} />
-
-                  {/* Key Features */}
-                  <MotionSection delay={0.3}>
-                    <div id="overview">
-                      <StaggerContainer className="key-features">
-
-                        <StaggerItem>
-                        <div className="key-feature">
-                          <Maximize className="w-6 h-6 text-primary" />
-                          <div>
-                            <span className="feature-value">
-                              {property.carpet_area || "N/A"}
-                            </span>
-                            <span className="feature-label">
-                              {property.carpet_area ? "Area" : "Sq. Ft."}
-                            </span>
-                          </div>
-                        </div>
-                      </StaggerItem>
-                      <StaggerItem>
-                        <div className="key-feature">
-                          <Building className="w-6 h-6 text-primary" />
-                          <div>
-                            <span className="feature-value">
-                              {property.property_type}
-                            </span>
-                            <span className="feature-label">Type</span>
-                          </div>
-                        </div>
-                      </StaggerItem>
-                    </StaggerContainer>
-                    </div>
-                  </MotionSection>
-
-                  {/* Description */}
-                  <MotionSection delay={0.4}>
-                    <div className="property-section" id="description">
-                      <h2 className="section-heading">Description</h2>
-                      <ReadMoreText text={property.description || ""} maxLength={250} />
-                    </div>
-                  </MotionSection>
-
-                  {/* Project Overview */}
-                  {(property.land_parcel ||
-                    property.towers ||
-                    property.floors ||
-                    property.config ||
-                    property.carpet_area ||
-                    property.rera_no ||
-                    property.possession_status ||
-                    property.target_possession ||
-                    property.litigation !== undefined ||
-                    property.property_age) && (
-                    <MotionSection delay={0.45}>
-                      <div className="property-section" id="project-overview">
-                        <h2 className="section-heading">Project Overview</h2>
-                        <StaggerContainer
-                          className="project-overview-grid"
-                          fast
-                        >
-                          {property.land_parcel !== undefined &&
-                            property.land_parcel > 0 && (
-                              <StaggerItem>
-                                <div className="project-overview-item">
-                                  <div className="project-overview-icon">
-                                    <LandPlot className="w-5 h-5" />
-                                  </div>
-                                  <div className="project-overview-content">
-                                    <span className="project-overview-value">
-                                      {property.land_parcel}
-                                    </span>
-                                    <span className="project-overview-label">
-                                      Land Parcel
-                                    </span>
-                                  </div>
-                                </div>
-                              </StaggerItem>
-                            )}
-                          {property.towers !== undefined &&
-                            property.towers > 0 && (
-                              <StaggerItem>
-                                <div className="project-overview-item">
-                                  <div className="project-overview-icon">
-                                    <TowerControl className="w-5 h-5" />
-                                  </div>
-                                  <div className="project-overview-content">
-                                    <span className="project-overview-value">
-                                      {property.towers}
-                                    </span>
-                                    <span className="project-overview-label">
-                                      Towers
-                                    </span>
-                                  </div>
-                                </div>
-                              </StaggerItem>
-                            )}
-                          {property.floors && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Layers className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.floors}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Floors
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.config && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <LayoutGrid className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.config}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Config
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.carpet_area && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Ruler className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.carpet_area}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Carpet Area
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.rera_no && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <FileCheck className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span
-                                    className="project-overview-value rera-number"
-                                    title={property.rera_no}
-                                  >
-                                    {property.rera_no}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    RERA No.
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.rera_possession && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Calendar className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.rera_possession}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    RERA Possession
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.possession_status && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Building className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.possession_status}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Possession Status
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.target_possession && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Calendar className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.target_possession}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Target Possession
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-                          {property.property_age && (
-                            <StaggerItem>
-                              <div className="project-overview-item">
-                                <div className="project-overview-icon">
-                                  <Clock className="w-5 h-5" />
-                                </div>
-                                <div className="project-overview-content">
-                                  <span className="project-overview-value">
-                                    {property.property_age}
-                                  </span>
-                                  <span className="project-overview-label">
-                                    Property Age
-                                  </span>
-                                </div>
-                              </div>
-                            </StaggerItem>
-                          )}
-
-                          <StaggerItem>
-                            <div
-                              className={`project-overview-item litigation-item ${
-                                property.litigation
-                                  ? "has-litigation"
-                                  : "no-litigation"
-                              }`}
-                            >
-                              <div className="project-overview-icon">
-                                <Scale className="w-5 h-5" />
-                              </div>
-                              <div className="project-overview-content">
-                                <span className="project-overview-value">
-                                  {property.litigation ? "Yes" : "No"}
-                                </span>
-                                <span className="project-overview-label">
-                                  Litigation
-                                </span>
-                              </div>
-                            </div>
-                          </StaggerItem>
-                        </StaggerContainer>
-                      </div>
-                    </MotionSection>
-                  )}
-
-                  {/* Amenities */}
-                  {property.amenities && property.amenities.length > 0 && (
-                    <MotionSection delay={0.5}>
-                      <div className="property-section" id="amenities">
-                        <h2 className="section-heading">Amenities</h2>
-                        <StaggerContainer className="amenities-grid" fast>
-                          {property.amenities.map((amenity: string) => {
-                            const AmenityIcon = getAmenityIcon(amenity);
-                            return (
-                              <StaggerItem key={amenity}>
-                                <div className="amenity-item">
-                                  <AmenityIcon className="w-5 h-5 text-primary" />
-                                  <span>{amenity}</span>
-                                </div>
-                              </StaggerItem>
-                            );
-                          })}
-                        </StaggerContainer>
-                      </div>
-                    </MotionSection>
-                  )}
-
-                  {/* Floor Plan */}
-                  {property.floor_plan_url && (
-                    <MotionSection delay={0.51}>
-                      <div className="property-section" id="floor-plan">
-                        <h2 className="section-heading">Floor Plan</h2>
-                        <div className="relative w-full h-[400px] md:h-[600px] rounded-xl overflow-hidden shadow-lg">
-                          <Image
-                            src={property.floor_plan_url}
-                            alt="Floor Plan"
-                            fill
-                            className="object-contain bg-white"
-                          />
-                        </div>
-                      </div>
-                    </MotionSection>
-                  )}
-
-                  {/* Videos */}
-                  {property.video_urls && property.video_urls.length > 0 && (
-                    <MotionSection delay={0.515}>
-                      <div className="property-section" id="videos">
-                        <h2 className="section-heading">Videos</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {property.video_urls.map((url, index) => (
-                            <div key={index} className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
-                              <video
-                                src={url}
-                                className="w-full h-full object-contain"
-                                controls
-                                preload="metadata"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </MotionSection>
-                  )}
-
-                  {/* Brochure Download */}
-                  {property.brochure_urls &&
-                    property.brochure_urls.length > 0 && (
-                      <MotionSection delay={0.52}>
-                        <div className="property-section">
-                          <h2 className="section-heading">Brochures</h2>
-                          <div className="brochure-list">
-                            {property.brochure_urls.map((url, index) => (
-                              <a
-                                key={index}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="brochure-download-btn"
-                              >
-                                <span className="brochure-icon-wrap">
-                                  <FileText className="w-5 h-5" />
-                                </span>
-                                <span className="brochure-info">
-                                  <span className="brochure-title">
-                                    Property Brochure{property.brochure_urls!.length > 1 ? ` ${index + 1}` : ""}
-                                  </span>
-                                  <span className="brochure-meta">PDF Document · Tap to open</span>
-                                </span>
-                                <span className="brochure-cta">
-                                  <Download className="w-3.5 h-3.5" />
-                                  Download
-                                </span>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      </MotionSection>
-                    )}
-
-                  {/* Inquiry CTA */}
-                  <MotionSection delay={0.55}>
-                    <InquiryCTA />
-                  </MotionSection>
-
-                  {/* Location Map */}
-                  <MotionSection delay={0.6}>
-                    <div id="property-map" className="property-section">
-                      <h2 className="section-heading">Location</h2>
-                      <div className="location-content">
-                        <div className="location-text-block">
-                          <p className="location-address-text">
-                            <MapPin className="w-5 h-5 text-primary" />
-                            {property.address}, {property.area}
-                          </p>
-                        </div>
-                        <div className="location-map-container">
-                          <iframe
-                            src={`https://www.google.com/maps?q=${encodeURIComponent(
-                              `${property.address}, ${property.area}, Pune, Maharashtra, India`
-                            )}&output=embed`}
-                            width="100%"
-                            height="400"
-                            style={{ border: 0, borderRadius: "12px" }}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title={`Map showing location of ${property.title}`}
-                          />
-                        </div>
-                        <div className="location-inquiry-prompt">
-                          <p>
-                            For exact location details and site visit, please
-                            send an inquiry or contact us directly.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </MotionSection>
+              <div className="pdx-head-grid">
+                <div>
+                  <div className="pdx-badges">
+                    <span className="pdx-badge pdx-badge--solid">{listingLabel}</span>
+                    <span className="pdx-badge">{typeLabel}</span>
+                    {property.featured && <span className="pdx-badge">Featured</span>}
+                  </div>
+                  <h1 className="plx-title pdx-title">{property.title}</h1>
+                  <p className="pdx-location">
+                    <MapPin className="w-4 h-4" aria-hidden="true" />
+                    <span>
+                      {property.address}
+                      {property.address && property.area ? ", " : ""}
+                      {property.area}
+                    </span>
+                    <ScrollToButton
+                      targetId="property-map"
+                      block="center"
+                      className="pdx-map-link"
+                    >
+                      View on map
+                    </ScrollToButton>
+                  </p>
                 </div>
 
-                {/* Sidebar */}
-                <aside className="property-sidebar">
-                  <MotionSection delay={0.3}>
-                    <div className="sidebar-sticky">
-                      {/* Contact Form */}
-                      <ContactForm
-                        propertyId={property.id}
-                        propertyTitle={property.title}
-                      />
-                    </div>
-                  </MotionSection>
-                </aside>
+                <div className="pdx-price">
+                  <span className="pdx-price-label">
+                    {property.listing_type === "rent" ? "Rent" : "Price"}
+                  </span>
+                  <span className="pdx-price-value">
+                    {price}
+                    {property.listing_type === "rent" && <small>/month</small>}
+                  </span>
+                </div>
               </div>
+
+              {quickFacts.length > 0 && (
+                <dl className="pdx-facts" id="overview">
+                  {quickFacts.map((f) => (
+                    <div key={f.label}>
+                      <dt>{f.label}</dt>
+                      <dd>{f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </div>
           </section>
 
-          {/* Similar Properties */}
-          {similarProperties.length > 0 && (
-            <MotionSection className="similar-section">
-              <div className="container">
-                <h2 className="section-title-new">Similar Properties</h2>
-                <StaggerContainer className="similar-grid">
-                  {similarProperties.map((prop) => (
-                    <StaggerItem key={prop.id}>
-                      <Link
-                        href={`/properties/${prop.id}`}
-                        className="similar-card"
-                      >
-                        <div className="similar-card-image">
-                          {prop.images?.[0] && (
-                            <Image
-                              src={prop.images[0]}
-                              alt={prop.title}
-                              fill
-                              className="object-cover"
-                            />
-                          )}
+          {/* Gallery, pulled up over the header's edge */}
+          <section className="pdx-gallery">
+            <div className="container">
+              <ImageGallery images={property.images || []} title={property.title} />
+            </div>
+          </section>
+
+          <section className="pdx-body">
+            <div className="container pdx-layout">
+              <div className="pdx-main">
+                <PropertySectionNavbar sections={sections} />
+
+                <div className="pdx-section" id="description">
+                  <h2 className="pdx-h2">About this property</h2>
+                  <ReadMoreText text={property.description || ""} maxLength={250} />
+                </div>
+
+                {(specs.length > 0 || property.litigation !== undefined) && (
+                  <div className="pdx-section" id="project-overview">
+                    <h2 className="pdx-h2">Project details</h2>
+                    <dl className="pdx-specs">
+                      {specs.map(({ icon: Icon, label, value }) => (
+                        <div key={label}>
+                          <dt>
+                            <Icon className="w-4 h-4" aria-hidden="true" />
+                            {label}
+                          </dt>
+                          <dd>{value}</dd>
                         </div>
-                        <div className="similar-card-content">
-                          <h3>{prop.title}</h3>
-                          <p>{prop.area}</p>
-                          <span className="similar-price">
-                            {prop.min_price || prop.max_price
-                              ? formatPriceRange(prop.min_price, prop.max_price)
-                              : formatPrice(prop.price)}
+                      ))}
+                      {property.litigation !== undefined && (
+                        <div>
+                          <dt>
+                            <Scale className="w-4 h-4" aria-hidden="true" />
+                            Litigation
+                          </dt>
+                          <dd className={property.litigation ? "pdx-flag-bad" : "pdx-flag-good"}>
+                            {property.litigation ? "Yes, ask us for details" : "None"}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+                )}
+
+                {property.amenities && property.amenities.length > 0 && (
+                  <div className="pdx-section" id="amenities">
+                    <h2 className="pdx-h2">Amenities</h2>
+                    <ul className="pdx-amenities">
+                      {property.amenities.map((amenity: string) => {
+                        const AmenityIcon = getAmenityIcon(amenity);
+                        return (
+                          <li key={amenity}>
+                            <AmenityIcon className="w-4 h-4" aria-hidden="true" />
+                            {amenity}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                {property.floor_plan_url && (
+                  <div className="pdx-section" id="floor-plan">
+                    <h2 className="pdx-h2">Floor plan</h2>
+                    <div className="pdx-media pdx-floorplan">
+                      <Image
+                        src={property.floor_plan_url}
+                        alt={`Floor plan of ${property.title}`}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {property.video_urls && property.video_urls.length > 0 && (
+                  <div className="pdx-section" id="videos">
+                    <h2 className="pdx-h2">Videos</h2>
+                    <div className="pdx-videos">
+                      {property.video_urls.map((url, index) => (
+                        <div key={index} className="pdx-media pdx-video">
+                          <video src={url} controls preload="metadata" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {property.brochure_urls && property.brochure_urls.length > 0 && (
+                  <div className="pdx-section">
+                    <h2 className="pdx-h2">Brochures</h2>
+                    <div className="pdx-brochures">
+                      {property.brochure_urls.map((url, index) => (
+                        <a
+                          key={index}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="pdx-brochure"
+                        >
+                          <FileText className="w-5 h-5" aria-hidden="true" />
+                          <span>
+                            Brochure{property.brochure_urls!.length > 1 ? ` ${index + 1}` : ""}
+                            <small>PDF</small>
                           </span>
-                        </div>
-                      </Link>
-                    </StaggerItem>
-                  ))}
-                </StaggerContainer>
+                          <Download className="w-4 h-4" aria-hidden="true" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <InquiryCTA />
+
+                <div id="property-map" className="pdx-section">
+                  <h2 className="pdx-h2">Location</h2>
+                  <p className="pdx-map-address">
+                    <MapPin className="w-4 h-4" aria-hidden="true" />
+                    {property.address}, {property.area}
+                  </p>
+                  <div className="pdx-media pdx-map">
+                    <iframe
+                      src={`https://www.google.com/maps?q=${encodeURIComponent(
+                        `${property.address}, ${property.area}, Pune, Maharashtra, India`
+                      )}&output=embed`}
+                      width="100%"
+                      height="400"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`Map showing location of ${property.title}`}
+                    />
+                  </div>
+                  <p className="pdx-map-note">
+                    The pin shows the area. For the exact location or a site
+                    visit, send us an inquiry.
+                  </p>
+                </div>
               </div>
-            </MotionSection>
+
+              <aside className="pdx-sidebar">
+                <div className="pdx-sticky">
+                  <ContactForm propertyId={property.id} propertyTitle={property.title} />
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          {similarProperties.length > 0 && (
+            <section className="hlx-section pdx-similar">
+              <div className="container">
+                <span className="featured-v2-eyebrow">More in {property.area}</span>
+                <h2 className="featured-v2-title">
+                  Similar <em>listings nearby.</em>
+                </h2>
+                <div className="properties-grid">
+                  {similarProperties.map((prop, i) => (
+                    <PropertyCard key={prop.id} property={prop} index={i} />
+                  ))}
+                </div>
+              </div>
+            </section>
           )}
         </main>
       </PropertyDetailsClient>

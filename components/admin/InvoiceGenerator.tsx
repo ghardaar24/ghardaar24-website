@@ -338,8 +338,8 @@ export default function InvoiceGenerator({ userId, userName }: InvoiceGeneratorP
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+    <div>
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Form Controls - Hidden on Print */}
         <div className="w-full lg:w-1/3 bg-white p-6 md:rounded-xl shadow-sm border border-gray-100 print:hidden h-fit max-h-[90vh] overflow-y-auto">
           <h2 className="text-xl font-semibold mb-6">Invoice Details</h2>

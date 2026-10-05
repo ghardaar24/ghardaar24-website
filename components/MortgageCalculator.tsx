@@ -70,7 +70,7 @@ export default function MortgageCalculator() {
           <div className="emi-input-header">
             <label>
               <Wallet className="w-4 h-4" />
-              Annual Income
+              Annual income
             </label>
             <span className="emi-input-value">
               {formatCurrency(annualIncome)}
@@ -95,7 +95,7 @@ export default function MortgageCalculator() {
           <div className="emi-input-header">
             <label>
               <IndianRupee className="w-4 h-4" />
-              Monthly Expenses
+              Monthly expenses
             </label>
             <span className="emi-input-value">
               {formatCurrency(monthlyExpenses)}
@@ -120,7 +120,7 @@ export default function MortgageCalculator() {
           <div className="emi-input-header">
             <label>
               <PiggyBank className="w-4 h-4" />
-              Down Payment
+              Down payment
             </label>
             <span className="emi-input-value">
               {formatCurrency(downPayment)}
@@ -145,7 +145,7 @@ export default function MortgageCalculator() {
           <div className="emi-input-header">
             <label>
               <Percent className="w-4 h-4" />
-              Interest Rate
+              Interest rate
             </label>
             <span className="emi-input-value">
               {interestRate}% p.a.
@@ -170,9 +170,9 @@ export default function MortgageCalculator() {
           <div className="emi-input-header">
             <label>
               <Calendar className="w-4 h-4" />
-              Loan Tenure
+              Loan tenure
             </label>
-            <span className="emi-input-value">{tenure} Years</span>
+            <span className="emi-input-value">{tenure} years</span>
           </div>
           <input
             type="range"
@@ -192,7 +192,7 @@ export default function MortgageCalculator() {
 
       <div className="emi-calculator-result">
         <div className="emi-result-main">
-          <span className="emi-result-label">Maximum Property Value</span>
+          <span className="emi-result-label">You can afford up to</span>
           <motion.span
             className="emi-result-value"
             key={maxPropertyValue}
@@ -206,7 +206,7 @@ export default function MortgageCalculator() {
 
         <div className="emi-result-breakdown">
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Maximum Loan Amount</span>
+            <span className="breakdown-label">Maximum Loan amount</span>
             <span className="breakdown-value principal">
               {formatCurrency(maxLoan)}
             </span>
@@ -218,13 +218,13 @@ export default function MortgageCalculator() {
             </span>
           </div>
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Debt-to-Income Ratio</span>
+            <span className="breakdown-label">Debt-to-income ratio</span>
             <span className="breakdown-value">
               {dti}%
             </span>
           </div>
           <div className="emi-breakdown-item total">
-            <span className="breakdown-label">Down Payment</span>
+            <span className="breakdown-label">Down payment</span>
             <span className="breakdown-value">
               {formatCurrency(downPayment)}
             </span>
@@ -238,7 +238,7 @@ export default function MortgageCalculator() {
           whileTap={{ scale: 0.98 }}
         >
           <Home className="w-4 h-4" />
-          Find Properties in Your Budget
+          See homes in your budget
         </motion.a>
       </div>
     </motion.div>

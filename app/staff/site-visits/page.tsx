@@ -31,6 +31,7 @@ import {
   History,
   ChevronDown,
 } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface PropertyOption {
   id: string;
@@ -386,42 +387,38 @@ export default function StaffSiteVisitsPage() {
   return (
     <div className="staff-page-container">
       {/* Header */}
-      <motion.div
-        className="sv-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="sv-header-text">
-          <h1>
-            <MapPin className="w-6 h-6" />
-            Site Visits
-          </h1>
-          <p>Record your property site visits with photo proof</p>
-        </div>
-        <motion.button
-          className={cn(
-            buttonVariants({ variant: showForm ? "outline" : "default" }),
-            "sv-add-btn",
-            showForm && "active"
-          )}
-          onClick={() => {
-            setShowForm(!showForm);
-            if (showForm) resetForm();
-          }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          {showForm ? (
-            <>
-              <X className="w-5 h-5" /> Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-5 h-5" /> New Visit
-            </>
-          )}
-        </motion.button>
-      </motion.div>
+      <PageHeader
+        eyebrow="Work"
+        title="Site visits"
+        description="Record your property visits with photo proof."
+        actions={
+          <>
+            <motion.button
+              className={cn(
+                buttonVariants({ variant: showForm ? "outline" : "default" }),
+                "sv-add-btn",
+                showForm && "active"
+              )}
+              onClick={() => {
+                setShowForm(!showForm);
+                if (showForm) resetForm();
+              }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {showForm ? (
+                <>
+                  <X className="w-5 h-5" /> Cancel
+                </>
+              ) : (
+                <>
+                  <Plus className="w-5 h-5" /> New Visit
+                </>
+              )}
+            </motion.button>
+          </>
+        }
+      />
 
       {/* Message */}
       <AnimatePresence>

@@ -58,7 +58,7 @@ export default function EMICalculator() {
           <div className="emi-input-header">
             <label>
               <IndianRupee className="w-4 h-4" />
-              Loan Amount
+              Loan amount
             </label>
             <span className="emi-input-value">
               {formatCurrency(loanAmount)}
@@ -83,7 +83,7 @@ export default function EMICalculator() {
           <div className="emi-input-header">
             <label>
               <Percent className="w-4 h-4" />
-              Interest Rate
+              Interest rate
             </label>
             <span className="emi-input-value">{interestRate}% p.a.</span>
           </div>
@@ -106,9 +106,9 @@ export default function EMICalculator() {
           <div className="emi-input-header">
             <label>
               <Calendar className="w-4 h-4" />
-              Loan Tenure
+              Loan tenure
             </label>
-            <span className="emi-input-value">{tenure} Years</span>
+            <span className="emi-input-value">{tenure} years</span>
           </div>
           <input
             type="range"
@@ -128,7 +128,7 @@ export default function EMICalculator() {
 
       <div className="emi-calculator-result">
         <div className="emi-result-main">
-          <span className="emi-result-label">Your Monthly EMI</span>
+          <span className="emi-result-label">Your monthly EMI</span>
           <motion.span
             className="emi-result-value"
             key={emi}
@@ -142,19 +142,19 @@ export default function EMICalculator() {
 
         <div className="emi-result-breakdown">
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Principal Amount</span>
+            <span className="breakdown-label">Principal</span>
             <span className="breakdown-value principal">
               {formatCurrency(loanAmount)}
             </span>
           </div>
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Total Interest</span>
+            <span className="breakdown-label">Total interest</span>
             <span className="breakdown-value interest">
               {formatCurrency(totalInterest)}
             </span>
           </div>
           <div className="emi-breakdown-item total">
-            <span className="breakdown-label">Total Payment</span>
+            <span className="breakdown-label">Total payment</span>
             <span className="breakdown-value">
               {formatCurrency(totalPayment)}
             </span>
@@ -162,12 +162,12 @@ export default function EMICalculator() {
         </div>
 
         <motion.a
-          href="tel:+919673655631"
+          href="/services/home-loans"
           className="emi-cta"
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
         >
-          Get Best Loan Rates
+          Get help with a lower rate
         </motion.a>
       </div>
     </motion.div>

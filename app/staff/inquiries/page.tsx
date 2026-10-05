@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface Inquiry {
   id: string;
@@ -159,11 +160,11 @@ export default function StaffInquiriesPage() {
         >
           <Card style={{ textAlign: 'center', padding: '4rem', borderRadius: '1rem' }}>
             <CardContent style={{ padding: 0 }}>
-              <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: '#9ca3af' }} />
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>
+              <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-gray-400)' }} />
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.5rem' }}>
                 No Inquiry Access
               </h3>
-              <p style={{ color: '#6b7280' }}>
+              <p style={{ color: 'var(--color-gray-500)' }}>
                 You don&apos;t have access to any inquiry categories yet. Please contact your administrator.
               </p>
             </CardContent>
@@ -176,16 +177,11 @@ export default function StaffInquiriesPage() {
   return (
     <div className="staff-page">
       {/* Header */}
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div>
-          <h1>Inquiries</h1>
-          <p>View customer inquiries assigned to you</p>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="People"
+        title="Inquiries"
+        description="Customer inquiries assigned to you."
+      />
 
       {/* Search & Filters */}
       <motion.div

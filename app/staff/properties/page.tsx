@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function StaffPropertiesPage() {
   const { staffProfile } = useStaffAuth();
@@ -81,24 +82,25 @@ export default function StaffPropertiesPage() {
   );
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div className="admin-page">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Properties</h1>
-          <p style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-            {properties.length} total properties
-          </p>
-        </div>
-        <Button render={<Link href="/staff/properties/new" />}>
-          <Plus className="w-4 h-4" />
-          Add Property
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Listings"
+        title="Properties"
+        description={`${properties.length} ${properties.length === 1 ? "property" : "properties"} listed`}
+        actions={
+          <>
+            <Button render={<Link href="/staff/properties/new" />}>
+              <Plus className="w-4 h-4" />
+              Add Property
+            </Button>
+          </>
+        }
+      />
 
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-        <Search className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+        <Search className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)' }} />
         <Input
           type="text"
           placeholder="Search properties..."
@@ -118,8 +120,8 @@ export default function StaffPropertiesPage() {
         </div>
       ) : filteredProperties.length === 0 ? (
         <div style={{ padding: '3rem', textAlign: 'center' }}>
-          <Building className="w-12 h-12 mx-auto" style={{ color: '#d1d5db' }} />
-          <p style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '1rem' }}>
+          <Building className="w-12 h-12 mx-auto" style={{ color: 'var(--color-gray-300)' }} />
+          <p style={{ color: 'var(--color-gray-500)', fontSize: '0.875rem', marginTop: '1rem' }}>
             {searchQuery ? 'No properties match your search.' : 'No properties found.'}
           </p>
         </div>
@@ -131,7 +133,7 @@ export default function StaffPropertiesPage() {
               className="p-0 overflow-hidden gap-0"
             >
               {/* Image */}
-              <div style={{ position: 'relative', height: '180px', background: '#f3f4f6' }}>
+              <div style={{ position: 'relative', height: '180px', background: 'var(--color-gray-100)' }}>
                 {property.images && property.images.length > 0 ? (
                   <Image
                     src={property.images[0]}
@@ -141,7 +143,7 @@ export default function StaffPropertiesPage() {
                   />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    <Building className="w-8 h-8" style={{ color: '#d1d5db' }} />
+                    <Building className="w-8 h-8" style={{ color: 'var(--color-gray-300)' }} />
                   </div>
                 )}
                 {property.featured && (
@@ -157,13 +159,13 @@ export default function StaffPropertiesPage() {
 
               {/* Content */}
               <div style={{ padding: '1rem' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#111827', marginBottom: '0.25rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-gray-900)', marginBottom: '0.25rem' }}>
                   {property.title}
                 </h3>
-                <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)', marginBottom: '0.5rem' }}>
                   {[property.address, property.city].filter(Boolean).join(', ')}
                 </p>
-                <p style={{ fontSize: '1.125rem', fontWeight: 700, color: '#3b82f6' }}>
+                <p style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-blue-500)' }}>
                   {formatPrice(property.price)}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
@@ -180,7 +182,7 @@ export default function StaffPropertiesPage() {
                     render={<Link href={`/staff/properties/${property.id}`} />}
                     variant="outline"
                     size="sm"
-                    className="flex-1 border-[#3b82f6] text-[#3b82f6] hover:text-[#3b82f6]"
+                    className="flex-1 border-[var(--color-blue-500)] text-[var(--color-blue-500)] hover:text-[var(--color-blue-500)]"
                   >
                     <Edit className="w-3.5 h-3.5" />
                     Edit

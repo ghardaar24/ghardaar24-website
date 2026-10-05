@@ -3,12 +3,11 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
-import { Building } from "lucide-react";
 import { Suspense } from "react";
-import { MotionSection, StaggerContainer, StaggerItem } from "@/lib/motion";
 import { Metadata } from "next";
 import { generatePropertiesListMetadata } from "@/lib/seo";
 import Link from "next/link";
+import Image from "next/image";
 
 interface SearchParams {
   state?: string;
@@ -123,6 +122,25 @@ function getPageTitle(searchParams: SearchParams): string {
   return parts.join(" ");
 }
 
+const propertyTypes = [
+  { type: "apartment", label: "Apartments" },
+  { type: "house", label: "Houses" },
+  { type: "villa", label: "Villas" },
+  { type: "plot", label: "Plots" },
+  { type: "commercial", label: "Commercial" },
+];
+
+// Same URL with property_type toggled; other filters are kept.
+function typeHref(params: SearchParams, type: string) {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => typeof v === "string") as [string, string][]
+  );
+  if (params.property_type === type) qs.delete("property_type");
+  else qs.set("property_type", type);
+  const q = qs.toString();
+  return q ? `/properties?${q}` : "/properties";
+}
+
 export default async function PropertiesPage({
   searchParams,
 }: {
@@ -136,33 +154,50 @@ export default async function PropertiesPage({
     <>
       <Header />
 
-      <main className="properties-page">
-        {/* Page Header */}
-        <MotionSection className="page-header">
+      <main className="hlx-page plx-page">
+        {/* Dusk header with the illustrated type rail */}
+        <section className="plx-head">
           <div className="container">
-            <StaggerContainer>
-              <StaggerItem>
-                <div className="breadcrumb">
-                  <Link href="/">Home</Link>
-                  <span>/</span>
-                  <span>Properties</span>
-                </div>
-              </StaggerItem>
-              <StaggerItem>
-                <h1 className="page-title">{pageTitle}</h1>
-              </StaggerItem>
-              <StaggerItem>
-                <p className="page-subtitle">
-                  {properties.length}{" "}
-                  {properties.length === 1 ? "property" : "properties"} found
-                </p>
-              </StaggerItem>
-            </StaggerContainer>
-          </div>
-        </MotionSection>
+            <nav className="plx-breadcrumb" aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <span aria-hidden="true">/</span>
+              <span>Properties</span>
+            </nav>
+            <h1 className="plx-title">{pageTitle}</h1>
+            <p className="plx-count">
+              <strong>{properties.length}</strong>{" "}
+              {properties.length === 1 ? "verified listing" : "verified listings"}
+              {" · "}zero brokerage
+            </p>
 
-        {/* Filters & Listings */}
-        <section className="listings-section">
+            <ul className="plx-types" aria-label="Filter by property type">
+              {propertyTypes.map(({ type, label }) => {
+                const active = params.property_type === type;
+                return (
+                  <li key={type}>
+                    <Link
+                      href={typeHref(params, type)}
+                      className="plx-type"
+                      aria-current={active ? "true" : undefined}
+                    >
+                      <Image
+                        src={`/property/${type}.png`}
+                        alt=""
+                        width={96}
+                        height={96}
+                        className="plx-type-img"
+                      />
+                      <span>{label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+
+        {/* Filters & listings */}
+        <section className="plx-listings">
           <div className="container">
             <Suspense
               fallback={
@@ -186,21 +221,22 @@ export default async function PropertiesPage({
                 ))}
               </div>
             ) : (
-              <MotionSection>
-                <div className="empty-state">
-                  <div className="empty-state-icon">
-                    <Building className="w-10 h-10" />
-                  </div>
-                  <h3>No Properties Found</h3>
-                  <p>
-                    We couldn&apos;t find any properties matching your search
-                    criteria. Try removing some filters to see more results.
-                  </p>
-                  <Link href="/properties" className="btn-primary-new">
-                    Clear All Filters
-                  </Link>
-                </div>
-              </MotionSection>
+              <div className="plx-empty">
+                <Image
+                  src="/property/plot.png"
+                  alt=""
+                  width={200}
+                  height={200}
+                  className="plx-empty-img"
+                />
+                <h2>No homes match these filters</h2>
+                <p>
+                  Try removing a filter or widening your price range.
+                </p>
+                <Link href="/properties" className="hero-v2-btn-primary">
+                  Clear all filters
+                </Link>
+              </div>
             )}
           </div>
         </section>

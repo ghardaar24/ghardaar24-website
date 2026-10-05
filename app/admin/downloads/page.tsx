@@ -31,6 +31,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function DownloadsPage() {
   const [brochures, setBrochures] = useState<Brochure[]>([]);
@@ -183,22 +184,25 @@ export default function DownloadsPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="admin-page">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Downloads & Brochures</h1>
-          <p className="text-gray-500 mt-1">Manage downloadable resources and guides for your users</p>
-        </div>
-        <Button
-          render={<motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} />}
-          onClick={() => setIsUploadModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium shadow-sm hover:bg-blue-700 transition-colors h-auto"
-        >
-          <Plus className="w-5 h-5" />
-          Add New Brochure
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Downloads"
+        description="Brochures and guides people can download from the site."
+        actions={
+          <>
+            <Button
+              render={<motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} />}
+              onClick={() => setIsUploadModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium shadow-sm hover:bg-blue-700 transition-colors h-auto"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Brochure
+            </Button>
+          </>
+        }
+      />
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

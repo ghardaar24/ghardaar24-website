@@ -44,7 +44,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // Fetch admin profile from admins table
-  const fetchAdminProfile = async (userId: string) => {
+  // true = admin, false = confirmed not an admin, null = couldn't verify
+  const fetchAdminProfile = async (userId: string): Promise<boolean | null> => {
     // Prevent concurrent fetch calls
     if (isFetching) {
       return null;
@@ -72,7 +73,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           }
         }
         setAdminProfile(null);
-        return false;
+        return null; // couldn't verify (network / policy error), not a confirmed "no"
       }
 
       if (data) {
@@ -88,7 +89,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         console.error("Admin profile fetch exception:", err);
       }
       setAdminProfile(null);
-      return false;
+      return null; // couldn't verify
     } finally {
       setIsFetching(false);
     }
@@ -109,8 +110,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user && session.access_token) {
-          // Don't await admin profile fetch
-          fetchAdminProfile(session.user.id);
+          // A restored session must still belong to an admin: if the account was
+          // removed from the admins table, end the session instead of showing the panel.
+          const isAdmin = await fetchAdminProfile(session.user.id);
+          if (isAdmin === false && isMounted) {
+            await supabaseAdmin.auth.signOut({ scope: "local" });
+            setSession(null);
+            setUser(null);
+          }
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {

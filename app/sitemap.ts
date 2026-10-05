@@ -30,6 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${BASE_URL}/downloads`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
     // Service pages
     {
       url: `${BASE_URL}/services/interior-design`,
@@ -55,7 +61,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: properties } = await supabase
     .from("properties")
     .select("id, updated_at")
-    .eq("status", "active");
+    .eq("status", "active")
+    // pending / rejected user submissions must not be indexed
+    .or("approval_status.eq.approved,approval_status.is.null");
 
   const propertyPages: MetadataRoute.Sitemap = (properties || []).map(
     (property) => ({

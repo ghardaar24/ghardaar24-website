@@ -35,6 +35,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface UserProfile {
   id: string;
@@ -279,39 +280,37 @@ export default function LeadsPage() {
 
   return (
     <div className="admin-page">
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1>Leads</h1>
-          <p>View and manage registered user profiles</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {selectedIds.size > 0 && (
-            <motion.button
-              onClick={() => setDeleteConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors shadow-sm"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete ({selectedIds.size})</span>
-            </motion.button>
-          )}
-          <motion.button
-            onClick={exportToCSV}
-            className="btn-admin-export"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <Download className="w-4 h-4" />
-            <span>Export CSV</span>
-          </motion.button>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="People"
+        title="Leads"
+        description="Registered users and their profiles."
+        actions={
+          <>
+            <div className="flex items-center gap-3">
+              {selectedIds.size > 0 && (
+                <motion.button
+                  onClick={() => setDeleteConfirm(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors shadow-sm"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete ({selectedIds.size})</span>
+                </motion.button>
+              )}
+              <motion.button
+                onClick={exportToCSV}
+                className="btn-admin-export"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Download className="w-4 h-4" />
+                <span>Export CSV</span>
+              </motion.button>
+            </div>
+          </>
+        }
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

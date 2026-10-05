@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "@/lib/motion";
-import Link from "next/link";
 import {
-  ArrowLeft,
   Plus,
   Edit2,
   Trash2,
@@ -56,6 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface CallingCommentEntry {
   comment: string;
@@ -549,10 +548,10 @@ export default function AdminTasksPage() {
         animate={{ opacity: 1, y: 0 }}
         layout
         style={{
-          background: overdue ? "rgba(239, 68, 68, 0.03)" : "var(--surface-soft, #fafafa)",
+          background: overdue ? "rgba(239, 68, 68, 0.03)" : "var(--surface-soft, var(--color-gray-50))",
           borderRadius: "12px",
           padding: "1.25rem",
-          border: overdue ? "1px solid var(--error, #ef4444)" : "1px solid var(--border, #e5e7eb)",
+          border: overdue ? "1px solid var(--error, #ef4444)" : "1px solid var(--border, var(--color-gray-200))",
           transition: "all 0.2s",
         }}
       >
@@ -560,7 +559,7 @@ export default function AdminTasksPage() {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "0.75rem" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3
-              style={{ fontSize: "1rem", fontWeight: 600, color: "var(--foreground, #1f2937)", margin: "0 0 0.5rem" }}
+              style={{ fontSize: "1rem", fontWeight: 600, color: "var(--foreground, var(--color-gray-800))", margin: "0 0 0.5rem" }}
             >
               {task.title}
               {(() => {
@@ -619,7 +618,7 @@ export default function AdminTasksPage() {
             <select
               value={task.status}
               onChange={(e) => handleStatusChange(task.id, e.target.value)}
-              style={{ padding: "0.375rem 0.75rem", fontSize: "0.813rem", borderRadius: "8px", minWidth: "120px", border: "2px solid #e5e7eb", background: "#fafafa", color: "#1f2937", cursor: "pointer" }}
+              style={{ padding: "0.375rem 0.75rem", fontSize: "0.813rem", borderRadius: "8px", minWidth: "120px", border: "2px solid var(--color-gray-200)", background: "var(--color-gray-50)", color: "var(--color-gray-800)", cursor: "pointer" }}
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -628,14 +627,14 @@ export default function AdminTasksPage() {
             <button
               onClick={() => openEditModal(task)}
               title="Edit"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, #9ca3af)", borderRadius: "8px", cursor: "pointer" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, var(--color-gray-400))", borderRadius: "8px", cursor: "pointer" }}
             >
               <Edit2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleDelete(task.id)}
               title="Delete"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, #9ca3af)", borderRadius: "8px", cursor: "pointer" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", border: "none", background: "transparent", color: "var(--text-muted, var(--color-gray-400))", borderRadius: "8px", cursor: "pointer" }}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -644,11 +643,11 @@ export default function AdminTasksPage() {
 
         {/* Description */}
         {task.description && (
-          <p style={{ color: "var(--text-secondary, #6b7280)", fontSize: "0.875rem", margin: "0 0 0.75rem", lineHeight: 1.5 }}>{task.description}</p>
+          <p style={{ color: "var(--text-secondary, var(--color-gray-500))", fontSize: "0.875rem", margin: "0 0 0.75rem", lineHeight: 1.5 }}>{task.description}</p>
         )}
 
         {/* Meta */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", fontSize: "0.813rem", color: "var(--text-muted, #9ca3af)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", fontSize: "0.813rem", color: "var(--text-muted, var(--color-gray-400))" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
             <User className="w-4 h-4" />
             {getAssigneeName(task)}
@@ -669,25 +668,24 @@ export default function AdminTasksPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <div className="admin-page-header">
-        <div>
-          <Link href="/admin" className="back-link">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Link>
-          <h1>Task Management</h1>
-          <p>Assign and manage tasks for admins and staff members</p>
-        </div>
-        <motion.button
-          className="btn-core btn-primary"
-          onClick={openAddModal}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Plus className="w-5 h-5" />
-          Assign Task
-        </motion.button>
-      </div>
+      <PageHeader
+        eyebrow="Work"
+        title="Tasks"
+        description="Assign and track tasks for admins and staff."
+        actions={
+          <>
+            <motion.button
+              className="btn-core btn-primary"
+              onClick={openAddModal}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Plus className="w-5 h-5" />
+              Assign Task
+            </motion.button>
+          </>
+        }
+      />
 
       {/* Success/Error Messages */}
       <AnimatePresence>
@@ -717,14 +715,14 @@ export default function AdminTasksPage() {
 
       {/* Stats */}
       <div className="stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
-        <div className="dashboard-stat-card" style={{ "--stat-gradient": "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)" } as React.CSSProperties}>
+        <div className="dashboard-stat-card" style={{ "--stat-gradient": "linear-gradient(135deg, var(--color-gray-500) 0%, var(--color-gray-600) 100%)" } as React.CSSProperties}>
           <div className="dashboard-stat-icon"><Clock className="w-5 h-5" /></div>
           <div className="dashboard-stat-info">
             <span className="dashboard-stat-value">{pendingCount}</span>
             <span className="dashboard-stat-label">Pending</span>
           </div>
         </div>
-        <div className="dashboard-stat-card" style={{ "--stat-gradient": "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" } as React.CSSProperties}>
+        <div className="dashboard-stat-card" style={{ "--stat-gradient": "linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-blue-700) 100%)" } as React.CSSProperties}>
           <div className="dashboard-stat-icon"><PlayCircle className="w-5 h-5" /></div>
           <div className="dashboard-stat-info">
             <span className="dashboard-stat-value">{inProgressCount}</span>
@@ -751,11 +749,11 @@ export default function AdminTasksPage() {
       <div className="admin-section-card">
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 200px" }}>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Filter by Assignee</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", marginBottom: "0.5rem" }}>Filter by Assignee</label>
             <select
               value={filterStaff}
               onChange={(e) => setFilterStaff(e.target.value)}
-              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid var(--color-gray-200)", background: "var(--color-gray-50)", fontSize: "0.875rem", color: "var(--color-gray-800)" }}
             >
               <option value="">All Assignees</option>
               {admins.length > 0 && (
@@ -775,11 +773,11 @@ export default function AdminTasksPage() {
             </select>
           </div>
           <div style={{ flex: "1 1 200px" }}>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Filter by Status</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", marginBottom: "0.5rem" }}>Filter by Status</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid var(--color-gray-200)", background: "var(--color-gray-50)", fontSize: "0.875rem", color: "var(--color-gray-800)" }}
             >
               <option value="">All Statuses</option>
               {STATUS_OPTIONS.map((s) => (
@@ -788,21 +786,21 @@ export default function AdminTasksPage() {
             </select>
           </div>
           <div style={{ flex: "1 1 160px" }}>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Due Date From</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", marginBottom: "0.5rem" }}>Due Date From</label>
             <input
               type="date"
               value={filterDateFrom}
               onChange={(e) => setFilterDateFrom(e.target.value)}
-              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid var(--color-gray-200)", background: "var(--color-gray-50)", fontSize: "0.875rem", color: "var(--color-gray-800)" }}
             />
           </div>
           <div style={{ flex: "1 1 160px" }}>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Due Date To</label>
+            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", marginBottom: "0.5rem" }}>Due Date To</label>
             <input
               type="date"
               value={filterDateTo}
               onChange={(e) => setFilterDateTo(e.target.value)}
-              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid #e5e7eb", background: "#fafafa", fontSize: "0.875rem", color: "#1f2937" }}
+              style={{ width: "100%", padding: "0.625rem 0.875rem", borderRadius: "10px", border: "2px solid var(--color-gray-200)", background: "var(--color-gray-50)", fontSize: "0.875rem", color: "var(--color-gray-800)" }}
             />
           </div>
           <div style={{ flex: "0 0 auto", display: "flex", alignItems: "flex-end", gap: "0.5rem" }}>
@@ -814,9 +812,9 @@ export default function AdminTasksPage() {
                 gap: "0.5rem",
                 padding: "0.625rem 1rem",
                 borderRadius: "10px",
-                border: "2px solid #e5e7eb",
-                background: "#fafafa",
-                color: "#374151",
+                border: "2px solid var(--color-gray-200)",
+                background: "var(--color-gray-50)",
+                color: "var(--color-gray-700)",
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -835,9 +833,9 @@ export default function AdminTasksPage() {
                 gap: "0.5rem",
                 padding: "0.625rem 1rem",
                 borderRadius: "10px",
-                border: `2px solid ${filterOverdue ? "#ef4444" : "#e5e7eb"}`,
-                background: filterOverdue ? "rgba(239, 68, 68, 0.1)" : "#fafafa",
-                color: filterOverdue ? "#ef4444" : "#6b7280",
+                border: `2px solid ${filterOverdue ? "#ef4444" : "var(--color-gray-200)"}`,
+                background: filterOverdue ? "rgba(239, 68, 68, 0.1)" : "var(--color-gray-50)",
+                color: filterOverdue ? "#ef4444" : "var(--color-gray-500)",
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -865,8 +863,8 @@ export default function AdminTasksPage() {
           {/* Admin Tasks Section */}
           {adminTasks.length > 0 && (
             <div className="admin-section-card">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid #f3f4f6" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid var(--color-gray-100)" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, var(--color-purple-500) 0%, var(--color-purple-600) 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
                   <Shield className="w-4 h-4" />
                 </div>
                 <div>
@@ -883,8 +881,8 @@ export default function AdminTasksPage() {
           {/* Staff Tasks Section */}
           {staffTasks.length > 0 && (
             <div className="admin-section-card">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid #f3f4f6" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem", paddingBottom: "1rem", borderBottom: "2px solid var(--color-gray-100)" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-blue-700) 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
@@ -1032,7 +1030,7 @@ export default function AdminTasksPage() {
 
                 {/* Title */}
                 <div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                     <Flag className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Task Title
                     <span style={{ color: "#ef4444", fontWeight: 700 }}>*</span>
@@ -1046,10 +1044,10 @@ export default function AdminTasksPage() {
                     style={{
                       width: "100%",
                       padding: "0.875rem 1rem",
-                      border: "2px solid #e5e7eb",
+                      border: "2px solid var(--color-gray-200)",
                       borderRadius: "12px",
-                      background: "#fafafa",
-                      color: "#1f2937",
+                      background: "var(--color-gray-50)",
+                      color: "var(--color-gray-800)",
                       fontSize: "0.9375rem",
                       fontFamily: "inherit",
                       outline: "none",
@@ -1060,10 +1058,10 @@ export default function AdminTasksPage() {
 
                 {/* Description */}
                 <div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                     <Edit2 className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Description
-                    <span style={{ fontSize: "0.6875rem", fontWeight: 500, color: "#9ca3af", background: "#f3f4f6", padding: "0.125rem 0.5rem", borderRadius: "100px", textTransform: "lowercase", letterSpacing: 0, marginLeft: "auto" }}>Optional</span>
+                    <span style={{ fontSize: "0.6875rem", fontWeight: 500, color: "var(--color-gray-400)", background: "var(--color-gray-100)", padding: "0.125rem 0.5rem", borderRadius: "100px", textTransform: "lowercase", letterSpacing: 0, marginLeft: "auto" }}>Optional</span>
                   </label>
                   <textarea
                     value={formData.description}
@@ -1073,10 +1071,10 @@ export default function AdminTasksPage() {
                     style={{
                       width: "100%",
                       padding: "0.875rem 1rem",
-                      border: "2px solid #e5e7eb",
+                      border: "2px solid var(--color-gray-200)",
                       borderRadius: "12px",
-                      background: "#fafafa",
-                      color: "#1f2937",
+                      background: "var(--color-gray-50)",
+                      color: "var(--color-gray-800)",
                       fontSize: "0.9375rem",
                       fontFamily: "inherit",
                       outline: "none",
@@ -1089,7 +1087,7 @@ export default function AdminTasksPage() {
 
                 {/* Assign To */}
                 <div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                     <User className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Assign To
                     <span style={{ color: "#ef4444", fontWeight: 700 }}>*</span>
@@ -1101,10 +1099,10 @@ export default function AdminTasksPage() {
                     style={{
                       width: "100%",
                       padding: "0.875rem 1rem",
-                      border: "2px solid #e5e7eb",
+                      border: "2px solid var(--color-gray-200)",
                       borderRadius: "12px",
-                      background: "#fafafa",
-                      color: "#1f2937",
+                      background: "var(--color-gray-50)",
+                      color: "var(--color-gray-800)",
                       fontSize: "0.9375rem",
                       fontFamily: "inherit",
                       outline: "none",
@@ -1134,7 +1132,7 @@ export default function AdminTasksPage() {
 
                 {/* Priority */}
                 <div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                     <Flag className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                     Priority Level
                   </label>
@@ -1152,7 +1150,7 @@ export default function AdminTasksPage() {
                           border: `2px solid ${formData.priority === p.value ? p.color : "#e5e7eb"}`,
                           borderRadius: "10px",
                           background: formData.priority === p.value ? `${p.color}20` : `${p.color}08`,
-                          color: formData.priority === p.value ? p.color : "#6b7280",
+                          color: formData.priority === p.value ? p.color : "var(--color-gray-500)",
                           fontSize: "0.8125rem",
                           fontWeight: 600,
                           cursor: "pointer",
@@ -1177,7 +1175,7 @@ export default function AdminTasksPage() {
                 {/* Due Date & Time */}
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 140px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                       <Calendar className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                       Due Date
                     </label>
@@ -1188,10 +1186,10 @@ export default function AdminTasksPage() {
                       style={{
                         width: "100%",
                         padding: "0.875rem 1rem",
-                        border: "2px solid #e5e7eb",
+                        border: "2px solid var(--color-gray-200)",
                         borderRadius: "12px",
-                        background: "#fafafa",
-                        color: "#1f2937",
+                        background: "var(--color-gray-50)",
+                        color: "var(--color-gray-800)",
                         fontSize: "0.9375rem",
                         fontFamily: "inherit",
                         outline: "none",
@@ -1201,7 +1199,7 @@ export default function AdminTasksPage() {
                     />
                   </div>
                   <div style={{ flex: "1 1 140px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
                       <Clock className="w-4 h-4" style={{ color: "var(--primary, #f36a2a)" }} />
                       Due Time
                     </label>
@@ -1212,10 +1210,10 @@ export default function AdminTasksPage() {
                       style={{
                         width: "100%",
                         padding: "0.875rem 1rem",
-                        border: "2px solid #e5e7eb",
+                        border: "2px solid var(--color-gray-200)",
                         borderRadius: "12px",
-                        background: "#fafafa",
-                        color: "#1f2937",
+                        background: "var(--color-gray-50)",
+                        color: "var(--color-gray-800)",
                         fontSize: "0.9375rem",
                         fontFamily: "inherit",
                         outline: "none",
@@ -1234,8 +1232,8 @@ export default function AdminTasksPage() {
                   justifyContent: "flex-end",
                   gap: "0.75rem",
                   padding: "1.25rem 1.75rem",
-                  borderTop: "1px solid #f3f4f6",
-                  background: "#fafafa",
+                  borderTop: "1px solid var(--color-gray-100)",
+                  background: "var(--color-gray-50)",
                 }}
               >
                 <button
@@ -1244,10 +1242,10 @@ export default function AdminTasksPage() {
                   disabled={saving}
                   style={{
                     padding: "0.75rem 1.5rem",
-                    border: "2px solid #e5e7eb",
+                    border: "2px solid var(--color-gray-200)",
                     borderRadius: "10px",
                     background: "#ffffff",
-                    color: "#6b7280",
+                    color: "var(--color-gray-500)",
                     fontSize: "0.9375rem",
                     fontWeight: 600,
                     cursor: saving ? "not-allowed" : "pointer",
@@ -1334,14 +1332,14 @@ export default function AdminTasksPage() {
               }}
             >
               {clientLoading ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4rem", gap: "0.75rem", color: "#6b7280" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4rem", gap: "0.75rem", color: "var(--color-gray-500)" }}>
                   <Loader2 className="w-5 h-5" style={{ animation: "spin 1s linear infinite" }} />
                   Loading client details...
                 </div>
               ) : clientDetails ? (
                 <>
                   {/* Header */}
-                  <div style={{ background: "linear-gradient(135deg, #1f2937 0%, #374151 100%)", padding: "1.5rem 2rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div style={{ background: "linear-gradient(135deg, var(--color-gray-800) 0%, var(--color-gray-700) 100%)", padding: "1.5rem 2rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                     <div>
                       <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "white", margin: "0 0 0.5rem", letterSpacing: "-0.01em" }}>
                         {clientDetails.client_name}
@@ -1365,7 +1363,7 @@ export default function AdminTasksPage() {
                   </div>
 
                   {/* Badges */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", padding: "1rem 2rem", borderBottom: "1px solid #f3f4f6" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", padding: "1rem 2rem", borderBottom: "1px solid var(--color-gray-100)" }}>
                     {(() => {
                       const lt = LEAD_TYPE_OPTIONS.find(o => o.value === clientDetails.lead_type);
                       return lt ? (
@@ -1389,29 +1387,29 @@ export default function AdminTasksPage() {
                   {/* Content */}
                   <div style={{ padding: "1.5rem 2rem", overflowY: "auto", flex: 1 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}>
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "#f9fafb", borderRadius: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "var(--color-gray-50)", borderRadius: "12px" }}>
                         <div style={{ padding: "0.375rem", background: "#fed7aa", borderRadius: "8px", color: "#ea580c" }}>
                           <MapPin className="w-4 h-4" />
                         </div>
                         <div>
-                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Location</div>
-                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#1f2937" }}>{clientDetails.location_category || "Not Specified"}</div>
+                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Location</div>
+                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--color-gray-800)" }}>{clientDetails.location_category || "Not Specified"}</div>
                         </div>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "#f9fafb", borderRadius: "12px" }}>
-                        <div style={{ padding: "0.375rem", background: "#dbeafe", borderRadius: "8px", color: "#2563eb" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "var(--color-gray-50)", borderRadius: "12px" }}>
+                        <div style={{ padding: "0.375rem", background: "var(--color-blue-100)", borderRadius: "8px", color: "var(--color-blue-600)" }}>
                           <Calendar className="w-4 h-4" />
                         </div>
                         <div>
-                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Expected Visit</div>
-                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#1f2937" }}>
+                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Expected Visit</div>
+                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--color-gray-800)" }}>
                             {clientDetails.expected_visit_date
                               ? new Date(clientDetails.expected_visit_date).toLocaleDateString("en-IN", { weekday: "short", year: "numeric", month: "short", day: "numeric" })
                               : "Not Scheduled"}
                           </div>
                           {clientDetails.expected_visit_time && (
-                            <div style={{ fontSize: "0.8125rem", color: "#6366f1", marginTop: "0.125rem" }}>
+                            <div style={{ fontSize: "0.8125rem", color: "var(--color-indigo-500)", marginTop: "0.125rem" }}>
                               {(() => {
                                 const [h, m] = clientDetails.expected_visit_time.split(":");
                                 const t = new Date();
@@ -1423,13 +1421,13 @@ export default function AdminTasksPage() {
                         </div>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "#f9fafb", borderRadius: "12px" }}>
-                        <div style={{ padding: "0.375rem", background: "#e9d5ff", borderRadius: "8px", color: "#7c3aed" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.875rem", background: "var(--color-gray-50)", borderRadius: "12px" }}>
+                        <div style={{ padding: "0.375rem", background: "var(--color-purple-100)", borderRadius: "8px", color: "var(--color-purple-600)" }}>
                           <Clock className="w-4 h-4" />
                         </div>
                         <div>
-                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Added On</div>
-                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#1f2937" }}>
+                          <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>Added On</div>
+                          <div style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--color-gray-800)" }}>
                             {new Date(clientDetails.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                           </div>
                         </div>
@@ -1439,20 +1437,20 @@ export default function AdminTasksPage() {
                     {/* Calling History */}
                     {clientDetails.calling_comment_history && clientDetails.calling_comment_history.length > 0 && (
                       <div style={{ marginBottom: "1.5rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.75rem", fontWeight: 700, color: "#4338ca", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-indigo-700)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
                           <MessageSquare className="w-4 h-4" />
                           Calling History
                         </div>
-                        <div style={{ borderLeft: "2px solid #c7d2fe", paddingLeft: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                        <div style={{ borderLeft: "2px solid var(--color-indigo-200)", paddingLeft: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                           {clientDetails.calling_comment_history.map((entry, index) => (
                             <div key={index}>
-                              <div style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: 500, marginBottom: "0.25rem" }}>
+                              <div style={{ fontSize: "0.75rem", color: "var(--color-indigo-500)", fontWeight: 500, marginBottom: "0.25rem" }}>
                                 {new Date(entry.date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                                 {entry.addedBy && entry.addedBy !== "migrated" && (
-                                  <span style={{ color: "#9ca3af", marginLeft: "0.5rem" }}>by {entry.addedBy}</span>
+                                  <span style={{ color: "var(--color-gray-400)", marginLeft: "0.5rem" }}>by {entry.addedBy}</span>
                                 )}
                               </div>
-                              <p style={{ margin: 0, fontSize: "0.875rem", color: "#374151", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{entry.comment}</p>
+                              <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--color-gray-700)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{entry.comment}</p>
                             </div>
                           ))}
                         </div>
@@ -1466,7 +1464,7 @@ export default function AdminTasksPage() {
                           <AlertCircle className="w-4 h-4" />
                           Admin Remarks
                         </div>
-                        <p style={{ margin: 0, fontSize: "0.875rem", color: "#374151", lineHeight: 1.5, whiteSpace: "pre-wrap", padding: "0.75rem 1rem", background: "#fffbeb", borderRadius: "10px", borderLeft: "3px solid #f59e0b" }}>
+                        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--color-gray-700)", lineHeight: 1.5, whiteSpace: "pre-wrap", padding: "0.75rem 1rem", background: "#fffbeb", borderRadius: "10px", borderLeft: "3px solid #f59e0b" }}>
                           {clientDetails.admin_notes}
                         </p>
                       </div>
@@ -1474,7 +1472,7 @@ export default function AdminTasksPage() {
                   </div>
 
                   {/* Footer */}
-                  <div style={{ padding: "1rem 2rem", borderTop: "1px solid #f3f4f6", background: "#fafafa", display: "flex", justifyContent: "space-between" }}>
+                  <div style={{ padding: "1rem 2rem", borderTop: "1px solid var(--color-gray-100)", background: "var(--color-gray-50)", display: "flex", justifyContent: "space-between" }}>
                     <button
                       onClick={() => { if (clientDetails) openClientEditModal(clientDetails); }}
                       style={{
@@ -1497,14 +1495,14 @@ export default function AdminTasksPage() {
                     </button>
                     <button
                       onClick={() => { setShowClientModal(false); setClientDetails(null); }}
-                      style={{ padding: "0.625rem 1.5rem", border: "2px solid #e5e7eb", borderRadius: "10px", background: "#ffffff", color: "#374151", fontSize: "0.9375rem", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "0.625rem 1.5rem", border: "2px solid var(--color-gray-200)", borderRadius: "10px", background: "#ffffff", color: "var(--color-gray-700)", fontSize: "0.9375rem", fontWeight: 600, cursor: "pointer" }}
                     >
                       Close
                     </button>
                   </div>
                 </>
               ) : (
-                <div style={{ padding: "3rem", textAlign: "center", color: "#6b7280" }}>
+                <div style={{ padding: "3rem", textAlign: "center", color: "var(--color-gray-500)" }}>
                   <AlertCircle className="w-8 h-8" style={{ margin: "0 auto 0.75rem", opacity: 0.5 }} />
                   <p style={{ margin: 0, fontSize: "0.9375rem" }}>Client not found</p>
                 </div>
@@ -1589,15 +1587,15 @@ export default function AdminTasksPage() {
               <form onSubmit={handleClientEditSubmit} style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", flex: 1 }}>
                 {/* Lead Stage */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Stage</label>
-                  <select value={clientEditData.lead_stage} onChange={(e) => setClientEditData({ ...clientEditData, lead_stage: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem" }}>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Stage</label>
+                  <select value={clientEditData.lead_stage} onChange={(e) => setClientEditData({ ...clientEditData, lead_stage: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid var(--color-gray-200)", borderRadius: "12px", background: "var(--color-gray-50)", color: "var(--color-gray-800)", fontSize: "0.9375rem" }}>
                     {LEAD_STAGE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
 
                 {/* Lead Type */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Type</label>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Lead Type</label>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     {LEAD_TYPE_OPTIONS.map((o) => (
                       <label key={o.value} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "0.75rem 0.5rem", border: `2px solid ${clientEditData.lead_type === o.value ? o.color : "#e5e7eb"}`, borderRadius: "10px", background: clientEditData.lead_type === o.value ? `${o.color}20` : `${o.color}08`, color: clientEditData.lead_type === o.value ? o.color : "#6b7280", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
@@ -1611,7 +1609,7 @@ export default function AdminTasksPage() {
 
                 {/* Deal Status */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Deal Status</label>
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Deal Status</label>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     {DEAL_STATUS_OPTIONS.map((o) => (
                       <label key={o.value} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "0.75rem 0.5rem", border: `2px solid ${clientEditData.deal_status === o.value ? o.color : "#e5e7eb"}`, borderRadius: "10px", background: clientEditData.deal_status === o.value ? `${o.color}20` : `${o.color}08`, color: clientEditData.deal_status === o.value ? o.color : "#6b7280", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
@@ -1625,33 +1623,33 @@ export default function AdminTasksPage() {
 
                 {/* Location */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Location</label>
-                  <input type="text" value={clientEditData.location_category} onChange={(e) => setClientEditData({ ...clientEditData, location_category: e.target.value })} placeholder="Location category" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Location</label>
+                  <input type="text" value={clientEditData.location_category} onChange={(e) => setClientEditData({ ...clientEditData, location_category: e.target.value })} placeholder="Location category" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid var(--color-gray-200)", borderRadius: "12px", background: "var(--color-gray-50)", color: "var(--color-gray-800)", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
                 </div>
 
                 {/* Facing */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Facing</label>
-                  <input type="text" value={clientEditData.facing} onChange={(e) => setClientEditData({ ...clientEditData, facing: e.target.value })} placeholder="Facing direction" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                  <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Facing</label>
+                  <input type="text" value={clientEditData.facing} onChange={(e) => setClientEditData({ ...clientEditData, facing: e.target.value })} placeholder="Facing direction" style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid var(--color-gray-200)", borderRadius: "12px", background: "var(--color-gray-50)", color: "var(--color-gray-800)", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
                 </div>
 
 
                 {/* Expected Visit Date & Time */}
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 140px" }}>
-                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Date</label>
-                    <input type="date" value={clientEditData.expected_visit_date} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_date: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Date</label>
+                    <input type="date" value={clientEditData.expected_visit_date} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_date: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid var(--color-gray-200)", borderRadius: "12px", background: "var(--color-gray-50)", color: "var(--color-gray-800)", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
                   </div>
                   <div style={{ flex: "1 1 140px" }}>
-                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Time</label>
-                    <input type="time" value={clientEditData.expected_visit_time} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_time: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid #e5e7eb", borderRadius: "12px", background: "#fafafa", color: "#1f2937", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
+                    <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-gray-700)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Expected Visit Time</label>
+                    <input type="time" value={clientEditData.expected_visit_time} onChange={(e) => setClientEditData({ ...clientEditData, expected_visit_time: e.target.value })} style={{ width: "100%", padding: "0.875rem 1rem", border: "2px solid var(--color-gray-200)", borderRadius: "12px", background: "var(--color-gray-50)", color: "var(--color-gray-800)", fontSize: "0.9375rem", boxSizing: "border-box" as const }} />
                   </div>
                 </div>
               </form>
 
               {/* Actions */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", padding: "1.25rem 1.75rem", borderTop: "1px solid #f3f4f6", background: "#fafafa" }}>
-                <button type="button" onClick={() => setShowClientEditModal(false)} disabled={clientEditSaving} style={{ padding: "0.75rem 1.5rem", border: "2px solid #e5e7eb", borderRadius: "10px", background: "#ffffff", color: "#6b7280", fontSize: "0.9375rem", fontWeight: 600, cursor: clientEditSaving ? "not-allowed" : "pointer", opacity: clientEditSaving ? 0.5 : 1 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", padding: "1.25rem 1.75rem", borderTop: "1px solid var(--color-gray-100)", background: "var(--color-gray-50)" }}>
+                <button type="button" onClick={() => setShowClientEditModal(false)} disabled={clientEditSaving} style={{ padding: "0.75rem 1.5rem", border: "2px solid var(--color-gray-200)", borderRadius: "10px", background: "#ffffff", color: "var(--color-gray-500)", fontSize: "0.9375rem", fontWeight: 600, cursor: clientEditSaving ? "not-allowed" : "pointer", opacity: clientEditSaving ? 0.5 : 1 }}>
                   Cancel
                 </button>
                 <button type="submit" onClick={handleClientEditSubmit} disabled={clientEditSaving} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1.75rem", border: "none", borderRadius: "10px", background: "linear-gradient(135deg, var(--primary, #f36a2a) 0%, var(--primary-dark, #d4551a) 100%)", color: "white", fontSize: "0.9375rem", fontWeight: 600, cursor: clientEditSaving ? "not-allowed" : "pointer", opacity: clientEditSaving ? 0.7 : 1, boxShadow: "0 4px 14px 0 rgba(243, 106, 42, 0.4)" }}>

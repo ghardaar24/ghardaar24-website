@@ -90,9 +90,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, description, priority, due_date, due_time, client_id } = body;
 
-    if (!title) {
+    if (!title || typeof title !== "string" || title.length > 200) {
       return NextResponse.json(
-        { error: "Title is required" },
+        { error: "Title is required (max 200 characters)" },
+        { status: 400 }
+      );
+    }
+
+    if (priority && !["low", "medium", "high", "urgent"].includes(priority)) {
+      return NextResponse.json({ error: "Invalid priority value" }, { status: 400 });
+    }
+
+    if (description && (typeof description !== "string" || description.length > 5000)) {
+      return NextResponse.json(
+        { error: "Description must be under 5000 characters" },
         { status: 400 }
       );
     }

@@ -31,6 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface Inquiry {
   id: string;
@@ -166,17 +167,11 @@ export default function AdminInquiriesPage() {
 
   return (
     <div className="admin-page">
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1>Inquiries</h1>
-          <p>View and manage property inquiries</p>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="People"
+        title="Inquiries"
+        description="Messages from people interested in a property."
+      />
 
       <motion.div
         className="admin-toolbar"

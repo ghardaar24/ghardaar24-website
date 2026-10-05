@@ -78,7 +78,17 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { type, data } = body;
+    const { type } = body;
+    // Cap every value so a client can't flood the sheet with huge strings.
+    const data: Record<string, unknown> | null =
+      body.data && typeof body.data === "object"
+        ? Object.fromEntries(
+            Object.entries(body.data).map(([k, v]) => [
+              k,
+              typeof v === "string" ? v.slice(0, 500) : v,
+            ])
+          )
+        : null;
 
     if (!type || !data) {
       return NextResponse.json(
@@ -88,7 +98,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === "signup") {
-      const signupData = data as SignupData;
+      // A signup row always describes the caller: never trust the email in the body.
+      const signupData = { ...data, email: user.email ?? "" } as unknown as SignupData;
       if (!signupData.name || !signupData.email || !signupData.phone) {
         return NextResponse.json(
           { error: "Missing required signup fields" },
@@ -97,7 +108,7 @@ export async function POST(req: NextRequest) {
       }
       await appendUserSignup(signupData);
     } else if (type === "property") {
-      const propertyData = data as PropertyData;
+      const propertyData = data as unknown as PropertyData;
       if (!propertyData.title || !propertyData.property_type) {
         return NextResponse.json(
           { error: "Missing required property fields" },

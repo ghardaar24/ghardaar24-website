@@ -3,118 +3,227 @@
 import { useState } from "react";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
 import {
-  Landmark,
   ShieldCheck,
   FileText,
   Phone,
   ArrowRight,
-  CheckCircle,
+  Check,
   Clock,
   BadgePercent,
   Calculator,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConsultationFormModal from "@/components/ConsultationFormModal";
-
+import { formatPrice } from "@/lib/utils";
 
 const benefits = [
   {
     icon: BadgePercent,
-    title: "Lowest Interest Rates",
+    title: "Lower interest rates",
     description:
-      "We negotiate with multiple banks to get you the most competitive interest rates in the market, saving you lakhs over your loan tenure.",
+      "We put your file in front of several banks at once and push for the lowest rate. Half a percent less saves lakhs over 20 years.",
   },
   {
     icon: FileText,
-    title: "Minimal Documentation",
+    title: "Less paperwork",
     description:
-      "Our experts handle all paperwork efficiently. We only ask for essential documents, making the process hassle-free for you.",
+      "We tell you exactly which documents your bank needs, check them before they go in, and file them for you.",
   },
   {
     icon: Clock,
-    title: "Quick Approval",
+    title: "Approval in about 7 working days",
     description:
-      "With our pre-verified properties and strong banking relationships, get your loan approved in as little as 7 working days.",
+      "Verified properties and long-standing bank contacts mean fewer back-and-forth queries on your file.",
   },
   {
     icon: Users,
-    title: "Dedicated Relationship Manager",
+    title: "One person from start to finish",
     description:
-      "A personal loan expert guides you through every step, from application to disbursement, ensuring a smooth experience.",
+      "A single relationship manager handles your loan from application to disbursement. You always know who to call.",
   },
   {
     icon: Calculator,
-    title: "Free EMI Calculation",
+    title: "EMI worked out upfront",
     description:
-      "Get accurate EMI calculations and understand your repayment schedule before committing to any loan.",
+      "See your monthly EMI and total interest before you sign anything, for every offer you receive.",
   },
   {
     icon: ShieldCheck,
-    title: "100% Transparency",
+    title: "Every fee disclosed",
     description:
-      "No hidden charges or surprises. We disclose all fees upfront so you can make informed decisions.",
+      "Processing fees, legal charges and insurance are listed before you commit. Nothing turns up later.",
   },
 ];
 
 const eligibility = [
-  "Salaried individuals with minimum 2 years work experience",
-  "Self-employed professionals with 3+ years in business",
-  "Age between 21-60 years at loan maturity",
-  "Minimum monthly income of ₹25,000",
-  "Good credit score (650+)",
-  "Properties in approved locations",
+  "Salaried, with at least 2 years of work experience",
+  "Self-employed, with at least 3 years in business",
+  "Aged 21–60 at the end of the loan term",
+  "Monthly income of ₹25,000 or more",
+  "Credit score of 650 or higher",
+  "Property in a bank-approved location",
 ];
 
 const documents = [
   {
-    category: "Identity Proof",
-    items: ["Aadhaar Card", "PAN Card", "Passport"],
+    category: "Identity",
+    items: ["Aadhaar card", "PAN card", "Passport"],
   },
   {
-    category: "Address Proof",
-    items: ["Utility Bills", "Rent Agreement", "Aadhaar Card"],
+    category: "Address",
+    items: ["Utility bills", "Rent agreement", "Aadhaar card"],
   },
   {
-    category: "Income Proof",
-    items: ["Salary Slips (3 months)", "Bank Statements (6 months)", "Form 16"],
+    category: "Income",
+    items: ["Salary slips (3 months)", "Bank statements (6 months)", "Form 16"],
   },
   {
-    category: "Property Documents",
-    items: ["Sale Agreement", "Title Deeds", "NOC from Society"],
+    category: "Property",
+    items: ["Sale agreement", "Title deeds", "NOC from society"],
   },
 ];
 
 const processSteps = [
   {
-    step: "01",
-    title: "Apply Online",
+    title: "Tell us what you need",
     description:
-      "Fill out our simple online form or call us. Our team will get in touch within 2 hours.",
+      "Fill in the form or call us. We get back to you within 2 hours.",
   },
   {
-    step: "02",
-    title: "Document Collection",
+    title: "We collect your documents",
     description:
-      "Our representative visits your location to collect documents at your convenience.",
+      "Our representative picks up your documents from home or office, at a time that suits you.",
   },
   {
-    step: "03",
-    title: "Loan Processing",
+    title: "Banks compete for your file",
     description:
-      "We submit your application to multiple banks and negotiate the best rates for you.",
+      "We send your application to several banks and negotiate the rate and fees.",
   },
   {
-    step: "04",
-    title: "Approval & Disbursement",
+    title: "Sanction and disbursement",
     description:
-      "Once approved, the loan amount is disbursed directly to the seller's account.",
+      "Once approved, the bank pays the seller directly. You get the keys.",
   },
 ];
 
 const banks = ["SBI", "HDFC", "ICICI", "Axis", "Kotak", "LIC HFL"];
+
+function calcEmi(principal: number, annualRate: number, years: number) {
+  const r = annualRate / 12 / 100;
+  const n = years * 12;
+  const emi = (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  return { emi, interest: emi * n - principal };
+}
+
+const rupees = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+
+function SanctionSlip() {
+  const [amount, setAmount] = useState(5000000);
+  const [rate, setRate] = useState(8.5);
+  const [years, setYears] = useState(20);
+  const { emi, interest } = calcEmi(amount, rate, years);
+  const interestShare = interest / (interest + amount);
+
+  return (
+    <motion.div
+      className="hlx-slip"
+      initial={{ opacity: 0, y: 24, rotate: 0 }}
+      animate={{ opacity: 1, y: 0, rotate: -1.5 }}
+      transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="hlx-slip-head">
+        <span>Home loan · EMI estimate</span>
+      </div>
+
+      <div className="hlx-slip-emi">
+        <span className="hlx-slip-label">Your monthly EMI</span>
+        <output className="hlx-slip-emi-value" aria-live="polite">
+          {rupees(emi)}
+        </output>
+      </div>
+
+      <div className="hlx-slip-fields">
+        <label className="hlx-field">
+          <span className="hlx-field-row">
+            <span>Loan amount</span>
+            <strong>{formatPrice(amount)}</strong>
+          </span>
+          <input
+            type="range"
+            min={1000000}
+            max={30000000}
+            step={100000}
+            value={amount}
+            onChange={(e) => setAmount(+e.target.value)}
+          />
+        </label>
+        <label className="hlx-field">
+          <span className="hlx-field-row">
+            <span>Interest rate</span>
+            <strong>{rate.toFixed(2)}%</strong>
+          </span>
+          <input
+            type="range"
+            min={7}
+            max={12}
+            step={0.05}
+            value={rate}
+            onChange={(e) => setRate(+e.target.value)}
+          />
+        </label>
+        <label className="hlx-field">
+          <span className="hlx-field-row">
+            <span>Tenure</span>
+            <strong>{years} years</strong>
+          </span>
+          <input
+            type="range"
+            min={5}
+            max={30}
+            step={1}
+            value={years}
+            onChange={(e) => setYears(+e.target.value)}
+          />
+        </label>
+      </div>
+
+      <div className="hlx-slip-split">
+        <div
+          className="hlx-slip-bar"
+          role="img"
+          aria-label={`${Math.round(interestShare * 100)}% of what you repay is interest`}
+        >
+          <span style={{ width: `${(1 - interestShare) * 100}%` }} />
+        </div>
+        <dl>
+          <div>
+            <dt>Principal</dt>
+            <dd>{formatPrice(amount)}</dd>
+          </div>
+          <div>
+            <dt>Total interest</dt>
+            <dd className="is-interest">{formatPrice(interest)}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <span className="hlx-stamp" aria-hidden="true">
+        Estimate
+      </span>
+    </motion.div>
+  );
+}
+
+const loanStats = [
+  { value: "₹0", label: "Consultation fee" },
+  { value: "6", label: "Banks compared for you" },
+  { value: "7 days", label: "Approval, in as little as" },
+  { value: "2 hrs", label: "Callback after you apply" },
+];
 
 export default function HomeLoansPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,202 +231,162 @@ export default function HomeLoansPage() {
   return (
     <>
       <Header />
-      <main className="service-page hl-page">
-        {/* Hero Section */}
-        <section className="hl-hero">
-          <div className="container hl-hero-inner">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="hl-eyebrow">
-                <Landmark className="w-4 h-4" /> Financing, arranged
-              </span>
-              <h1 className="hl-hero-title">
-                <span className="hl-hero-title-line1">Financing,</span>
-                <span className="hl-hero-title-line2">handled properly.</span>
+      <main className="hlx-page">
+        {/* Hero — same dusk shell as the landing page */}
+        <section className="hero-v2 hlx-hero">
+          <div className="container hero-v2-container">
+            <div className="hero-v2-content">
+              <p className="hero-v2-eyebrow">Home loans · Pune</p>
+              <h1 className="hero-v2-heading">
+                <span>Six banks quote.</span>
+                <em>You sign the lowest.</em>
               </h1>
-              <p className="hl-hero-subtitle">
-                We don&apos;t sell you a loan &mdash; we shop six banks for one.
-                Our team compares rates, pushes back on fees, and hands you
-                the cheapest sanction available for your profile.
+              <p className="hero-v2-sub">
+                We don&apos;t sell you a loan. We take your file to six lenders,
+                compare their rates and fees, and bring back the cheapest
+                sanction for your profile.
               </p>
-              <div className="hl-hero-cta">
+              <div className="hero-v2-cta-group">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="hl-btn-primary"
+                  className="hero-v2-btn-primary"
                 >
-                  Get Free Consultation
+                  Get a free consultation
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <Link href="/properties" className="hl-btn-ghost">
-                  Browse Properties
-                </Link>
+                <a href="tel:+919673655631" className="hero-v2-btn-ghost">
+                  <Phone className="w-5 h-5" />
+                  Call us
+                </a>
               </div>
-            </motion.div>
+              <p className="hero-v2-areas-label" id="hlx-banks-label">
+                Banks we compare
+              </p>
+              <ul className="hero-v2-areas hlx-banks" aria-labelledby="hlx-banks-label">
+                {banks.map((bank) => (
+                  <li key={bank}>{bank}</li>
+                ))}
+              </ul>
+            </div>
 
-            <motion.div
-              className="hl-ledger"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="hl-ledger-item">
-                <span className="hl-ledger-label">Banks compared</span>
-                <div className="hl-ledger-value accent">
-                  {banks.length}<span>+</span>
-                </div>
-              </div>
-              <div className="hl-ledger-item">
-                <span className="hl-ledger-label">Approval in</span>
-                <div className="hl-ledger-value">7<span>days</span></div>
-              </div>
-              <div className="hl-ledger-item">
-                <span className="hl-ledger-label">Years of trust</span>
-                <div className="hl-ledger-value">10<span>+</span></div>
-              </div>
-              <div className="hl-ledger-item">
-                <span className="hl-ledger-label">Transparency</span>
-                <div className="hl-ledger-value accent">100<span>%</span></div>
-              </div>
-            </motion.div>
-
-            <div className="hl-marquee">
-              <span>Rates compared across</span>
-              {banks.map((bank) => (
-                <span key={bank} className="hl-marquee-chip">
-                  {bank}
-                </span>
-              ))}
+            <div className="hlx-hero-art">
+              <Image
+                src="/homeloan.png"
+                alt=""
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 1024px) 34vw, 80vw"
+                className="hlx-hero-img"
+              />
+              <SanctionSlip />
             </div>
           </div>
         </section>
 
-        {/* Benefits Section */}
-        <section className="service-benefits">
+        {/* Trust strip — reuses the landing page's */}
+        <section className="trust-v2">
           <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">Why Choose Ghardaar24</span>
-              <h2 className="section-title-new">
-                Benefits of Our Home Loan Service
-              </h2>
-              <p className="section-subtitle">
-                We go above and beyond to make your home financing journey
-                smooth and stress-free
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="service-benefits-grid extended"
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {benefits.map((benefit) => (
-                <motion.div
-                  key={benefit.title}
-                  className="service-benefit-card"
-                  variants={fadeInUp}
-                >
-                  <div className="service-benefit-icon">
-                    <benefit.icon className="w-6 h-6" />
-                  </div>
-                  <h3>{benefit.title}</h3>
-                  <p>{benefit.description}</p>
-                </motion.div>
+            <dl className="trust-v2-list">
+              {loanStats.map((stat) => (
+                <div key={stat.label} className="trust-v2-item">
+                  <dt>{stat.label}</dt>
+                  <dd>{stat.value}</dd>
+                </div>
               ))}
-            </motion.div>
+            </dl>
           </div>
         </section>
 
-        {/* Process Section */}
-        <section className="service-process hlw-section">
-          <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">Simple Process</span>
-              <h2 className="section-title-new">How It Works</h2>
-              <p className="section-subtitle">
-                Get your home loan approved in 4 simple steps
+        {/* Benefits */}
+        <section className="hlx-section">
+          <div className="container hlx-split">
+            <div className="hlx-split-head">
+              <span className="featured-v2-eyebrow">What we do for you</span>
+              <h2 className="featured-v2-title">
+                A loan advisor <em>on your side.</em>
+              </h2>
+              <p className="hlx-body">
+                A bank&apos;s loan officer works for the bank. We work for you,
+                comparing every offer before you commit to one.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="hlw-track"
+            <motion.ul
+              className="hlx-benefits"
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-60px" }}
             >
-              {processSteps.map((item, i) => {
-                const isLast = i === processSteps.length - 1;
-                return (
-                  <motion.div
-                    key={item.step}
-                    className={`hlw-card${isLast ? " hlw-card--stamped" : ""}`}
-                    variants={fadeInUp}
-                  >
-                    <span className="hlw-number">{item.step}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+              {benefits.map((b) => (
+                <motion.li key={b.title} variants={fadeInUp}>
+                  <span className="hlx-benefit-icon">
+                    <b.icon className="w-5 h-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>{b.title}</h3>
+                    <p>{b.description}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </motion.ul>
           </div>
         </section>
 
-        {/* Eligibility & Documents */}
-        <section className="service-eligibility">
+        {/* Process: a real sequence, so the steps are numbered */}
+        <section className="hlx-section hlx-section--dusk">
           <div className="container">
-            <div className="eligibility-grid">
-              <motion.div
-                className="eligibility-card"
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <h3>
-                  <Users className="w-6 h-6" /> Eligibility Criteria
-                </h3>
+            <span className="hero-v2-eyebrow">How it works</span>
+            <h2 className="featured-v2-title hlx-title-light">
+              From first call <em>to keys.</em>
+            </h2>
+
+            <motion.ol
+              className="hlx-route"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+            >
+              {processSteps.map((s, i) => (
+                <motion.li key={s.title} variants={fadeInUp}>
+                  <span className="hlx-route-dot">{i + 1}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.description}</p>
+                </motion.li>
+              ))}
+            </motion.ol>
+          </div>
+        </section>
+
+        {/* Eligibility & documents */}
+        <section className="hlx-section">
+          <div className="container">
+            <span className="featured-v2-eyebrow">Before you apply</span>
+            <h2 className="featured-v2-title">
+              Check you qualify, <em>then gather these.</em>
+            </h2>
+
+            <div className="hlx-ready">
+              <div className="hlx-elig">
+                <h3>Eligibility</h3>
                 <ul>
                   {eligibility.map((item) => (
                     <li key={item}>
-                      <CheckCircle className="w-5 h-5" />
-                      <span>{item}</span>
+                      <Check className="w-4 h-4" aria-hidden="true" />
+                      {item}
                     </li>
                   ))}
                 </ul>
-              </motion.div>
+              </div>
 
-              <motion.div
-                className="documents-card"
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <h3>
-                  <FileText className="w-6 h-6" /> Documents Required
-                </h3>
-                <div className="documents-list">
+              <div className="hlx-docs">
+                <h3>Documents</h3>
+                <div className="hlx-docs-grid">
                   {documents.map((doc) => (
-                    <div key={doc.category} className="document-category">
-                      <h4>{doc.category}</h4>
+                    <div key={doc.category} className="hlx-doc">
+                      <span className="hlx-doc-tab">{doc.category}</span>
                       <ul>
                         {doc.items.map((item) => (
                           <li key={item}>{item}</li>
@@ -326,48 +395,35 @@ export default function HomeLoansPage() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Contact Section */}
-        <section id="contact" className="service-contact">
-          <div className="container">
-            <motion.div
-              className="service-contact-card"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="service-contact-content">
-                <h2>Ready to Finance Your Dream Home?</h2>
-                <p>
-                  Our home loan experts are ready to help you find the best
-                  financing options. Get a free consultation and personalized
-                  rate quote today. No obligations, no hidden fees.
-                </p>
-              </div>
-              <div className="service-contact-cta">
-                <button 
-                  onClick={() => setIsModalOpen(true)} 
-                  className="btn-primary"
-                >
-                  Get Free Consultation
-                </button>
-                <a href="tel:+919673655631" className="btn-secondary">
-                  <Phone className="w-5 h-5" />
-                  Call Now
-                </a>
-              </div>
-            </motion.div>
+        {/* Closing CTA — the landing page's saffron band */}
+        <section id="contact" className="cta-v2">
+          <div className="container cta-v2-inner">
+            <h2 className="cta-v2-title">
+              Found the home?
+              <em>Let&apos;s fund it.</em>
+            </h2>
+            <div className="cta-v2-buttons">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="cta-v2-btn-primary"
+              >
+                Get a free consultation
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <Link href="/properties" className="cta-v2-btn-outline">
+                Browse properties
+              </Link>
+            </div>
           </div>
         </section>
       </main>
       <Footer />
 
-      {/* Consultation Form Modal */}
       <ConsultationFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -376,4 +432,3 @@ export default function HomeLoansPage() {
     </>
   );
 }
-

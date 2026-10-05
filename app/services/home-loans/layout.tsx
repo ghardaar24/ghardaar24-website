@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-
 export const metadata: Metadata = {
   title: "Home Loan Assistance Pune | Best Rates & Quick Approval | Ghardaar24",
   description:

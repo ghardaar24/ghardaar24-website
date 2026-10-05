@@ -17,11 +17,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, BarChart2, ArrowLeft } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from "lucide-react";
 import { motion } from "@/lib/motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface RevenueEntry {
   id: string;
@@ -146,33 +147,29 @@ export default function RevenueAnalyticsPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <motion.div className="admin-page-header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <Link
-            href="/admin/revenue"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "2.5rem", height: "2.5rem", borderRadius: "0.5rem", background: "#f3f4f6", color: "#374151" }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1>Revenue Analytics</h1>
-            <p>Financial performance overview</p>
-          </div>
-        </div>
-        {/* Range selector */}
-        <div style={{ display: "flex", gap: "0.375rem" }}>
-          {(["3m", "6m", "1y", "all"] as const).map((r) => (
-            <Button
-              key={r}
-              onClick={() => setRange(r)}
-              className={range === r ? "btn-primary" : "btn-secondary"}
-              style={{ padding: "0.375rem 0.75rem", fontSize: "0.8rem" }}
-            >
-              {r === "all" ? "All time" : r}
-            </Button>
-          ))}
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Money"
+        title="Revenue analytics"
+        description="How earnings and expenses have moved over time."
+        back={{ href: "/admin/revenue", label: "Revenue" }}
+        actions={
+          <>
+            {/* Range selector */}
+            <div style={{ display: "flex", gap: "0.375rem" }}>
+              {(["3m", "6m", "1y", "all"] as const).map((r) => (
+                <Button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={range === r ? "btn-primary" : "btn-secondary"}
+                  style={{ padding: "0.375rem 0.75rem", fontSize: "0.8rem" }}
+                >
+                  {r === "all" ? "All time" : r}
+                </Button>
+              ))}
+            </div>
+          </>
+        }
+      />
 
       {/* Stat Cards */}
       <div className="dashboard-stats-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>

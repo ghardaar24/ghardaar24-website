@@ -36,6 +36,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import PageHeader from "@/components/admin/PageHeader";
 
 // Types
 interface ActivityLog {
@@ -198,7 +199,7 @@ export default function CRMLogsPage() {
   // Get action badge style
   const getActionBadgeStyle = (actionType: string) => {
     if (actionType === "add_comment") {
-      return { backgroundColor: "#dbeafe", color: "#1d4ed8" };
+      return { backgroundColor: "var(--color-blue-100)", color: "var(--color-blue-700)" };
     }
     return { backgroundColor: "#fef3c7", color: "#92400e" };
   };
@@ -216,32 +217,25 @@ export default function CRMLogsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <Link href="/admin/crm" className="hover:text-gray-700">
-              CRM
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900">Activity Logs</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-7 h-7 text-indigo-600" />
-            Staff Activity Logs
-          </h1>
-          <p className="text-gray-500 mt-1">Track all changes made by staff members</p>
-        </div>
-        <Button
-          onClick={fetchLogs}
-          variant="secondary"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </Button>
-      </div>
+    <div className="admin-page space-y-6">
+      <PageHeader
+        eyebrow="People"
+        title="Staff activity"
+        description="Every change staff members make in the CRM."
+        back={{ href: "/admin/crm", label: "CRM" }}
+        actions={
+          <>
+            <Button
+              onClick={fetchLogs}
+              variant="secondary"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* Search and Filters */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">

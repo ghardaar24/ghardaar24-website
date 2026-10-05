@@ -55,6 +55,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface PropertyOption {
   id: string;
@@ -611,38 +612,34 @@ export default function AdminSiteVisitsPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <motion.div
-        className="admin-sv-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div>
-          <h1>
-            <MapPin className="w-7 h-7" />
-            Site Visits
-          </h1>
-          <p>Monitor all property visits & record your own</p>
-        </div>
-        <motion.button
-          className={`sv-add-btn ${showForm ? "active" : ""}`}
-          onClick={() => {
-            setShowForm(!showForm);
-            if (showForm) resetForm();
-          }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          {showForm ? (
-            <>
-              <X className="w-5 h-5" /> Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-5 h-5" /> New Visit
-            </>
-          )}
-        </motion.button>
-      </motion.div>
+      <PageHeader
+        eyebrow="Work"
+        title="Site visits"
+        description="Every property visit by your team, and a form to record your own."
+        actions={
+          <>
+            <motion.button
+              className={`sv-add-btn ${showForm ? "active" : ""}`}
+              onClick={() => {
+                setShowForm(!showForm);
+                if (showForm) resetForm();
+              }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {showForm ? (
+                <>
+                  <X className="w-5 h-5" /> Cancel
+                </>
+              ) : (
+                <>
+                  <Plus className="w-5 h-5" /> New Visit
+                </>
+              )}
+            </motion.button>
+          </>
+        }
+      />
 
       {/* Message */}
       <AnimatePresence>
@@ -1024,7 +1021,7 @@ export default function AdminSiteVisitsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="admin-sv-stat-card" style={{ "--stat-color": "#3b82f6" } as React.CSSProperties}>
+        <div className="admin-sv-stat-card" style={{ "--stat-color": "var(--color-blue-500)" } as React.CSSProperties}>
           <div className="admin-sv-stat-icon">
             <Eye className="w-5 h-5" />
           </div>
@@ -1051,7 +1048,7 @@ export default function AdminSiteVisitsPage() {
             <span className="admin-sv-stat-label">This Week</span>
           </div>
         </div>
-        <div className="admin-sv-stat-card" style={{ "--stat-color": "#8b5cf6" } as React.CSSProperties}>
+        <div className="admin-sv-stat-card" style={{ "--stat-color": "var(--color-purple-500)" } as React.CSSProperties}>
           <div className="admin-sv-stat-icon">
             <Users className="w-5 h-5" />
           </div>

@@ -31,21 +31,51 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const navItems = [
-  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/properties", icon: Building, label: "Properties" },
-  { href: "/admin/properties/new", icon: Plus, label: "Add Property" },
-  { href: "/admin/approvals", icon: CheckCircle, label: "Approvals" },
-  { href: "/admin/locations", icon: MapPin, label: "Locations" },
-  { href: "/admin/inquiries", icon: MessageSquare, label: "Inquiries" },
-  { href: "/admin/leads", icon: User, label: "Leads" },
-  { href: "/admin/crm", icon: Users, label: "CRM" },
-  { href: "/admin/tasks", icon: ClipboardList, label: "Tasks" },
-  { href: "/admin/site-visits", icon: Eye, label: "Site Visits" },
-  { href: "/admin/staff", icon: UserCog, label: "Staff Management" },
-  { href: "/admin/downloads", icon: Download, label: "Downloads" },
-  { href: "/admin/invoice-generator", icon: Receipt, label: "Invoice Gen" },
-  { href: "/admin/revenue", icon: TrendingUp, label: "Revenue" },
+// Reachable without a session, and rendered without the sidebar shell.
+const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+
+// Grouped by job; the group names also appear as each page's eyebrow.
+const navGroups = [
+  {
+    label: "Overview",
+    items: [{ href: "/admin", icon: LayoutDashboard, label: "Dashboard" }],
+  },
+  {
+    label: "Listings",
+    items: [
+      { href: "/admin/properties", icon: Building, label: "Properties" },
+      { href: "/admin/properties/new", icon: Plus, label: "Add property" },
+      { href: "/admin/approvals", icon: CheckCircle, label: "Approvals" },
+      { href: "/admin/locations", icon: MapPin, label: "Locations" },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { href: "/admin/inquiries", icon: MessageSquare, label: "Inquiries" },
+      { href: "/admin/leads", icon: User, label: "Leads" },
+      { href: "/admin/crm", icon: Users, label: "CRM" },
+      { href: "/admin/staff", icon: UserCog, label: "Staff" },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { href: "/admin/tasks", icon: ClipboardList, label: "Tasks" },
+      { href: "/admin/site-visits", icon: Eye, label: "Site visits" },
+    ],
+  },
+  {
+    label: "Money",
+    items: [
+      { href: "/admin/revenue", icon: TrendingUp, label: "Revenue" },
+      { href: "/admin/invoice-generator", icon: Receipt, label: "Invoices" },
+    ],
+  },
+  {
+    label: "Content",
+    items: [{ href: "/admin/downloads", icon: Download, label: "Downloads" }],
+  },
 ];
 
 export default function AdminLayout({
@@ -62,7 +92,7 @@ export default function AdminLayout({
   useEffect(() => {
     if (loading) return;
 
-    if (!user && pathname !== "/admin/login") {
+    if (!user && !PUBLIC_ADMIN_PATHS.includes(pathname)) {
       router.push("/admin/login");
       return;
     }
@@ -87,7 +117,7 @@ export default function AdminLayout({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  if (pathname === "/admin/login") {
+  if (PUBLIC_ADMIN_PATHS.includes(pathname)) {
     return <>{children}</>;
   }
 
@@ -118,7 +148,8 @@ export default function AdminLayout({
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
-    return pathname?.startsWith(href);
+    if (href === "/admin/properties" && pathname === "/admin/properties/new") return false;
+    return pathname === href || pathname?.startsWith(href + "/");
   };
 
   return (
@@ -168,7 +199,7 @@ export default function AdminLayout({
         </motion.div>
         <span className="admin-brand flex items-center gap-2">
           <Image
-            src="/logo2.png"
+            src="/logo3.png"
             alt="Ghardaar24"
             width={120}
             height={40}
@@ -187,7 +218,7 @@ export default function AdminLayout({
               whileTap={{ scale: 0.95 }}
             >
               <Image
-                src="/logo2.png"
+                src="/logo3.png"
                 alt="Ghardaar24"
                 width={120}
                 height={40}
@@ -198,24 +229,22 @@ export default function AdminLayout({
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item, index) => (
-            <motion.div
-              key={item.href}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Link
-                href={item.href}
-                className={`sidebar-link ${
-                  isActive(item.href) ? "active" : ""
-                }`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            </motion.div>
+          {navGroups.map((group) => (
+            <div key={group.label} className="sidebar-group">
+              <p className="sidebar-group-label">{group.label}</p>
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`sidebar-link ${isActive(item.href) ? "active" : ""}`}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -263,19 +292,19 @@ export default function AdminLayout({
               render={<Link href="/" target="_blank" />}
             >
               <Settings className="w-5 h-5" />
-              <span>View Site</span>
+              <span>View site</span>
             </Button>
           </motion.div>
-          <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
+          <div>
             <Button
               variant="ghost"
               onClick={signOut}
               className="sidebar-link logout justify-start"
             >
               <LogOut className="w-5 h-5" />
-              <span>Sign Out</span>
+              <span>Sign out</span>
             </Button>
-          </motion.div>
+          </div>
         </div>
       </aside>
 

@@ -39,10 +39,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-bg-elements">
-        <div className="auth-bg-circle auth-bg-circle-1" />
-        <div className="auth-bg-circle auth-bg-circle-2" />
-      </div>
 
       <motion.div
         className="auth-container"

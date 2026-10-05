@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface CRMClient {
   id: string;
@@ -177,24 +178,14 @@ export default function AnalyticsPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 space-y-8">
+    <div className="admin-page space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-gray-500 mb-2">
-            <Link href="/admin/crm" className="hover:text-primary transition-colors flex items-center gap-1">
-              <ArrowLeft className="w-4 h-4" />
-              Back to CRM
-            </Link>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Analytics Dashboard
-            </h1>
-            <p className="text-gray-500">Insights and performance metrics for your clients</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="People"
+        title="CRM analytics"
+        description="How your clients break down by type, status and source."
+        back={{ href: "/admin/crm", label: "CRM" }}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

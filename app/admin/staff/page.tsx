@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "@/lib/motion";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import {
-  ArrowLeft,
   Plus,
   Edit2,
   Trash2,
@@ -57,6 +55,7 @@ import {
   Compass,
   CreditCard,
 } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface Staff {
   id: string;
@@ -511,36 +510,27 @@ export default function StaffManagementPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link
-            href="/admin"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '2.5rem', height: '2.5rem', borderRadius: '0.5rem', background: '#f3f4f6' }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1>Staff Management</h1>
-            <p>Manage staff members and their CRM sheet access</p>
-          </div>
-        </div>
-        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <Button
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="btn-admin-primary"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Staff</span>
-          </Button>
-        </motion.div>
-      </motion.div>
+      <PageHeader
+        eyebrow="People"
+        title="Staff"
+        description="Staff members and their CRM sheet access."
+        actions={
+          <>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowAddModal(true);
+                }}
+                className="btn-admin-primary"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Staff</span>
+              </Button>
+            </motion.div>
+          </>
+        }
+      />
 
       {/* Info Card */}
       <motion.div
@@ -549,7 +539,7 @@ export default function StaffManagementPage() {
         transition={{ delay: 0.1 }}
         style={{
           padding: '1rem 1.25rem',
-          background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)',
+          background: 'linear-gradient(135deg, var(--color-indigo-50) 0%, var(--color-indigo-100) 100%)',
           borderRadius: '0.75rem',
           marginBottom: '1.5rem',
           display: 'flex',
@@ -557,8 +547,8 @@ export default function StaffManagementPage() {
           gap: '0.75rem',
         }}
       >
-        <Shield className="w-5 h-5" style={{ color: '#6366f1' }} />
-        <p style={{ fontSize: '0.875rem', color: '#4338ca' }}>
+        <Shield className="w-5 h-5" style={{ color: 'var(--color-indigo-500)' }} />
+        <p style={{ fontSize: '0.875rem', color: 'var(--color-indigo-700)' }}>
           Staff members can only view sheets you grant them access to. They can login at <strong>/staff/login</strong>
         </p>
       </motion.div>
@@ -573,14 +563,14 @@ export default function StaffManagementPage() {
             padding: '4rem',
             background: 'white',
             borderRadius: '1rem',
-            border: '1px solid #e5e7eb',
+            border: '1px solid var(--color-gray-200)',
           }}
         >
-          <User className="w-12 h-12 mx-auto mb-4" style={{ color: '#9ca3af' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>
+          <User className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-gray-400)' }} />
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: '0.5rem' }}>
             No Staff Members Yet
           </h3>
-          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          <p style={{ color: 'var(--color-gray-500)', marginBottom: '1.5rem' }}>
             Add staff members to give them read-only access to specific CRM sheets.
           </p>
           <Button
@@ -601,29 +591,29 @@ export default function StaffManagementPage() {
           style={{
             background: 'white',
             borderRadius: '1rem',
-            border: '1px solid #e5e7eb',
+            border: '1px solid var(--color-gray-200)',
             overflow: 'hidden',
           }}
         >
           <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <TableHeader style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+            <TableHeader style={{ background: 'var(--color-gray-50)', borderBottom: '1px solid var(--color-gray-200)' }}>
               <TableRow>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   Name
                 </TableHead>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   Email
                 </TableHead>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   CRM Sheets
                 </TableHead>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   Inquiries
                 </TableHead>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   Status
                 </TableHead>
-                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>
+                <TableHead style={{ padding: '0.875rem 1rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-gray-500)', textTransform: 'uppercase' }}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -633,9 +623,9 @@ export default function StaffManagementPage() {
                 const accessibleSheets = getStaffSheets(s.id);
                 const accessibleInquiryTypes = getStaffInquiryTypes(s.id);
                 return (
-                  <TableRow key={s.id} style={{ borderBottom: index < staff.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                    <TableCell style={{ padding: '1rem', fontWeight: 500, color: '#111827' }}>{s.name}</TableCell>
-                    <TableCell style={{ padding: '1rem', color: '#6b7280' }}>{s.email}</TableCell>
+                  <TableRow key={s.id} style={{ borderBottom: index < staff.length - 1 ? '1px solid var(--color-gray-100)' : 'none' }}>
+                    <TableCell style={{ padding: '1rem', fontWeight: 500, color: 'var(--color-gray-900)' }}>{s.name}</TableCell>
+                    <TableCell style={{ padding: '1rem', color: 'var(--color-gray-500)' }}>{s.email}</TableCell>
                     <TableCell style={{ padding: '1rem' }}>
                       {accessibleSheets.length > 0 ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
@@ -648,8 +638,8 @@ export default function StaffManagementPage() {
                                 alignItems: 'center',
                                 gap: '0.25rem',
                                 padding: '0.25rem 0.5rem',
-                                background: '#eef2ff',
-                                color: '#4338ca',
+                                background: 'var(--color-indigo-50)',
+                                color: 'var(--color-indigo-700)',
                                 borderRadius: '0.375rem',
                                 fontSize: '0.75rem',
                                 fontWeight: 500,
@@ -662,13 +652,13 @@ export default function StaffManagementPage() {
                             </Badge>
                           ))}
                           {accessibleSheets.length > 2 && (
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
                               +{accessibleSheets.length - 2}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>None</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-400)' }}>None</span>
                       )}
                     </TableCell>
                     <TableCell style={{ padding: '1rem' }}>
@@ -689,7 +679,7 @@ export default function StaffManagementPage() {
                           })}
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>None</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-400)' }}>None</span>
                       )}
                     </TableCell>
                     <TableCell style={{ padding: '1rem' }}>
@@ -728,8 +718,8 @@ export default function StaffManagementPage() {
                             alignItems: 'center',
                             gap: '0.25rem',
                             padding: '0.375rem 0.75rem',
-                            background: '#eef2ff',
-                            color: '#4338ca',
+                            background: 'var(--color-indigo-50)',
+                            color: 'var(--color-indigo-700)',
                             borderRadius: '0.375rem',
                             fontSize: '0.75rem',
                             fontWeight: 500,
@@ -751,8 +741,8 @@ export default function StaffManagementPage() {
                             alignItems: 'center',
                             gap: '0.25rem',
                             padding: '0.375rem 0.75rem',
-                            background: s.id_card_issued_at ? '#d1fae5' : '#f3f4f6',
-                            color: s.id_card_issued_at ? '#047857' : '#4b5563',
+                            background: s.id_card_issued_at ? '#d1fae5' : 'var(--color-gray-100)',
+                            color: s.id_card_issued_at ? '#047857' : 'var(--color-gray-600)',
                             borderRadius: '0.375rem',
                             fontSize: '0.75rem',
                             fontWeight: 500,
@@ -773,14 +763,14 @@ export default function StaffManagementPage() {
                           }}
                           style={{
                             padding: '0.375rem',
-                            background: '#f3f4f6',
+                            background: 'var(--color-gray-100)',
                             borderRadius: '0.375rem',
                             border: 'none',
                             height: 'auto',
                             width: 'auto',
                           }}
                         >
-                          <Edit2 className="w-4 h-4" style={{ color: '#6b7280' }} />
+                          <Edit2 className="w-4 h-4" style={{ color: 'var(--color-gray-500)' }} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -843,7 +833,7 @@ export default function StaffManagementPage() {
                 )}
 
                 <div style={{ marginBottom: '1rem' }}>
-                  <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
+                  <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
                     Email
                   </Label>
                   <div style={{ position: 'relative' }}>
@@ -865,16 +855,16 @@ export default function StaffManagementPage() {
                         paddingRight: lookingUpEmail || emailLookupResult ? '2.5rem' : '0.75rem',
                         paddingTop: '0.625rem',
                         paddingBottom: '0.625rem',
-                        border: emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin ? '1px solid #22c55e' : '1px solid #d1d5db',
+                        border: emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin ? '1px solid #22c55e' : '1px solid var(--color-gray-300)',
                         borderRadius: '0.5rem',
                         fontSize: '0.875rem',
                         opacity: editingStaff ? 0.6 : 1,
                         height: 'auto',
                       }}
                     />
-                    <Mail className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', zIndex: 10, pointerEvents: 'none' }} />
+                    <Mail className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)', zIndex: 10, pointerEvents: 'none' }} />
                     {lookingUpEmail && (
-                      <Loader2 className="w-4 h-4 animate-spin" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#6366f1', zIndex: 10, pointerEvents: 'none' }} />
+                      <Loader2 className="w-4 h-4 animate-spin" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-indigo-500)', zIndex: 10, pointerEvents: 'none' }} />
                     )}
                     {!lookingUpEmail && emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin && (
                       <CheckCircle className="w-4 h-4" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#22c55e', zIndex: 10, pointerEvents: 'none' }} />
@@ -887,14 +877,14 @@ export default function StaffManagementPage() {
                     </p>
                   )}
                   {!editingStaff && !emailLookupResult?.exists && emailLookupResult !== null && (
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.375rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)', marginTop: '0.375rem' }}>
                       New user - a password will be required.
                     </p>
                   )}
                 </div>
 
                 <div style={{ marginBottom: '1rem' }}>
-                  <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
+                  <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
                     Full Name {emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin && <span style={{ fontWeight: 400, color: '#22c55e' }}>(auto-filled)</span>}
                   </Label>
                   <div style={{ position: 'relative' }}>
@@ -911,17 +901,17 @@ export default function StaffManagementPage() {
                         paddingRight: '0.75rem',
                         paddingTop: '0.625rem',
                         paddingBottom: '0.625rem',
-                        border: '1px solid #d1d5db',
+                        border: '1px solid var(--color-gray-300)',
                         borderRadius: '0.5rem',
                         fontSize: '0.875rem',
-                        backgroundColor: emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin ? '#f3f4f6' : 'white',
+                        backgroundColor: emailLookupResult?.exists && !emailLookupResult.isStaff && !emailLookupResult.isAdmin ? 'var(--color-gray-100)' : 'white',
                         height: 'auto',
                       }}
                     />
-                    <User className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', zIndex: 10, pointerEvents: 'none' }} />
+                    <User className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)', zIndex: 10, pointerEvents: 'none' }} />
                   </div>
                   {!editingStaff && !emailLookupResult?.exists && emailLookupResult !== null && (
-                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.375rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)', marginTop: '0.375rem' }}>
                       This name will also be used as the display name in the database.
                     </p>
                   )}
@@ -929,8 +919,8 @@ export default function StaffManagementPage() {
 
                 {!editingStaff && (
                   <div style={{ marginBottom: '1rem' }}>
-                    <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
-                      Password <span style={{ fontWeight: 400, color: '#9ca3af' }}>(optional for existing users)</span>
+                    <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                      Password <span style={{ fontWeight: 400, color: 'var(--color-gray-400)' }}>(optional for existing users)</span>
                     </Label>
                     <div style={{ position: 'relative' }}>
                       <Input
@@ -945,15 +935,15 @@ export default function StaffManagementPage() {
                           paddingRight: '0.75rem',
                           paddingTop: '0.625rem',
                           paddingBottom: '0.625rem',
-                          border: '1px solid #d1d5db',
+                          border: '1px solid var(--color-gray-300)',
                           borderRadius: '0.5rem',
                           fontSize: '0.875rem',
                           height: 'auto',
                         }}
                       />
-                      <Lock className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', zIndex: 10, pointerEvents: 'none' }} />
+                      <Lock className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)', zIndex: 10, pointerEvents: 'none' }} />
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.375rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-gray-400)', marginTop: '0.375rem' }}>
                       Leave blank if the user already has an account - they&apos;ll use their existing password.
                     </p>
                   </div>
@@ -961,8 +951,8 @@ export default function StaffManagementPage() {
 
                 {editingStaff && (
                   <div style={{ marginBottom: '1.5rem' }}>
-                    <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
-                      New Password <span style={{ fontWeight: 400, color: '#9ca3af' }}>(optional)</span>
+                    <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
+                      New Password <span style={{ fontWeight: 400, color: 'var(--color-gray-400)' }}>(optional)</span>
                     </Label>
                     <div style={{ position: 'relative' }}>
                       <Input
@@ -977,15 +967,15 @@ export default function StaffManagementPage() {
                           paddingRight: '0.75rem',
                           paddingTop: '0.625rem',
                           paddingBottom: '0.625rem',
-                          border: '1px solid #d1d5db',
+                          border: '1px solid var(--color-gray-300)',
                           borderRadius: '0.5rem',
                           fontSize: '0.875rem',
                           height: 'auto',
                         }}
                       />
-                      <Lock className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', zIndex: 10, pointerEvents: 'none' }} />
+                      <Lock className="w-4 h-4" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)', zIndex: 10, pointerEvents: 'none' }} />
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.375rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-gray-400)', marginTop: '0.375rem' }}>
                       Enter a new password to reset the staff member&apos;s password
                     </p>
                   </div>
@@ -1049,9 +1039,9 @@ export default function StaffManagementPage() {
                       gap: '0.5rem',
                       padding: '0.75rem 1rem',
                       borderRadius: '0.5rem',
-                      border: accessTab === 'sheets' ? '2px solid #6366f1' : '1px solid #e5e7eb',
-                      background: accessTab === 'sheets' ? '#eef2ff' : 'white',
-                      color: accessTab === 'sheets' ? '#4338ca' : '#6b7280',
+                      border: accessTab === 'sheets' ? '2px solid var(--color-indigo-500)' : '1px solid var(--color-gray-200)',
+                      background: accessTab === 'sheets' ? 'var(--color-indigo-50)' : 'white',
+                      color: accessTab === 'sheets' ? 'var(--color-indigo-700)' : 'var(--color-gray-500)',
                       fontWeight: 500,
                       fontSize: '0.875rem',
                       height: 'auto',
@@ -1072,9 +1062,9 @@ export default function StaffManagementPage() {
                       gap: '0.5rem',
                       padding: '0.75rem 1rem',
                       borderRadius: '0.5rem',
-                      border: accessTab === 'inquiries' ? '2px solid var(--primary)' : '1px solid #e5e7eb',
+                      border: accessTab === 'inquiries' ? '2px solid var(--primary)' : '1px solid var(--color-gray-200)',
                       background: accessTab === 'inquiries' ? 'rgba(243, 106, 42, 0.1)' : 'white',
-                      color: accessTab === 'inquiries' ? 'var(--primary)' : '#6b7280',
+                      color: accessTab === 'inquiries' ? 'var(--primary)' : 'var(--color-gray-500)',
                       fontWeight: 500,
                       fontSize: '0.875rem',
                       cursor: 'pointer',
@@ -1096,9 +1086,9 @@ export default function StaffManagementPage() {
                       gap: '0.5rem',
                       padding: '0.75rem 1rem',
                       borderRadius: '0.5rem',
-                      border: accessTab === 'permissions' ? '2px solid #10b981' : '1px solid #e5e7eb',
+                      border: accessTab === 'permissions' ? '2px solid #10b981' : '1px solid var(--color-gray-200)',
                       background: accessTab === 'permissions' ? '#d1fae5' : 'white',
-                      color: accessTab === 'permissions' ? '#047857' : '#6b7280',
+                      color: accessTab === 'permissions' ? '#047857' : 'var(--color-gray-500)',
                       fontWeight: 500,
                       fontSize: '0.875rem',
                       height: 'auto',
@@ -1112,7 +1102,7 @@ export default function StaffManagementPage() {
                 {/* Sheets Tab Content */}
                 {accessTab === 'sheets' && (
                   <>
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '1rem' }}>
                       Select which CRM sheets this staff member can view.
                     </p>
 
@@ -1120,11 +1110,11 @@ export default function StaffManagementPage() {
                       <div style={{
                         padding: '2rem',
                         textAlign: 'center',
-                        background: '#f9fafb',
+                        background: 'var(--color-gray-50)',
                         borderRadius: '0.75rem',
                       }}>
-                        <FileSpreadsheet className="w-8 h-8 mx-auto mb-2" style={{ color: '#9ca3af' }} />
-                        <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                        <FileSpreadsheet className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--color-gray-400)' }} />
+                        <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)' }}>
                           No sheets available. Import data to create sheets first.
                         </p>
                       </div>
@@ -1143,16 +1133,16 @@ export default function StaffManagementPage() {
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 padding: '0.875rem 1rem',
-                                background: hasAccess ? '#eef2ff' : '#f9fafb',
-                                border: hasAccess ? '2px solid #6366f1' : '1px solid #e5e7eb',
+                                background: hasAccess ? 'var(--color-indigo-50)' : 'var(--color-gray-50)',
+                                border: hasAccess ? '2px solid var(--color-indigo-500)' : '1px solid var(--color-gray-200)',
                                 borderRadius: '0.5rem',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <FileSpreadsheet className="w-5 h-5" style={{ color: hasAccess ? '#4338ca' : '#6b7280' }} />
-                                <span style={{ fontWeight: 500, color: hasAccess ? '#4338ca' : '#374151' }}>
+                                <FileSpreadsheet className="w-5 h-5" style={{ color: hasAccess ? 'var(--color-indigo-700)' : 'var(--color-gray-500)' }} />
+                                <span style={{ fontWeight: 500, color: hasAccess ? 'var(--color-indigo-700)' : 'var(--color-gray-700)' }}>
                                   {sheet.name}
                                 </span>
                               </div>
@@ -1163,7 +1153,7 @@ export default function StaffManagementPage() {
                                   justifyContent: 'center',
                                   width: '1.25rem',
                                   height: '1.25rem',
-                                  background: '#6366f1',
+                                  background: 'var(--color-indigo-500)',
                                   borderRadius: '9999px',
                                 }}>
                                   <Check className="w-3 h-3" style={{ color: 'white' }} />
@@ -1180,7 +1170,7 @@ export default function StaffManagementPage() {
                 {/* Inquiries Tab Content */}
                 {accessTab === 'inquiries' && (
                   <>
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '1rem' }}>
                       Select which inquiry types this staff member can view.
                     </p>
 
@@ -1191,9 +1181,9 @@ export default function StaffManagementPage() {
                         );
                         const Icon = getInquiryTypeIcon(type);
                         const colorMap = {
-                          property: { bg: '#dbeafe', border: '#3b82f6', text: '#1d4ed8' },
+                          property: { bg: 'var(--color-blue-100)', border: 'var(--color-blue-500)', text: 'var(--color-blue-700)' },
                           home_loan: { bg: '#dcfce7', border: '#22c55e', text: '#16a34a' },
-                          interior_design: { bg: '#f3e8ff', border: '#a855f7', text: '#9333ea' },
+                          interior_design: { bg: 'var(--color-purple-50)', border: '#a855f7', text: '#9333ea' },
                           vastu_consultation: { bg: '#ffedd5', border: '#f97316', text: '#c2410c' },
                         };
                         const colors = colorMap[type];
@@ -1207,7 +1197,7 @@ export default function StaffManagementPage() {
                               alignItems: 'center',
                               justifyContent: 'space-between',
                               padding: '0.875rem 1rem',
-                              background: hasAccess ? colors.bg : '#f9fafb',
+                              background: hasAccess ? colors.bg : 'var(--color-gray-50)',
                               border: hasAccess ? `2px solid ${colors.border}` : '1px solid #e5e7eb',
                               borderRadius: '0.5rem',
                               cursor: 'pointer',
@@ -1215,8 +1205,8 @@ export default function StaffManagementPage() {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                              <Icon className="w-5 h-5" style={{ color: hasAccess ? colors.text : '#6b7280' }} />
-                              <span style={{ fontWeight: 500, color: hasAccess ? colors.text : '#374151' }}>
+                              <Icon className="w-5 h-5" style={{ color: hasAccess ? colors.text : 'var(--color-gray-500)' }} />
+                              <span style={{ fontWeight: 500, color: hasAccess ? colors.text : 'var(--color-gray-700)' }}>
                                 {getInquiryTypeLabel(type)} Inquiries
                               </span>
                             </div>
@@ -1243,7 +1233,7 @@ export default function StaffManagementPage() {
                 {/* Privileges Tab Content */}
                 {accessTab === 'permissions' && (
                   <>
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-500)', marginBottom: '1rem' }}>
                       Select which global tools and sections this staff member can access.
                     </p>
 
@@ -1256,17 +1246,17 @@ export default function StaffManagementPage() {
                           justifyContent: 'space-between',
                           padding: '0.875rem 1rem',
                           background: 'white',
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid var(--color-gray-200)',
                           borderRadius: '0.5rem',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <Building className="w-5 h-5 text-gray-500" />
                           <div>
-                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                            <span style={{ fontWeight: 500, color: 'var(--color-gray-700)', display: 'block' }}>
                               Manage Properties
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
                               Allows adding and editing real estate listings
                             </span>
                           </div>
@@ -1283,8 +1273,8 @@ export default function StaffManagementPage() {
                             fontWeight: 500,
                             border: 'none',
                             cursor: 'pointer',
-                            background: selectedStaff.can_manage_properties ? '#dcfce7' : '#f3f4f6',
-                            color: selectedStaff.can_manage_properties ? '#166534' : '#4b5563',
+                            background: selectedStaff.can_manage_properties ? '#dcfce7' : 'var(--color-gray-100)',
+                            color: selectedStaff.can_manage_properties ? '#166534' : 'var(--color-gray-600)',
                           }}
                         >
                           {selectedStaff.can_manage_properties ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
@@ -1299,17 +1289,17 @@ export default function StaffManagementPage() {
                           justifyContent: 'space-between',
                           padding: '0.875rem 1rem',
                           background: 'white',
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid var(--color-gray-200)',
                           borderRadius: '0.5rem',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <FileSpreadsheet className="w-5 h-5 text-gray-500" />
                           <div>
-                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                            <span style={{ fontWeight: 500, color: 'var(--color-gray-700)', display: 'block' }}>
                               Invoice Generator
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
                               Allows creating and printing official invoices
                             </span>
                           </div>
@@ -1326,8 +1316,8 @@ export default function StaffManagementPage() {
                             fontWeight: 500,
                             border: 'none',
                             cursor: 'pointer',
-                            background: selectedStaff.can_generate_invoices ? '#dcfce7' : '#f3f4f6',
-                            color: selectedStaff.can_generate_invoices ? '#166534' : '#4b5563',
+                            background: selectedStaff.can_generate_invoices ? '#dcfce7' : 'var(--color-gray-100)',
+                            color: selectedStaff.can_generate_invoices ? '#166534' : 'var(--color-gray-600)',
                           }}
                         >
                           {selectedStaff.can_generate_invoices ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
@@ -1342,17 +1332,17 @@ export default function StaffManagementPage() {
                           justifyContent: 'space-between',
                           padding: '0.875rem 1rem',
                           background: 'white',
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid var(--color-gray-200)',
                           borderRadius: '0.5rem',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <FileSpreadsheet className="w-5 h-5 text-gray-500" />
                           <div>
-                            <span style={{ fontWeight: 500, color: '#374151', display: 'block' }}>
+                            <span style={{ fontWeight: 500, color: 'var(--color-gray-700)', display: 'block' }}>
                               Create CRM Sheets & Add Leads
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
                               Allows creating new sheets and adding own leads
                             </span>
                           </div>
@@ -1369,8 +1359,8 @@ export default function StaffManagementPage() {
                             fontWeight: 500,
                             border: 'none',
                             cursor: 'pointer',
-                            background: selectedStaff.can_add_sheets ? '#dcfce7' : '#f3f4f6',
-                            color: selectedStaff.can_add_sheets ? '#166534' : '#4b5563',
+                            background: selectedStaff.can_add_sheets ? '#dcfce7' : 'var(--color-gray-100)',
+                            color: selectedStaff.can_add_sheets ? '#166534' : 'var(--color-gray-600)',
                           }}
                         >
                           {selectedStaff.can_add_sheets ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
@@ -1424,7 +1414,7 @@ export default function StaffManagementPage() {
               )}
 
               <div style={{ marginBottom: '1rem' }}>
-                <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
+                <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
                   Employee Code
                 </Label>
                 <Input
@@ -1432,12 +1422,12 @@ export default function StaffManagementPage() {
                   value={idCardForm.employee_code}
                   onChange={(e) => setIdCardForm((f) => ({ ...f, employee_code: e.target.value }))}
                   placeholder="e.g., GH24-014"
-                  style={{ width: '100%', padding: '0.625rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', fontSize: '0.875rem', height: 'auto' }}
+                  style={{ width: '100%', padding: '0.625rem 0.75rem', border: '1px solid var(--color-gray-300)', borderRadius: '0.5rem', fontSize: '0.875rem', height: 'auto' }}
                 />
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.375rem' }}>
+                <Label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: '0.375rem' }}>
                   Designation
                 </Label>
                 <Input
@@ -1445,7 +1435,7 @@ export default function StaffManagementPage() {
                   value={idCardForm.designation}
                   onChange={(e) => setIdCardForm((f) => ({ ...f, designation: e.target.value }))}
                   placeholder="e.g., Sales Executive"
-                  style={{ width: '100%', padding: '0.625rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', fontSize: '0.875rem', height: 'auto' }}
+                  style={{ width: '100%', padding: '0.625rem 0.75rem', border: '1px solid var(--color-gray-300)', borderRadius: '0.5rem', fontSize: '0.875rem', height: 'auto' }}
                 />
               </div>
 

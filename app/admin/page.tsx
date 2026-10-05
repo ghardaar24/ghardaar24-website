@@ -19,16 +19,10 @@ import {
   CheckSquare,
   Users,
   ClipboardCheck,
-  MapPin,
-  UserCog,
-  TrendingUp,
-  FileSpreadsheet,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, staggerContainer, fadeInUp } from "@/lib/motion";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
@@ -59,66 +53,18 @@ interface RecentProperty {
 }
 
 const statCards = [
-  {
-    key: "totalProperties",
-    icon: Building,
-    label: "Total Properties",
-    accent: "#2563eb",
-    bgLight: "#eff6ff",
-    href: "/admin/properties",
-  },
-  {
-    key: "featuredProperties",
-    icon: Star,
-    label: "Featured",
-    accent: "#d97706",
-    bgLight: "#fffbeb",
-    href: "/admin/properties",
-  },
-  {
-    key: "totalInquiries",
-    icon: MessageSquare,
-    label: "Total Inquiries",
-    accent: "#16a34a",
-    bgLight: "#f0fdf4",
-    href: "/admin/inquiries",
-  },
-  {
-    key: "pendingApprovals",
-    icon: ClipboardCheck,
-    label: "Pending Approvals",
-    accent: "#e85f1f",
-    bgLight: "#fff1e8",
-    href: "/admin/approvals",
-  },
-  {
-    key: "totalLeads",
-    icon: Users,
-    label: "Total Leads",
-    accent: "#7e22ce",
-    bgLight: "#faf5ff",
-    href: "/admin/leads",
-  },
-  {
-    key: "openTasks",
-    icon: CheckSquare,
-    label: "Open Tasks",
-    accent: "#be185d",
-    bgLight: "#fdf2f8",
-    href: "/admin/tasks",
-  },
-];
+  { key: "totalProperties", icon: Building, label: "Properties", href: "/admin/properties" },
+  { key: "featuredProperties", icon: Star, label: "Featured", href: "/admin/properties" },
+  { key: "totalInquiries", icon: MessageSquare, label: "Inquiries", href: "/admin/inquiries" },
+  { key: "pendingApprovals", icon: ClipboardCheck, label: "Pending approvals", href: "/admin/approvals" },
+  { key: "totalLeads", icon: Users, label: "Leads", href: "/admin/leads" },
+  { key: "openTasks", icon: CheckSquare, label: "Open tasks", href: "/admin/tasks" },
+] as const;
 
-const quickActions = [
-  { label: "Add Property", icon: Plus, href: "/admin/properties/new" },
-  { label: "Approvals", icon: ClipboardCheck, href: "/admin/approvals" },
-  { label: "CRM", icon: Users, href: "/admin/crm" },
-  { label: "Revenue", icon: TrendingUp, href: "/admin/revenue" },
-  { label: "Staff", icon: UserCog, href: "/admin/staff" },
-  { label: "Locations", icon: MapPin, href: "/admin/locations" },
-  { label: "Tasks", icon: CheckSquare, href: "/admin/tasks" },
-  { label: "Invoices", icon: FileSpreadsheet, href: "/admin/invoice-generator" },
-];
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+}
 
 export default function AdminDashboard() {
   const { adminProfile, refreshProfile } = useAdminAuth();
@@ -318,25 +264,32 @@ export default function AdminDashboard() {
     );
   }
 
+  const firstName = (adminProfile?.name || "Admin").split(" ")[0];
+  const attention = [
+    { count: stats.pendingApprovals, label: "properties waiting for approval", href: "/admin/approvals" },
+    { count: stats.openTasks, label: "open tasks", href: "/admin/tasks" },
+  ].filter((a) => a.count > 0);
+
   return (
-    <div className="admin-page">
-      {/* Profile Card */}
-      {adminProfile && (
-        <motion.div
-          className="profile-card"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="profile-card-left">
+    <div className="admin-page bo-dash">
+      {/* Greeting banner */}
+      <motion.section
+        className="bo-banner"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="bo-banner-main">
+          {adminProfile && (
             <div
-              className="profile-avatar-wrapper"
+              className="profile-avatar-wrapper bo-banner-avatar"
               onClick={() => fileInputRef.current?.click()}
+              title="Change profile picture"
             >
-              <Avatar className="profile-avatar-img w-20 h-20">
+              <Avatar className="profile-avatar-img w-16 h-16">
                 <AvatarImage src={adminProfile.profile_picture_url || undefined} alt={adminProfile.name || "Admin"} />
                 <AvatarFallback className="profile-avatar-placeholder">
-                  <User className="w-8 h-8" />
+                  <User className="w-7 h-7" />
                 </AvatarFallback>
               </Avatar>
               <div className="profile-avatar-overlay">
@@ -365,204 +318,136 @@ export default function AdminDashboard() {
                 style={{ display: "none" }}
               />
             </div>
-            <div className="profile-info">
-              <h2 className="profile-name">{adminProfile.name || "Admin"}</h2>
-              <div className="profile-detail">
-                <Mail className="w-4 h-4" />
-                <span>{adminProfile.email}</span>
-              </div>
-            </div>
+          )}
+          <div>
+            <p className="bo-banner-date">
+              {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+            </p>
+            <h1 className="bo-banner-title">
+              {greeting()}, <em>{firstName}.</em>
+            </h1>
+            {adminProfile?.email && (
+              <p className="bo-banner-sub">
+                <Mail className="w-4 h-4" aria-hidden="true" />
+                {adminProfile.email}
+              </p>
+            )}
           </div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-            <Button className="dashboard-cta-btn" render={<Link href="/admin/properties/new" />}>
-              <Plus className="w-5 h-5" />
-              Add New Property
-            </Button>
-          </motion.div>
-        </motion.div>
+        </div>
+        <Link href="/admin/properties/new" className="bo-btn bo-btn--solid">
+          <Plus className="w-4 h-4" />
+          Add property
+        </Link>
+      </motion.section>
+
+      {/* Needs attention */}
+      {attention.length > 0 && (
+        <div className="bo-attention">
+          <span className="bo-attention-label">Needs attention</span>
+          {attention.map((a) => (
+            <Link key={a.href} href={a.href} className="bo-attention-item">
+              <strong>{a.count}</strong> {a.label}
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
       )}
 
-      {/* Stats Grid */}
+      {/* Stats */}
       <motion.div
-        className="dashboard-metric-grid"
+        className="bo-stats"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        {statCards.map((stat, index) => (
-          <motion.div
-            key={stat.key}
-            variants={fadeInUp}
-            whileHover={{ y: -3 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Link href={stat.href} className="block">
-              <Card
-                className="dashboard-metric-card"
-                style={
-                  {
-                    "--metric-accent": stat.accent,
-                    "--metric-bg": stat.bgLight,
-                  } as React.CSSProperties
-                }
-              >
-                <div className="dashboard-metric-icon">
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <motion.span
-                  className="dashboard-metric-value"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + index * 0.05 }}
-                >
-                  {stats[stat.key as keyof Stats]}
-                </motion.span>
-                <span className="dashboard-metric-label">{stat.label}</span>
-              </Card>
+        {statCards.map((stat) => (
+          <motion.div key={stat.key} variants={fadeInUp}>
+            <Link href={stat.href} className="bo-stat">
+              <span className="bo-stat-icon">
+                <stat.icon className="w-4 h-4" />
+              </span>
+              <span className="bo-stat-value">{stats[stat.key as keyof Stats]}</span>
+              <span className="bo-stat-label">{stat.label}</span>
             </Link>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
-      >
-        <Card className="dashboard-section">
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Quick Actions</h2>
-          </div>
-          <div className="dashboard-quick-actions-grid">
-            {quickActions.map((action) => (
-              <Link key={action.href} href={action.href} className="dashboard-quick-action">
-                <action.icon className="w-5 h-5" />
-                <span>{action.label}</span>
-              </Link>
-            ))}
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* Main Content Grid */}
-      <div className="dashboard-content-grid">
-        {/* Recent Inquiries */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-        <Card className="dashboard-section dashboard-inquiries-section">
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Recent Inquiries</h2>
-            <Link href="/admin/inquiries" className="dashboard-view-all">
-              View All <ArrowRight className="w-4 h-4" />
+      {/* Recent activity */}
+      <div className="bo-two-col">
+        <section className="bo-panel">
+          <div className="bo-panel-head">
+            <h2>Recent inquiries</h2>
+            <Link href="/admin/inquiries" className="bo-link">
+              View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
           {recentInquiries.length > 0 ? (
-            <div className="dashboard-inquiries-list">
-              {recentInquiries.map((inquiry, index) => (
-                <motion.div
-                  key={inquiry.id}
-                  className="dashboard-inquiry-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.55 + index * 0.05 }}
-                >
-                  <div className="dashboard-inquiry-avatar">
-                    {inquiry.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="dashboard-inquiry-info">
-                    <span className="dashboard-inquiry-name">
-                      {inquiry.name}
-                    </span>
-                    <span className="dashboard-inquiry-time">
+            <ul className="bo-list">
+              {recentInquiries.map((inquiry) => (
+                <li key={inquiry.id}>
+                  <span className="bo-list-avatar">{inquiry.name.charAt(0).toUpperCase()}</span>
+                  <span className="bo-list-main">
+                    <span className="bo-list-title">{inquiry.name}</span>
+                    <span className="bo-list-meta">
                       <Clock className="w-3 h-3" />
                       {formatTimeAgo(inquiry.created_at)}
                     </span>
-                  </div>
-                  <Link
-                    href="/admin/inquiries"
-                    className="dashboard-inquiry-action"
-                  >
+                  </span>
+                  <Link href="/admin/inquiries" className="bo-icon-btn" aria-label={`View inquiry from ${inquiry.name}`}>
                     <Eye className="w-4 h-4" />
                   </Link>
-                </motion.div>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
-            <div className="dashboard-empty-state small">
-              <MessageSquare className="w-8 h-8" />
+            <div className="bo-empty">
+              <MessageSquare className="w-6 h-6" />
               <p>No inquiries yet</p>
             </div>
           )}
-        </Card>
-        </motion.div>
+        </section>
 
-        {/* Recent Properties */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55 }}
-        >
-        <Card className="dashboard-section dashboard-inquiries-section">
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Recent Properties</h2>
-            <Link href="/admin/properties" className="dashboard-view-all">
-              View All <ArrowRight className="w-4 h-4" />
+        <section className="bo-panel">
+          <div className="bo-panel-head">
+            <h2>Recent properties</h2>
+            <Link href="/admin/properties" className="bo-link">
+              View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
           {recentProperties.length > 0 ? (
-            <div className="dashboard-inquiries-list">
-              {recentProperties.map((property, index) => (
-                <motion.div
-                  key={property.id}
-                  className="dashboard-inquiry-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + index * 0.05 }}
-                >
-                  <div className="dashboard-inquiry-avatar" style={{ overflow: "hidden", padding: 0 }}>
+            <ul className="bo-list">
+              {recentProperties.map((property) => (
+                <li key={property.id}>
+                  <span className="bo-list-avatar bo-list-thumb">
                     {property.images?.[0] ? (
-                      <Image
-                        src={property.images[0]}
-                        alt={property.title}
-                        width={36}
-                        height={36}
-                        className="object-cover w-full h-full"
-                      />
+                      <Image src={property.images[0]} alt="" width={40} height={40} className="object-cover w-full h-full" />
                     ) : (
                       <Building className="w-4 h-4" />
                     )}
-                  </div>
-                  <div className="dashboard-inquiry-info">
-                    <span className="dashboard-inquiry-name">
-                      {property.title}
-                    </span>
-                    <span className="dashboard-inquiry-time">
+                  </span>
+                  <span className="bo-list-main">
+                    <span className="bo-list-title">{property.title}</span>
+                    <span className="bo-list-meta">
                       {formatPrice(property.price)} · {formatTimeAgo(property.created_at)}
                     </span>
-                  </div>
-                  <Link
-                    href={`/admin/properties/${property.id}`}
-                    className="dashboard-inquiry-action"
-                  >
+                  </span>
+                  {property.approval_status === "pending" && (
+                    <span className="bo-badge bo-badge--warn">Pending</span>
+                  )}
+                  <Link href={`/admin/properties/${property.id}`} className="bo-icon-btn" aria-label={`Edit ${property.title}`}>
                     <Eye className="w-4 h-4" />
                   </Link>
-                </motion.div>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
-            <div className="dashboard-empty-state small">
-              <Building className="w-8 h-8" />
+            <div className="bo-empty">
+              <Building className="w-6 h-6" />
               <p>No properties yet</p>
             </div>
           )}
-        </Card>
-        </motion.div>
+        </section>
       </div>
     </div>
   );

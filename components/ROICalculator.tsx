@@ -48,7 +48,7 @@ export default function ROICalculator() {
           <div className="emi-input-header">
             <label>
               <IndianRupee className="w-4 h-4" />
-              Investment Amount
+              Property price
             </label>
             <span className="emi-input-value">
               {formatCurrency(investmentAmount)}
@@ -73,7 +73,7 @@ export default function ROICalculator() {
           <div className="emi-input-header">
             <label>
               <IndianRupee className="w-4 h-4" />
-              Monthly Rent
+              Monthly rent
             </label>
             <span className="emi-input-value">
               {formatCurrency(monthlyRent)}
@@ -98,7 +98,7 @@ export default function ROICalculator() {
           <div className="emi-input-header">
             <label>
               <TrendingUp className="w-4 h-4" />
-              Annual Appreciation
+              Yearly price growth
             </label>
             <span className="emi-input-value">{appreciationRate}%</span>
           </div>
@@ -121,9 +121,9 @@ export default function ROICalculator() {
           <div className="emi-input-header">
             <label>
               <Calendar className="w-4 h-4" />
-              Holding Period
+              Years you hold it
             </label>
-            <span className="emi-input-value">{holdingPeriod} Years</span>
+            <span className="emi-input-value">{holdingPeriod} years</span>
           </div>
           <input
             type="range"
@@ -143,7 +143,7 @@ export default function ROICalculator() {
 
       <div className="emi-calculator-result">
         <div className="emi-result-main">
-          <span className="emi-result-label">Estimated ROI</span>
+          <span className="emi-result-label">Estimated total return</span>
           <motion.span
             className="emi-result-value"
             key={roi}
@@ -157,19 +157,19 @@ export default function ROICalculator() {
 
         <div className="emi-result-breakdown">
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Final Value</span>
+            <span className="breakdown-label">Value at sale</span>
             <span className="breakdown-value principal">
               {formatCurrency(finalValue)}
             </span>
           </div>
           <div className="emi-breakdown-item">
-            <span className="breakdown-label">Total Rent Earned</span>
+            <span className="breakdown-label">Rent earned</span>
             <span className="breakdown-value interest">
               {formatCurrency(totalRent)}
             </span>
           </div>
           <div className="emi-breakdown-item total">
-            <span className="breakdown-label">Total Gain</span>
+            <span className="breakdown-label">Total gain</span>
             <span className="breakdown-value">
               {formatCurrency(totalReturn)}
             </span>
@@ -182,7 +182,7 @@ export default function ROICalculator() {
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
         >
-          Explore Investment Options
+          Explore properties for sale
         </motion.a>
       </div>
     </motion.div>

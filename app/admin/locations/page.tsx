@@ -41,6 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface Location {
   id: string;
@@ -164,19 +165,12 @@ export default function LocationsPage() {
   );
 
   return (
-    <div className="admin-page p-6">
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Manage Locations
-        </h1>
-        <p className="text-gray-500">
-          Add or remove service locations (State & City)
-        </p>
-      </motion.div>
+    <div className="admin-page">
+      <PageHeader
+        eyebrow="Listings"
+        title="Locations"
+        description="Add or remove the states and cities you serve."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Add New Location Form */}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -10,18 +9,11 @@ import {
   Sparkles,
   Phone,
   ArrowRight,
-  CheckCircle,
-  Sun,
-  Wind,
-  Droplets,
-  Flame,
-  Mountain,
-  Star,
-  Shield,
-  TrendingUp,
-  Heart,
+  Factory,
+  ClipboardCheck,
+  MessageCircle,
 } from "lucide-react";
-import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConsultationFormModal from "@/components/ConsultationFormModal";
@@ -29,206 +21,127 @@ import ConsultationFormModal from "@/components/ConsultationFormModal";
 const services = [
   {
     icon: Home,
-    title: "Residential Vastu",
+    title: "Homes",
     description:
-      "Complete Vastu analysis for your home including room placements, entrance direction, kitchen positioning, and bedroom layouts for positive energy flow.",
+      "Entrance, kitchen, bedrooms and puja room checked against their directions, with fixes for anything out of place.",
   },
   {
     icon: Building2,
-    title: "Commercial Vastu",
+    title: "Offices and shops",
     description:
-      "Optimize your office, shop, or business premises with Vastu principles to enhance productivity, attract prosperity, and create a harmonious work environment.",
+      "Seating, cash counter and entrance placed to suit the way your business runs.",
   },
   {
     icon: Compass,
-    title: "Plot Selection",
+    title: "Plot selection",
     description:
-      "Guidance on selecting the right plot based on Vastu principles including shape, direction, slope, and surrounding environment analysis.",
+      "Shape, facing, slope and surroundings checked before you buy, not after.",
   },
   {
     icon: Sparkles,
-    title: "Vastu Remedies",
+    title: "Remedies without demolition",
     description:
-      "Practical, non-demolition remedies to correct Vastu defects in existing properties using colors, mirrors, plants, and energy balancing techniques.",
+      "Corrections using colours, mirrors, plants and placement, so you don't have to break walls.",
   },
   {
-    icon: TrendingUp,
-    title: "Industrial Vastu",
+    icon: Factory,
+    title: "Factories and warehouses",
     description:
-      "Specialized Vastu consultation for factories, warehouses, and industrial units to improve efficiency, reduce accidents, and boost growth.",
+      "Layouts for machinery, storage and loading areas in industrial units.",
   },
   {
-    icon: Shield,
-    title: "Vastu Audit",
+    icon: ClipboardCheck,
+    title: "Vastu audit",
     description:
-      "Comprehensive evaluation of your existing property with detailed report, identifying issues and providing actionable recommendations.",
+      "A full review of an existing property, with a written report and a prioritised list of fixes.",
   },
 ];
 
-const elements = [
-  {
-    icon: Droplets,
-    name: "Water",
-    sanskrit: "Jal",
-    direction: "North-East",
-    angle: 45,
-    description: "Purity, clarity, and spiritual growth",
-  },
-  {
-    icon: Flame,
-    name: "Fire",
-    sanskrit: "Agni",
-    direction: "South-East",
-    angle: 135,
-    description: "Energy, transformation, and success",
-  },
-  {
-    icon: Mountain,
-    name: "Earth",
-    sanskrit: "Prithvi",
-    direction: "South-West",
-    angle: 225,
-    description: "Stability, strength, and grounding energy",
-  },
-  {
-    icon: Wind,
-    name: "Air",
-    sanskrit: "Vayu",
-    direction: "North-West",
-    angle: 315,
-    description: "Movement, freshness, and opportunities",
-  },
-];
-
-const centerElement = {
-  icon: Sun,
-  name: "Space",
-  sanskrit: "Akash",
-  description: "Expansion, consciousness, and balance",
-};
-
-const benefits = [
-  {
-    icon: Heart,
-    title: "Health & Well-being",
-    description: "Promote physical and mental health through balanced energy in living spaces",
-  },
-  {
-    icon: TrendingUp,
-    title: "Financial Prosperity",
-    description: "Attract wealth and abundance by optimizing the flow of positive energy",
-  },
-  {
-    icon: Star,
-    title: "Harmonious Relationships",
-    description: "Create an environment that fosters love, understanding, and peace in family",
-  },
-  {
-    icon: Shield,
-    title: "Protection & Security",
-    description: "Shield your home from negative energies and create a safe sanctuary",
-  },
+// The nine zones of the Vastu mandala, laid out with North at the top.
+const zones = [
+  { id: "NW", name: "North-west", element: "Air · ruled by Vayu", rooms: "Guest room, garage, storage for goods that move out", tip: "Good for anything that should keep moving." },
+  { id: "N", name: "North", element: "Ruled by Kubera", rooms: "Living room, home office, safe or locker", tip: "Keep it light and uncluttered. Traditionally linked with money." },
+  { id: "NE", name: "North-east", element: "Water · ruled by Ishana", rooms: "Puja room, meditation corner, water storage", tip: "The most sacred corner. Keep it open, clean and light." },
+  { id: "W", name: "West", element: "Ruled by Varuna", rooms: "Children's room, dining room, study", tip: "A steady zone for study and family meals." },
+  { id: "C", name: "Centre", element: "Space · Brahmasthan", rooms: "Leave it open", tip: "No pillars, heavy furniture or toilets at the centre of the home." },
+  { id: "E", name: "East", element: "Ruled by Indra", rooms: "Main entrance, living room, windows", tip: "Let the morning sun in. A strong place for the entrance." },
+  { id: "SW", name: "South-west", element: "Earth · ruled by Nirriti", rooms: "Master bedroom, heavy storage", tip: "The heaviest, most stable zone. Where the head of the family sleeps." },
+  { id: "S", name: "South", element: "Ruled by Yama", rooms: "Bedrooms, wardrobes, heavy furniture", tip: "Keep it solid. Fewer openings here." },
+  { id: "SE", name: "South-east", element: "Fire · ruled by Agni", rooms: "Kitchen, electrical panel, inverter", tip: "The fire corner. The ideal place for the stove." },
 ];
 
 const processSteps = [
   {
-    step: "01",
-    title: "Initial Consultation",
+    title: "Tell us about the property",
     description:
-      "Share your property details and concerns. We understand your requirements, goals, and any specific issues you're facing.",
+      "Share the address, floor plan if you have one, and anything that's bothering you.",
   },
   {
-    step: "02",
-    title: "Site Analysis",
+    title: "Site visit",
     description:
-      "Our Vastu expert visits your property to analyze directions, measurements, placements, and energy patterns using traditional and modern techniques.",
+      "Our consultant visits to take directions and measurements, room by room.",
   },
   {
-    step: "03",
-    title: "Detailed Report",
+    title: "Written report",
     description:
-      "Receive a comprehensive Vastu analysis report with findings, significance of each observation, and their impact on different life aspects.",
+      "You get a report with diagrams showing what's in the right zone and what isn't.",
   },
   {
-    step: "04",
-    title: "Remedial Solutions",
+    title: "Remedies",
     description:
-      "Get practical, implementable remedies - both with and without structural changes. We prioritize non-demolition solutions.",
+      "Practical fixes, starting with the ones that need no structural change.",
   },
   {
-    step: "05",
-    title: "Implementation Support",
+    title: "Help putting them in place",
     description:
-      "Guidance during implementation of remedies. We assist with placement of items, colors, and other Vastu corrections.",
+      "We guide you on placement, colours and other corrections as you make them.",
   },
   {
-    step: "06",
-    title: "Follow-up Review",
+    title: "Follow-up review",
     description:
-      "Post-implementation review to assess changes and provide any additional recommendations if needed.",
+      "A check after the changes, with further suggestions if anything still needs work.",
   },
 ];
 
-const features = [
-  "Certified Vastu consultants with 15+ years experience",
-  "Scientific approach combined with traditional wisdom",
-  "No superstition - only practical solutions",
-  "Detailed written reports with diagrams",
-  "Both on-site and online consultations available",
-  "Affordable pricing with no hidden charges",
-  "Post-consultation support included",
-  "Privacy and confidentiality guaranteed",
-];
+function ZoneMap() {
+  const [active, setActive] = useState("NE");
+  const zone = zones.find((z) => z.id === active)!;
 
-const DIRECTIONS = [
-  { label: "N", angle: 0 },
-  { label: "NE", angle: 45 },
-  { label: "E", angle: 90 },
-  { label: "SE", angle: 135 },
-  { label: "S", angle: 180 },
-  { label: "SW", angle: 225 },
-  { label: "W", angle: 270 },
-  { label: "NW", angle: 315 },
-];
-
-function CompassRose() {
   return (
-    <motion.svg
-      viewBox="0 0 140 140"
-      className="vastu-compass"
-      initial={{ opacity: 0, scale: 0.85, rotate: -20 }}
-      animate={{ opacity: 1, scale: 1, rotate: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      <circle cx="70" cy="70" r="66" fill="none" stroke="rgba(212,160,23,0.35)" strokeWidth="1" />
-      <circle cx="70" cy="70" r="48" fill="none" stroke="rgba(212,160,23,0.5)" strokeWidth="1" />
-      <circle cx="70" cy="70" r="4" fill="#d4a017" />
-      {DIRECTIONS.map(({ label, angle }) => {
-        const rad = ((angle - 90) * Math.PI) / 180;
-        const x1 = 70 + Math.cos(rad) * 48;
-        const y1 = 70 + Math.sin(rad) * 48;
-        const x2 = 70 + Math.cos(rad) * 66;
-        const y2 = 70 + Math.sin(rad) * 66;
-        const lx = 70 + Math.cos(rad) * 78;
-        const ly = 70 + Math.sin(rad) * 78;
-        return (
-          <g key={label}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4a017" strokeWidth={label.length === 1 ? 1.5 : 1} />
-            <text
-              x={lx}
-              y={ly}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize={label.length === 1 ? 11 : 8}
-              fontWeight={600}
-              fill="#faf3e6"
+    <div className="vsx-map">
+      <div className="vsx-grid-wrap">
+        <span className="vsx-north" aria-hidden="true">N ↑</span>
+        <div className="vsx-grid" role="group" aria-label="Vastu zones of a home, North at the top">
+          {zones.map((z) => (
+            <button
+              key={z.id}
+              type="button"
+              aria-pressed={z.id === active}
+              onClick={() => setActive(z.id)}
+              className={`vsx-cell${z.id === "C" ? " vsx-cell--centre" : ""}`}
             >
-              {label}
-            </text>
-          </g>
-        );
-      })}
-    </motion.svg>
+              <span className="vsx-cell-id">{z.id === "C" ? "•" : z.id}</span>
+              <span className="vsx-cell-name">{z.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="vsx-detail" aria-live="polite">
+        <span className="vsx-detail-element">{zone.element}</span>
+        <h3>{zone.name}</h3>
+        <dl>
+          <div>
+            <dt>Best for</dt>
+            <dd>{zone.rooms}</dd>
+          </div>
+          <div>
+            <dt>Keep in mind</dt>
+            <dd>{zone.tip}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
   );
 }
 
@@ -238,301 +151,161 @@ export default function VastuConsultationPage() {
   return (
     <>
       <Header />
-      <main className="service-page vastu-page">
-        {/* Hero Section */}
-        <section className="vastu-hero">
-          <div className="container vastu-hero-content">
-            <CompassRose />
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="vastu-eyebrow">
-                <Compass className="w-4 h-4" /> Pancha Bhoota &middot; five elements
-              </span>
-              <h1 className="vastu-hero-title">
-                <span className="vastu-hero-title-line1">Align your home</span>
-                <span className="vastu-hero-title-line2">with the directions.</span>
+      <main className="hlx-page">
+        {/* Hero — landing page's dusk shell */}
+        <section className="hero-v2">
+          <div className="container hero-v2-container">
+            <div className="hero-v2-content">
+              <p className="hero-v2-eyebrow">Vastu consultation · Pune</p>
+              <h1 className="hero-v2-heading">
+                <span>Every room has</span>
+                <em>a direction.</em>
               </h1>
-              <p className="vastu-hero-subtitle">
-                Vastu Shastra reads a space the way a compass reads the
-                earth &mdash; entrance, kitchen, bedroom, each with a
-                direction that either supports you or works against you.
-                Our consultants find which is which, and fix it.
+              <p className="hero-v2-sub">
+                Vastu Shastra reads a home the way a compass reads the earth.
+                Entrance, kitchen, bedroom: each has a direction that suits
+                it. Our consultants find what&apos;s out of place and fix it,
+                without breaking walls where possible.
               </p>
-              <div className="vastu-hero-cta">
+              <div className="hero-v2-cta-group">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="vastu-btn-primary"
+                  className="hero-v2-btn-primary"
                 >
-                  Book Consultation
+                  Book a consultation
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <Link href="/properties" className="vastu-btn-ghost">
-                  Browse Vastu-Compliant Homes
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Five Elements Section — arranged at their real Vastu directions */}
-        <section className="vastu-wheel-section">
-          <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">The Foundation</span>
-              <h2 className="section-title-new">
-                The Five Elements of Vastu
-              </h2>
-              <p className="section-subtitle">
-                Pancha Bhoota, placed the way they belong &mdash; four
-                elements at their direction, Akash holding the centre
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="vastu-wheel"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <div className="vastu-wheel-center">
-                <centerElement.icon className="w-7 h-7" />
-              </div>
-              {elements.map((element) => {
-                const rad = ((element.angle - 90) * Math.PI) / 180;
-                const x = 50 + Math.cos(rad) * 42;
-                const y = 50 + Math.sin(rad) * 42;
-                return (
-                  <div
-                    key={element.name}
-                    className="vastu-wheel-node"
-                    style={{ left: `${x}%`, top: `${y}%` }}
-                  >
-                    <div className="vastu-wheel-node-icon">
-                      <element.icon className="w-5 h-5" />
-                    </div>
-                    <span className="vastu-wheel-node-name">
-                      {element.name} <span style={{ opacity: 0.6, fontWeight: 400 }}>({element.sanskrit})</span>
-                    </span>
-                    <span className="vastu-wheel-node-direction">{element.direction}</span>
-                  </div>
-                );
-              })}
-            </motion.div>
-
-            <div className="elements-legend">
-              {[...elements, { ...centerElement, direction: "Center" }].map((element) => (
-                <div key={element.name} className="element-legend-item">
-                  <div className="element-legend-icon">
-                    <element.icon className="w-5 h-5" />
-                  </div>
-                  <strong>{element.name}</strong>
-                  <span>{element.description}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Services Section */}
-        <section className="service-benefits">
-          <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">Our Services</span>
-              <h2 className="section-title-new">
-                Comprehensive Vastu Solutions
-              </h2>
-              <p className="section-subtitle">
-                From residential homes to commercial spaces, we provide expert
-                Vastu guidance for all property types
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="service-benefits-grid extended"
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {services.map((service) => (
-                <motion.div
-                  key={service.title}
-                  className="service-benefit-card"
-                  variants={fadeInUp}
-                >
-                  <div className="service-benefit-icon">
-                    <service.icon className="w-6 h-6" />
-                  </div>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Benefits Section */}
-        <section className="service-styles">
-          <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">Benefits</span>
-              <h2 className="section-title-new">Why Vastu Matters</h2>
-              <p className="section-subtitle">
-                A Vastu-compliant space can positively impact various aspects of your life
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="benefits-showcase"
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {benefits.map((benefit) => (
-                <motion.div
-                  key={benefit.title}
-                  className="benefit-showcase-card"
-                  variants={fadeInUp}
-                >
-                  <div className="benefit-showcase-icon">
-                    <benefit.icon className="w-8 h-8" />
-                  </div>
-                  <h3>{benefit.title}</h3>
-                  <p>{benefit.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Process Section */}
-        <section className="service-process hlw-section">
-          <div className="container">
-            <motion.div
-              className="section-header section-header-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="section-label">Our Process</span>
-              <h2 className="section-title-new">How We Work</h2>
-              <p className="section-subtitle">
-                A systematic approach to analyze and optimize your space
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="hlw-track"
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {processSteps.map((item, i) => {
-                const isLast = i === processSteps.length - 1;
-                return (
-                  <motion.div
-                    key={item.step}
-                    className={`hlw-card${isLast ? " hlw-card--stamped" : ""}`}
-                    variants={fadeInUp}
-                  >
-                    <span className="hlw-number">{item.step}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Features List */}
-        <section className="service-features-list">
-          <div className="container">
-            <motion.div
-              className="features-list-content"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2>Why Choose Ghardaar24 Vastu Services?</h2>
-              <div className="features-checklist">
-                {features.map((feature) => (
-                  <div key={feature} className="feature-check-item">
-                    <CheckCircle className="w-5 h-5" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="service-contact">
-          <div className="container">
-            <motion.div
-              className="service-contact-card"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="service-contact-content">
-                <h2>Ready for a Vastu Consultation?</h2>
-                <p>
-                  Take the first step towards a harmonious living space. Our
-                  certified Vastu experts are ready to help you unlock the
-                  potential of your property. Schedule a consultation today and
-                  experience the positive transformation.
-                </p>
-              </div>
-              <div className="service-contact-cta">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="btn-primary"
-                >
-                  Book Consultation
-                </button>
-                <a href="tel:+919673655631" className="btn-secondary">
+                <a href="tel:+919673655631" className="hero-v2-btn-ghost">
                   <Phone className="w-5 h-5" />
-                  Call Now
-                </a>
-                <a
-                  href="https://wa.me/919673655631?text=Hi, I'm interested in Vastu consultation services from Ghardaar24"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary"
-                >
-                  WhatsApp Us
+                  Call us
                 </a>
               </div>
-            </motion.div>
+              <p className="hero-v2-areas-label" id="vsx-modes-label">
+                Consultations
+              </p>
+              <ul className="hero-v2-areas hlx-banks" aria-labelledby="vsx-modes-label">
+                {["On-site", "Online", "Written report", "Follow-up"].map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+            </div>
+
+            <figure className="hero-v2-tower idx-hero-art">
+              <Image
+                src="/vastuconsultation.png"
+                alt=""
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 1024px) 34vw, 80vw"
+                className="hero-v2-tower-img"
+              />
+            </figure>
+          </div>
+        </section>
+
+        {/* Zone map — the signature */}
+        <section className="hlx-section vsx-zones">
+          <div className="container">
+            <span className="featured-v2-eyebrow">The Vastu map</span>
+            <h2 className="featured-v2-title">
+              Nine zones, <em>one home.</em>
+            </h2>
+            <p className="hlx-body">
+              Vastu divides a home into nine zones, each with its own ruling force.
+              Tap a zone to see what belongs there.
+            </p>
+            <ZoneMap />
+          </div>
+        </section>
+
+        {/* Services */}
+        <section className="hlx-section">
+          <div className="container hlx-split">
+            <div className="hlx-split-head">
+              <span className="featured-v2-eyebrow">What we cover</span>
+              <h2 className="featured-v2-title">
+                Homes, offices <em>and plots.</em>
+              </h2>
+              <p className="hlx-body">
+                Practical advice for the property you live or work in, or the
+                one you&apos;re about to buy. No superstition, just clear fixes.
+              </p>
+            </div>
+
+            <motion.ul
+              className="hlx-benefits"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+            >
+              {services.map((s) => (
+                <motion.li key={s.title} variants={fadeInUp}>
+                  <span className="hlx-benefit-icon">
+                    <s.icon className="w-5 h-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>{s.title}</h3>
+                    <p>{s.description}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </div>
+        </section>
+
+        {/* Process: a real sequence, so the steps are numbered */}
+        <section className="hlx-section hlx-section--dusk">
+          <div className="container">
+            <span className="hero-v2-eyebrow">How it works</span>
+            <h2 className="featured-v2-title hlx-title-light">
+              From first call <em>to follow-up.</em>
+            </h2>
+
+            <motion.ol
+              className="hlx-route hlx-route--six"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+            >
+              {processSteps.map((s, i) => (
+                <motion.li key={s.title} variants={fadeInUp}>
+                  <span className="hlx-route-dot">{i + 1}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.description}</p>
+                </motion.li>
+              ))}
+            </motion.ol>
+          </div>
+        </section>
+
+        {/* Closing CTA — landing page's saffron band */}
+        <section id="contact" className="cta-v2">
+          <div className="container cta-v2-inner">
+            <h2 className="cta-v2-title">
+              Not sure your home is aligned?
+              <em>Let&apos;s check.</em>
+            </h2>
+            <div className="cta-v2-buttons">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="cta-v2-btn-primary"
+              >
+                Book a consultation
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <a
+                href="https://wa.me/919673655631?text=Hi, I'm interested in Vastu consultation services from Ghardaar24"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cta-v2-btn-outline"
+              >
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp us
+              </a>
+            </div>
           </div>
         </section>
       </main>

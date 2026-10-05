@@ -14,12 +14,7 @@ import {
   Maximize,
   MapPin,
   ChevronRight,
-  Home,
-  Castle,
-  Ruler,
-  Store,
   Wallet,
-  Building2,
   Tag,
 } from "lucide-react";
 import {
@@ -28,43 +23,73 @@ import {
   StaggerItem,
   motion,
 } from "@/lib/motion";
-import { ReactNode } from "react";
 
 interface HomeClientProps {
   featuredProperties: Property[];
 }
 
-const propertyTypes: { type: string; label: string; icon: ReactNode }[] = [
+const propertyTypes: {
+  type: string;
+  label: string;
+  desc: string;
+}[] = [
   {
     type: "apartment",
     label: "Apartments",
-    icon: <Building2 className="w-6 h-6" />,
+    desc: "Flats in gated societies",
   },
-  { type: "house", label: "Houses", icon: <Home className="w-6 h-6" /> },
-  { type: "villa", label: "Villas", icon: <Castle className="w-6 h-6" /> },
-  { type: "plot", label: "Plots", icon: <Ruler className="w-6 h-6" /> },
+  {
+    type: "house",
+    label: "Houses",
+    desc: "Independent and row houses",
+  },
+  {
+    type: "villa",
+    label: "Villas",
+    desc: "Bungalows with gardens",
+  },
+  {
+    type: "plot",
+    label: "Plots",
+    desc: "Land to build on",
+  },
   {
     type: "commercial",
     label: "Commercial",
-    icon: <Store className="w-6 h-6" />,
+    desc: "Offices and shops",
   },
 ];
+
+function TypeDoorContent({ item }: { item: (typeof propertyTypes)[number] }) {
+  return (
+    <>
+      <span className="type-card-v2-art">
+        <Image
+          src={`/property/${item.type}.png`}
+          alt=""
+          fill
+          sizes="(min-width: 900px) 18vw, 42vw"
+          className="type-card-v2-img"
+        />
+      </span>
+      <span className="type-card-v2-label">{item.label}</span>
+      <span className="type-card-v2-desc">{item.desc}</span>
+    </>
+  );
+}
 
 // Custom Property Card for Home Page with login check
 function HomePropertyCard({
   property,
   index = 0,
+  className,
 }: {
   property: Property;
   index?: number;
+  className?: string;
 }) {
-  const router = useRouter();
   const mainImage = property.images?.[0] || "/placeholder-property.svg";
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  const handleClick = () => {
-    router.push(`/properties/${property.id}`);
-  };
 
   const badgeLabel =
     property.listing_type === "sale"
@@ -75,6 +100,7 @@ function HomePropertyCard({
 
   return (
     <motion.div
+      className={className}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -84,7 +110,7 @@ function HomePropertyCard({
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      <div className="prop-card-v2" onClick={handleClick}>
+      <Link href={`/properties/${property.id}`} className="prop-card-v2">
         {/* Full-bleed image */}
         <div className="prop-card-v2-image">
           {!imageLoaded && (
@@ -138,9 +164,17 @@ function HomePropertyCard({
             )}
           </div>
         </div>
-      </div>
+      </Link>
     </motion.div>
   );
+}
+
+// Grid shape depends on how many featured listings exist (max 6)
+function featuredSpan(index: number, count: number) {
+  if (count === 1) return "feat-solo";
+  if (count === 2) return "feat-half";
+  if (index === 0 && (count === 3 || count === 6)) return "feat-spotlight";
+  return undefined;
 }
 
 export default function HomeClient({ featuredProperties }: HomeClientProps) {
@@ -209,13 +243,13 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
             <div className="container">
               <div className="featured-v2-header">
                 <div className="featured-v2-title-block">
-                  <span className="featured-v2-eyebrow">Handpicked for You</span>
-                  <h2 className="featured-v2-title">Featured Properties</h2>
+                  <span className="featured-v2-eyebrow">Handpicked for you</span>
+                  <h2 className="featured-v2-title">Featured properties</h2>
                 </div>
               </div>
               <div className="properties-grid">
                 {featuredProperties.map((property, index) => (
-                  <HomePropertyCard key={property.id} property={property} index={index} />
+                  <HomePropertyCard key={property.id} property={property} index={index} className={featuredSpan(index, featuredProperties.length)} />
                 ))}
               </div>
             </div>
@@ -224,14 +258,13 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
 
         <MotionSection className="types-v2">
           <div className="container">
-            <div className="section-header section-header-center">
-              <h2 className="featured-v2-title">Browse by Property Type</h2>
+            <div className="types-v2-header">
+              <h2 className="featured-v2-title">Browse by property type</h2>
             </div>
             <div className="types-v2-grid">
               {propertyTypes.map((item) => (
                 <div key={item.type} className="type-card-v2">
-                  <span className="type-card-v2-icon">{item.icon}</span>
-                  <span className="type-card-v2-label">{item.label}</span>
+                  <TypeDoorContent item={item} />
                 </div>
               ))}
             </div>
@@ -249,8 +282,8 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
           <div className="container">
             <div className="featured-v2-header">
               <div className="featured-v2-title-block">
-                <span className="featured-v2-eyebrow">Handpicked for You</span>
-                <h2 className="featured-v2-title">Featured Properties</h2>
+                <span className="featured-v2-eyebrow">Handpicked for you</span>
+                <h2 className="featured-v2-title">Featured properties</h2>
               </div>
               <Link href="/properties?featured=true" className="btn-outline-new">
                 View all <ChevronRight className="w-4 h-4" />
@@ -263,6 +296,7 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
                   key={property.id}
                   property={property}
                   index={index}
+                  className={featuredSpan(index, featuredProperties.length)}
                 />
               ))}
             </div>
@@ -273,27 +307,21 @@ export default function HomeClient({ featuredProperties }: HomeClientProps) {
       {/* Property Types */}
       <MotionSection className="types-v2">
         <div className="container">
-          <StaggerContainer className="section-header section-header-center">
-            <StaggerItem>
-              <span className="featured-v2-eyebrow">Explore</span>
-            </StaggerItem>
-            <StaggerItem>
-              <h2 className="featured-v2-title">Browse by Property Type</h2>
-            </StaggerItem>
-          </StaggerContainer>
+          <div className="types-v2-header">
+            <h2 className="featured-v2-title">Browse by property type</h2>
+          </div>
 
           <StaggerContainer className="types-v2-grid">
             {propertyTypes.map((item) => (
               <StaggerItem key={item.type}>
                 <Link
-                  href={`/properties?type=${item.type}`}
+                  href={`/properties?property_type=${item.type}`}
                   className="type-card-v2"
                   onClick={(e) =>
-                    handleLinkClick(e, `/properties?type=${item.type}`)
+                    handleLinkClick(e, `/properties?property_type=${item.type}`)
                   }
                 >
-                  <span className="type-card-v2-icon">{item.icon}</span>
-                  <span className="type-card-v2-label">{item.label}</span>
+                  <TypeDoorContent item={item} />
                 </Link>
               </StaggerItem>
             ))}

@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStaffAuth } from "@/lib/staff-auth";
 import { motion } from "@/lib/motion";
-import { FileSpreadsheet, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import Image from "next/image";
+import RoleAuthShell from "@/components/RoleAuthShell";
 
 export default function StaffLoginPage() {
   const [email, setEmail] = useState("");
@@ -39,108 +40,82 @@ export default function StaffLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-4">
-            <FileSpreadsheet className="w-8 h-8 text-white" />
+    <RoleAuthShell role="staff">
+      <div className="admin-login-page staff-login-page">
+        <motion.div
+          className="login-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="login-header">
+            <div className="login-logo">
+              <Image src="/logo.png" alt="Ghardaar24" width={120} height={48} className="h-12 w-auto" />
+            </div>
+            <h1>Staff portal</h1>
+            <p>Sign in with the email your admin set up for you.</p>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Staff Portal</h1>
-          <p className="text-gray-500 mt-1">Ghardaar24 CRM</p>
-        </div>
-
-        {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-indigo-100/50 p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
 
           {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4"
-            >
-              <Alert
-                variant="destructive"
-                className="p-3 bg-red-50 border-red-100 rounded-xl flex items-center gap-3 text-red-600"
-              >
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <AlertDescription className="text-sm text-red-600">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
+            <div className="login-error" role="alert">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <Label className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10 pointer-events-none" />
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="login-field">
+              <Label htmlFor="staff-email">Email address</Label>
+              <div className="login-input-wrapper">
+                <Mail className="login-input-icon" />
                 <Input
                   type="email"
+                  id="staff-email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-auto pl-14 pr-4 py-3 border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all"
-                  style={{ paddingLeft: '3.5rem' }}
                   placeholder="you@example.com"
                   required
+                  className="h-auto"
                 />
               </div>
             </div>
 
-            <div>
-              <Label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10 pointer-events-none" />
+            <div className="login-field">
+              <Label htmlFor="staff-password">Password</Label>
+              <div className="login-input-wrapper">
+                <Lock className="login-input-icon" />
                 <Input
                   type={showPassword ? "text" : "password"}
+                  id="staff-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-auto pl-14 pr-12 py-3 border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all"
-                  style={{ paddingLeft: '3.5rem' }}
                   placeholder="••••••••"
                   required
+                  className="h-auto"
                 />
                 <Button
                   type="button"
                   variant="ghost"
+                  size="icon-sm"
+                  className="login-password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-auto p-1 text-gray-400 hover:text-gray-600 hover:bg-transparent z-10"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </Button>
               </div>
             </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-auto py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </span>
-              ) : (
-                "Sign in"
-              )}
+            <Button type="submit" className="login-submit" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-        </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Contact your admin for account access
-        </p>
-      </motion.div>
-    </div>
+          <p className="login-footer">
+            Need an account or lost access? Ask your admin.
+          </p>
+        </motion.div>
+      </div>
+    </RoleAuthShell>
   );
 }

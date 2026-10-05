@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { motion } from "@/lib/motion";
-import Link from "next/link";
 import {
-  ArrowLeft,
   Lock,
   Eye,
   EyeOff,
@@ -17,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function AdminSettingsPage() {
   const { user, adminProfile, updatePassword } = useAdminAuth();
@@ -66,32 +65,11 @@ export default function AdminSettingsPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <Link
-            href="/admin"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "2.5rem",
-              height: "2.5rem",
-              borderRadius: "0.5rem",
-              background: "#f3f4f6",
-            }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1>Settings</h1>
-            <p>Manage your account settings</p>
-          </div>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Account"
+        title="Settings"
+        description="Your account details."
+      />
 
       {/* Settings Content */}
       <div style={{ maxWidth: "600px" }}>
@@ -103,7 +81,7 @@ export default function AdminSettingsPage() {
           style={{
             background: "white",
             borderRadius: "1rem",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--color-gray-200)",
             padding: "1.5rem",
             marginBottom: "1.5rem",
           }}
@@ -116,7 +94,7 @@ export default function AdminSettingsPage() {
               marginBottom: "1rem",
             }}
           >
-            <Settings className="w-5 h-5" style={{ color: "#6366f1" }} />
+            <Settings className="w-5 h-5" style={{ color: "var(--color-indigo-500)" }} />
             <h2 style={{ fontSize: "1.125rem", fontWeight: 600, margin: 0 }}>
               Account Information
             </h2>
@@ -124,18 +102,18 @@ export default function AdminSettingsPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#6b7280", textTransform: "uppercase" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase" }}>
                 Name
               </span>
-              <p style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#111827", margin: 0 }}>
+              <p style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--color-gray-900)", margin: 0 }}>
                 {adminProfile?.name || "Admin"}
               </p>
             </div>
             <div>
-              <span style={{ fontSize: "0.75rem", color: "#6b7280", textTransform: "uppercase" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase" }}>
                 Email
               </span>
-              <p style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#111827", margin: 0 }}>
+              <p style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--color-gray-900)", margin: 0 }}>
                 {user?.email || adminProfile?.email}
               </p>
             </div>
@@ -150,7 +128,7 @@ export default function AdminSettingsPage() {
           style={{
             background: "white",
             borderRadius: "1rem",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--color-gray-200)",
             padding: "1.5rem",
           }}
         >
@@ -162,7 +140,7 @@ export default function AdminSettingsPage() {
               marginBottom: "1.25rem",
             }}
           >
-            <Lock className="w-5 h-5" style={{ color: "#6366f1" }} />
+            <Lock className="w-5 h-5" style={{ color: "var(--color-indigo-500)" }} />
             <h2 style={{ fontSize: "1.125rem", fontWeight: 600, margin: 0 }}>
               Change Password
             </h2>
@@ -204,7 +182,7 @@ export default function AdminSettingsPage() {
 
           <form onSubmit={handlePasswordChange}>
             <div style={{ marginBottom: "1rem" }}>
-              <Label style={{ display: "block", marginBottom: "0.375rem", color: "#374151" }}>
+              <Label style={{ display: "block", marginBottom: "0.375rem", color: "var(--color-gray-700)" }}>
                 New Password
               </Label>
               <div style={{ position: "relative" }}>
@@ -231,7 +209,7 @@ export default function AdminSettingsPage() {
                     left: "0.75rem",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#9ca3af",
+                    color: "var(--color-gray-400)",
                     pointerEvents: "none",
                   }}
                 />
@@ -249,16 +227,16 @@ export default function AdminSettingsPage() {
                   }}
                 >
                   {showNewPassword ? (
-                    <EyeOff className="w-4 h-4" style={{ color: "#9ca3af" }} />
+                    <EyeOff className="w-4 h-4" style={{ color: "var(--color-gray-400)" }} />
                   ) : (
-                    <Eye className="w-4 h-4" style={{ color: "#9ca3af" }} />
+                    <Eye className="w-4 h-4" style={{ color: "var(--color-gray-400)" }} />
                   )}
                 </Button>
               </div>
             </div>
 
             <div style={{ marginBottom: "1.5rem" }}>
-              <Label style={{ display: "block", marginBottom: "0.375rem", color: "#374151" }}>
+              <Label style={{ display: "block", marginBottom: "0.375rem", color: "var(--color-gray-700)" }}>
                 Confirm New Password
               </Label>
               <div style={{ position: "relative" }}>
@@ -285,7 +263,7 @@ export default function AdminSettingsPage() {
                     left: "0.75rem",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#9ca3af",
+                    color: "var(--color-gray-400)",
                     pointerEvents: "none",
                   }}
                 />
@@ -303,9 +281,9 @@ export default function AdminSettingsPage() {
                   }}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="w-4 h-4" style={{ color: "#9ca3af" }} />
+                    <EyeOff className="w-4 h-4" style={{ color: "var(--color-gray-400)" }} />
                   ) : (
-                    <Eye className="w-4 h-4" style={{ color: "#9ca3af" }} />
+                    <Eye className="w-4 h-4" style={{ color: "var(--color-gray-400)" }} />
                   )}
                 </Button>
               </div>

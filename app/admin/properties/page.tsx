@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 type SortKey = "created_at_desc" | "created_at_asc" | "price_asc" | "price_desc" | "title_asc" | "title_desc" | "cp_slab_asc" | "cp_slab_desc";
 
@@ -202,23 +203,21 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="admin-page">
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1>Properties</h1>
-          <p>Manage all your property listings</p>
-        </div>
-        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <Button className="btn-admin-primary" render={<Link href="/admin/properties/new" />}>
-            <Plus className="w-5 h-5" />
-            Add Property
-          </Button>
-        </motion.div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Listings"
+        title="Properties"
+        description="Every listing on the site."
+        actions={
+          <>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button className="btn-admin-primary" render={<Link href="/admin/properties/new" />}>
+                <Plus className="w-5 h-5" />
+                Add Property
+              </Button>
+            </motion.div>
+          </>
+        }
+      />
 
       {/* Search & Filters */}
       <motion.div

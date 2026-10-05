@@ -10,6 +10,7 @@ import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import RoleAuthShell from "@/components/RoleAuthShell";
 
 const MotionButton = motion.create(Button);
 
@@ -51,7 +52,8 @@ export default function AdminLoginPage() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="admin-login-page">
+      <RoleAuthShell role="admin">
+<div className="admin-login-page">
         <motion.div
           className="login-container"
           initial={{ opacity: 0 }}
@@ -60,6 +62,7 @@ export default function AdminLoginPage() {
           <p className="text-center text-gray-500">Loading...</p>
         </motion.div>
       </div>
+</RoleAuthShell>
     );
   }
 
@@ -69,7 +72,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="admin-login-page">
+    <RoleAuthShell role="admin">
+<div className="admin-login-page">
       <motion.div
         className="login-container"
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -208,5 +212,6 @@ export default function AdminLoginPage() {
         </motion.p>
       </motion.div>
     </div>
+</RoleAuthShell>
   );
 }

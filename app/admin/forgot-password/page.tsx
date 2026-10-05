@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import RoleAuthShell from "@/components/RoleAuthShell";
 
 const MotionButton = motion(Button);
 
@@ -42,7 +43,8 @@ export default function AdminForgotPasswordPage() {
   };
 
   return (
-    <div className="admin-login-page">
+    <RoleAuthShell role="admin" showSwitch={false}>
+<div className="admin-login-page">
       <motion.div
         className="login-container"
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -151,5 +153,6 @@ export default function AdminForgotPasswordPage() {
         )}
       </motion.div>
     </div>
+</RoleAuthShell>
   );
 }

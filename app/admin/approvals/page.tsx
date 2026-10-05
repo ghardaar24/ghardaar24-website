@@ -27,6 +27,7 @@ import {
   AlertDialog,
   AlertDialogContent,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 const MotionButton = motion.create(Button);
 
@@ -198,17 +199,11 @@ export default function AdminApprovalsPage() {
 
   return (
     <div className="admin-page">
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1>Property Approvals</h1>
-          <p>Review and approve user-submitted properties</p>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Listings"
+        title="Approvals"
+        description="Review properties submitted by users before they go live."
+      />
 
       {/* Tabs */}
       <motion.div

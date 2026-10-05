@@ -41,6 +41,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface RevenueEntry {
   id: string;
@@ -261,8 +262,8 @@ export default function RevenuePage() {
     borderRadius: "999px",
     fontSize: "0.75rem",
     fontWeight: 600 as const,
-    background: isEarning(type) ? "#dcfce7" : isExpense(type) ? "#fee2e2" : "#f3f4f6",
-    color: isEarning(type) ? "#16a34a" : isExpense(type) ? "#dc2626" : "#374151",
+    background: isEarning(type) ? "#dcfce7" : isExpense(type) ? "#fee2e2" : "var(--color-gray-100)",
+    color: isEarning(type) ? "#16a34a" : isExpense(type) ? "#dc2626" : "var(--color-gray-700)",
   });
 
   return (
@@ -278,31 +279,34 @@ export default function RevenuePage() {
         {cityOptions.map((c) => <option key={c} value={c} />)}
       </datalist>
 
-      <motion.div className="admin-page-header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <div>
-          <h1>Revenue Tracking</h1>
-          <p>Log and monitor earnings and expenses</p>
-        </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <Button variant="outline" render={<Link href="/admin/revenue/analytics" />}>
-            <TrendingUp className="w-4 h-4" /> Analytics
-          </Button>
-          <Button
-            onClick={() => {
-              if (showForm) {
-                setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "", city: "" }); setClientAutoFilled(false);
-                setEditingId(null);
-                setShowForm(false);
-              } else {
-                setShowForm(true);
-              }
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            {showForm ? "Cancel" : "Add Entry"}
-          </Button>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="Money"
+        title="Revenue"
+        description="Log and track earnings and expenses."
+        actions={
+          <>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <Button variant="outline" render={<Link href="/admin/revenue/analytics" />}>
+                <TrendingUp className="w-4 h-4" /> Analytics
+              </Button>
+              <Button
+                onClick={() => {
+                  if (showForm) {
+                    setForm({ type: "Earning", amount: "", description: "", category: "", date: new Date().toISOString().split("T")[0], client_name: "", client_email: "", client_phone: "", city: "" }); setClientAutoFilled(false);
+                    setEditingId(null);
+                    setShowForm(false);
+                  } else {
+                    setShowForm(true);
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4" />
+                {showForm ? "Cancel" : "Add Entry"}
+              </Button>
+            </div>
+          </>
+        }
+      />
 
       {/* Stats */}
       <div className="dashboard-stats-grid">
@@ -351,7 +355,7 @@ export default function RevenuePage() {
         {showForm && (
           <motion.div
             ref={formRef}
-            style={{ background: "#fff", borderRadius: "0.75rem", padding: "1.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #e5e7eb", overflow: "hidden", marginBottom: "1.5rem" }}
+            style={{ background: "#fff", borderRadius: "0.75rem", padding: "1.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid var(--color-gray-200)", overflow: "hidden", marginBottom: "1.5rem" }}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -451,29 +455,29 @@ export default function RevenuePage() {
                     return matches.length > 0 ? (
                       <div style={{
                         position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
-                        background: "#fff", border: "1px solid #e5e7eb", borderRadius: "0.5rem",
+                        background: "#fff", border: "1px solid var(--color-gray-200)", borderRadius: "0.5rem",
                         boxShadow: "0 4px 12px rgba(0,0,0,0.1)", maxHeight: "200px", overflowY: "auto",
                       }}>
                         {matches.map((c) => (
                           <div
                             key={c.id}
-                            style={{ padding: "0.625rem 1rem", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }}
+                            style={{ padding: "0.625rem 1rem", cursor: "pointer", borderBottom: "1px solid var(--color-gray-100)" }}
                             onMouseDown={() => {
                               setForm((f) => ({ ...f, client_name: c.client_name, client_phone: c.customer_number || f.client_phone }));
                               setShowCrmDropdown(false);
                               setClientAutoFilled(false);
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-gray-50)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
                             <div style={{ fontWeight: 500, fontSize: "0.875rem" }}>{c.client_name}</div>
-                            {c.customer_number && <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{c.customer_number}</div>}
+                            {c.customer_number && <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>{c.customer_number}</div>}
                           </div>
                         ))}
                       </div>
                     ) : null;
                   })()}
-                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                  <p style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", marginTop: "0.25rem" }}>
                     Select from CRM to autofill details, or enter a custom client name.
                   </p>
                 </div>
@@ -488,7 +492,7 @@ export default function RevenuePage() {
                     maxLength={10}
                   />
                   {form.client_phone.length > 0 && form.client_phone.length < 10 && (
-                    <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                    <p style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", marginTop: "0.25rem" }}>
                       {10 - form.client_phone.length} more digit{10 - form.client_phone.length !== 1 ? "s" : ""} to auto-detect client
                     </p>
                   )}
@@ -541,7 +545,7 @@ export default function RevenuePage() {
 
       {/* Filter */}
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", alignItems: "center", flexWrap: "wrap" }}>
-        <Filter className="w-4 h-4" style={{ color: "#6b7280" }} />
+        <Filter className="w-4 h-4" style={{ color: "var(--color-gray-500)" }} />
         {filterOptions.map((t) => (
           <Button
             key={t}
@@ -564,7 +568,7 @@ export default function RevenuePage() {
           <Skeleton className="h-12 w-full" />
         </div>
       ) : filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "3rem", color: "#6b7280" }}>
+        <div style={{ textAlign: "center", padding: "3rem", color: "var(--color-gray-500)" }}>
           <DollarSign className="w-10 h-10" style={{ margin: "0 auto 0.75rem" }} />
           <p>No entries yet. Add your first entry.</p>
         </div>
@@ -588,7 +592,7 @@ export default function RevenuePage() {
                 <motion.tr key={entry.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-slot="table-row" className="border-b transition-colors hover:bg-muted/50">
                   <TableCell>{new Date(entry.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</TableCell>
                   <TableCell>
-                    <Badge style={{ background: isEarning(entry.type) ? "#dcfce7" : isExpense(entry.type) ? "#fee2e2" : "#f3f4f6", color: isEarning(entry.type) ? "#16a34a" : isExpense(entry.type) ? "#dc2626" : "#374151" }}>
+                    <Badge style={{ background: isEarning(entry.type) ? "#dcfce7" : isExpense(entry.type) ? "#fee2e2" : "var(--color-gray-100)", color: isEarning(entry.type) ? "#16a34a" : isExpense(entry.type) ? "#dc2626" : "var(--color-gray-700)" }}>
                       {entry.type}
                     </Badge>
                   </TableCell>
@@ -598,12 +602,12 @@ export default function RevenuePage() {
                     {entry.client_name ? (
                       <div>
                         <div style={{ fontWeight: 500, fontSize: "0.875rem" }}>{entry.client_name}</div>
-                        {entry.client_phone && <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{entry.client_phone}</div>}
+                        {entry.client_phone && <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>{entry.client_phone}</div>}
                       </div>
                     ) : "—"}
                   </TableCell>
-                  <TableCell style={{ color: "#6b7280", whiteSpace: "pre-wrap", maxWidth: "200px" }}>{entry.description || "—"}</TableCell>
-                  <TableCell style={{ fontWeight: 600, color: isEarning(entry.type) ? "#16a34a" : isExpense(entry.type) ? "#dc2626" : "#374151" }}>
+                  <TableCell style={{ color: "var(--color-gray-500)", whiteSpace: "pre-wrap", maxWidth: "200px" }}>{entry.description || "—"}</TableCell>
+                  <TableCell style={{ fontWeight: 600, color: isEarning(entry.type) ? "#16a34a" : isExpense(entry.type) ? "#dc2626" : "var(--color-gray-700)" }}>
                     {isExpense(entry.type) ? "−" : "+"}{fmt(entry.amount)}
                   </TableCell>
                   <TableCell>

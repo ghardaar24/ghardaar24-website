@@ -72,6 +72,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import PageHeader from "@/components/admin/PageHeader";
 
 // Types
 interface CallingCommentEntry {
@@ -1684,129 +1685,127 @@ export default function CRMPage() {
   return (
     <div className="admin-page">
       {/* Header */}
-      <motion.div
-        className="admin-page-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1>CRM</h1>
-          <p>Manage your clients and leads</p>
-        </div>
-        <div className="crm-header-actions">
-          <motion.button
-            onClick={() => setShowStats(!showStats)}
-            className="btn-admin-secondary"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            {showStats ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span>{showStats ? "Hide Stats" : "Show Stats"}</span>
-          </motion.button>
-          <motion.button
-            onClick={() => setShowImportModal(true)}
-            className="btn-admin-secondary"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <Upload className="w-4 h-4" />
-            <span>Import</span>
-          </motion.button>
-          <div style={{ position: "relative" }}>
-            <motion.button
-              onClick={() => setShowExportMenu((v) => !v)}
-              className="btn-admin-secondary"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Download className="w-4 h-4" />
-              <span>Export{selectedSheetId ? ` (${sheets.find((s) => s.id === selectedSheetId)?.name || "sheet"})` : ""}</span>
-            </motion.button>
-            <AnimatePresence>
-              {showExportMenu && (
-                <>
-                  <div
-                    style={{ position: "fixed", inset: 0, zIndex: 40 }}
-                    onClick={() => setShowExportMenu(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    style={{
-                      position: "absolute",
-                      top: "calc(100% + 6px)",
-                      left: 0,
-                      zIndex: 50,
-                      minWidth: 220,
-                      background: "var(--card, #fff)",
-                      border: "1px solid var(--border, #e5e7eb)",
-                      borderRadius: 8,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <button
-                      className="crm-export-menu-item"
-                      style={{ display: "flex", width: "100%", padding: "10px 14px", textAlign: "left", border: "none", background: "none", cursor: "pointer" }}
-                      onClick={() => {
-                        exportToCSV("full");
-                        setShowExportMenu(false);
-                      }}
-                    >
-                      Export full details{selectedSheetId ? " (this sheet)" : " (all clients)"}
-                    </button>
-                    <button
-                      className="crm-export-menu-item"
-                      style={{ display: "flex", width: "100%", padding: "10px 14px", textAlign: "left", border: "none", background: "none", cursor: "pointer" }}
-                      onClick={() => {
-                        exportToCSV("contact");
-                        setShowExportMenu(false);
-                      }}
-                    >
-                      Export name &amp; phone only
-                    </button>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-          <motion.button
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="btn-admin-primary"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <span>Add Client</span>
-          </motion.button>
-          <button
-            onClick={() => setShowDeleteAllModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete All
-          </button>
-          
-          <Link
-            href="/admin/crm/analytics"
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Analytics
-          </Link>
-          <Link
-            href="/admin/crm/logs"
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Activity className="w-4 h-4" />
-            Staff Logs
-          </Link>
-        </div>
-      </motion.div>
+      <PageHeader
+        eyebrow="People"
+        title="CRM"
+        description="Clients, leads and where each deal stands."
+        actions={
+          <>
+            <div className="crm-header-actions">
+              <motion.button
+                onClick={() => setShowStats(!showStats)}
+                className="btn-admin-secondary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                {showStats ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <span>{showStats ? "Hide Stats" : "Show Stats"}</span>
+              </motion.button>
+              <motion.button
+                onClick={() => setShowImportModal(true)}
+                className="btn-admin-secondary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Upload className="w-4 h-4" />
+                <span>Import</span>
+              </motion.button>
+              <div style={{ position: "relative" }}>
+                <motion.button
+                  onClick={() => setShowExportMenu((v) => !v)}
+                  className="btn-admin-secondary"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export{selectedSheetId ? ` (${sheets.find((s) => s.id === selectedSheetId)?.name || "sheet"})` : ""}</span>
+                </motion.button>
+                <AnimatePresence>
+                  {showExportMenu && (
+                    <>
+                      <div
+                        style={{ position: "fixed", inset: 0, zIndex: 40 }}
+                        onClick={() => setShowExportMenu(false)}
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 6px)",
+                          left: 0,
+                          zIndex: 50,
+                          minWidth: 220,
+                          background: "var(--card, #fff)",
+                          border: "1px solid var(--border, var(--color-gray-200))",
+                          borderRadius: 8,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <button
+                          className="crm-export-menu-item"
+                          style={{ display: "flex", width: "100%", padding: "10px 14px", textAlign: "left", border: "none", background: "none", cursor: "pointer" }}
+                          onClick={() => {
+                            exportToCSV("full");
+                            setShowExportMenu(false);
+                          }}
+                        >
+                          Export full details{selectedSheetId ? " (this sheet)" : " (all clients)"}
+                        </button>
+                        <button
+                          className="crm-export-menu-item"
+                          style={{ display: "flex", width: "100%", padding: "10px 14px", textAlign: "left", border: "none", background: "none", cursor: "pointer" }}
+                          onClick={() => {
+                            exportToCSV("contact");
+                            setShowExportMenu(false);
+                          }}
+                        >
+                          Export name &amp; phone only
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+              <motion.button
+                onClick={() => {
+                  resetForm();
+                  setShowAddModal(true);
+                }}
+                className="btn-admin-primary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span>Add Client</span>
+              </motion.button>
+              <button
+                onClick={() => setShowDeleteAllModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete All
+              </button>
+
+              <Link
+                href="/admin/crm/analytics"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </Link>
+              <Link
+                href="/admin/crm/logs"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Activity className="w-4 h-4" />
+                Staff Logs
+              </Link>
+            </div>
+          </>
+        }
+      />
 
       {/* Stats Row */}
       <AnimatePresence>
@@ -1819,7 +1818,7 @@ export default function CRMPage() {
             transition={{ duration: 0.3 }}
           >
             <div className="crm-stat-card">
-              <div className="crm-stat-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366f1" }}>
+              <div className="crm-stat-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--color-indigo-500)" }}>
                 <Users className="w-6 h-6" />
               </div>
               <div className="crm-stat-info">

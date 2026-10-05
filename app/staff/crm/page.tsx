@@ -65,6 +65,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
+import PageHeader from "@/components/admin/PageHeader";
 
 // Types
 interface CallingCommentEntry {
@@ -1213,35 +1214,37 @@ export default function StaffCRMPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">CRM Clients</h1>
-          <p className="text-gray-500">View and search client data</p>
-        </div>
-        <div className="flex gap-2">
-          {selectedSheetId && sheets.length > 0 && (
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="h-auto flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              Add Lead
-            </Button>
-          )}
-          {staffProfile?.can_add_sheets && (
-            <Button
-              onClick={() => setShowAddSheetModal(true)}
-              variant="outline"
-              className="h-auto flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 shadow-sm font-medium border border-indigo-200"
-            >
-              <Plus className="w-5 h-5" />
-              Add New Sheet
-            </Button>
-          )}
-        </div>
-      </div>
+    <div className="admin-page space-y-6">
+      <PageHeader
+        eyebrow="People"
+        title="CRM clients"
+        description="View and search your client sheets."
+        actions={
+          <>
+            <div className="flex gap-2">
+              {selectedSheetId && sheets.length > 0 && (
+                <Button
+                  onClick={() => setShowAddModal(true)}
+                  className="h-auto flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm font-medium"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Lead
+                </Button>
+              )}
+              {staffProfile?.can_add_sheets && (
+                <Button
+                  onClick={() => setShowAddSheetModal(true)}
+                  variant="outline"
+                  className="h-auto flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 shadow-sm font-medium border border-indigo-200"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add New Sheet
+                </Button>
+              )}
+            </div>
+          </>
+        }
+      />
 
       {/* Sheet Tabs */}
       <div className="staff-tabs-container">
