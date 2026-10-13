@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
+import { usePersistedState, usePersistedScroll } from "@/lib/use-persisted-state";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "@/lib/motion";
@@ -171,7 +172,7 @@ export default function CRMPage() {
   const { user, session, loading, adminProfile } = useAdminAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = usePersistedState<FilterState>("crm-admin-filters", {
     search: "",
     leadStage: "",
     leadType: "",
@@ -180,7 +181,7 @@ export default function CRMPage() {
     duplicates: false,
   });
   const [duplicateIds, setDuplicateIds] = useState<Set<string>>(new Set());
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = usePersistedState("crm-admin-showFilters", false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [editingClient, setEditingClient] = useState<CRMClient | null>(null);
@@ -192,7 +193,7 @@ export default function CRMPage() {
 
   // Sheet management state
   const [sheets, setSheets] = useState<CRMSheet[]>([]);
-  const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
+  const [selectedSheetId, setSelectedSheetId] = usePersistedState<string | null>("crm-admin-sheet", null);
   const [importSheetName, setImportSheetName] = useState("");
   const [importToExistingSheet, setImportToExistingSheet] = useState<string | null>(null);
   const [deleteSheetConfirm, setDeleteSheetConfirm] = useState<string | null>(null);
@@ -204,8 +205,8 @@ export default function CRMPage() {
   const workbookRef = useRef<XLSX.WorkBook | null>(null);
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [currentPage, setCurrentPage] = usePersistedState("crm-admin-page", 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistedState("crm-admin-perPage", DEFAULT_ITEMS_PER_PAGE);
 
   // Inline editing state
   const [editingCell, setEditingCell] = useState<{ clientId: string; field: string } | null>(null);
@@ -751,10 +752,36 @@ export default function CRMPage() {
   );
 
   // Reset page and selection on filter change
+  const skipPageReset = useRef(true);
   useEffect(() => {
+    if (skipPageReset.current) {
+      skipPageReset.current = false;
+      return;
+    }
     setCurrentPage(1);
     setSelectedClientIds(new Set());
   }, [filters, selectedSheetId, itemsPerPage]);
+
+  // Restore open client + scroll after returning from a phone call
+  const [openClientId, setOpenClientId] = usePersistedState<string | null>("crm-admin-openClient", null);
+  const restoredClient = useRef(false);
+  useEffect(() => {
+    // don't clobber the saved id before the restore below has run
+    if (!restoredClient.current && openClientId) return;
+    setOpenClientId(showDetailsModal && selectedClient ? selectedClient.id : null);
+  }, [showDetailsModal, selectedClient, openClientId, setOpenClientId]);
+  useEffect(() => {
+    if (restoredClient.current || !openClientId || clients.length === 0) return;
+    restoredClient.current = true;
+    const c = clients.find((x) => x.id === openClientId);
+    if (c) {
+      setSelectedClient(c);
+      setShowDetailsModal(true);
+      fetchVisitHistory(c);
+      
+    }
+  }, [clients, openClientId]);
+  usePersistedScroll("crm-admin-scroll", !isLoading);
 
   // Stats
   const stats = {

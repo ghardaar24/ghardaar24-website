@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { usePersistedState, usePersistedScroll } from "@/lib/use-persisted-state";
 import { useStaffAuth, supabaseStaff } from "@/lib/staff-auth";
 import { motion, AnimatePresence } from "@/lib/motion";
 import {
@@ -160,9 +161,9 @@ export default function StaffCRMPage() {
   const { staffProfile, session, accessibleSheets, loading: authLoading } = useStaffAuth();
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [sheets, setSheets] = useState<CRMSheet[]>([]);
-  const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
+  const [selectedSheetId, setSelectedSheetId] = usePersistedState<string | null>("crm-staff-sheet", null);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = usePersistedState<FilterState>("crm-staff-filters", {
     search: "",
     leadStage: "",
     leadType: "",
@@ -170,7 +171,7 @@ export default function StaffCRMPage() {
     locationCategory: "",
     duplicates: false,
   });
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = usePersistedState("crm-staff-showFilters", false);
   const [duplicateIds, setDuplicateIds] = useState<Set<string>>(new Set());
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -333,7 +334,7 @@ export default function StaffCRMPage() {
   };
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = usePersistedState("crm-staff-page", 1);
 
 
   // Inline editing state
@@ -636,10 +637,36 @@ export default function StaffCRMPage() {
   );
 
   // Reset page and selection on filter change
+  const skipPageReset = useRef(true);
   useEffect(() => {
+    if (skipPageReset.current) {
+      skipPageReset.current = false;
+      return;
+    }
     setCurrentPage(1);
     setSelectedClientIds(new Set());
   }, [filters, selectedSheetId]);
+
+  // Restore open client + scroll after returning from a phone call
+  const [openClientId, setOpenClientId] = usePersistedState<string | null>("crm-staff-openClient", null);
+  const restoredClient = useRef(false);
+  useEffect(() => {
+    // don't clobber the saved id before the restore below has run
+    if (!restoredClient.current && openClientId) return;
+    setOpenClientId(showDetailsModal && selectedClient ? selectedClient.id : null);
+  }, [showDetailsModal, selectedClient, openClientId, setOpenClientId]);
+  useEffect(() => {
+    if (restoredClient.current || !openClientId || clients.length === 0) return;
+    restoredClient.current = true;
+    const c = clients.find((x) => x.id === openClientId);
+    if (c) {
+      setSelectedClient(c);
+      setShowDetailsModal(true);
+      fetchVisitHistory(c);
+      fetchCallingHistory(c);
+    }
+  }, [clients, openClientId]);
+  usePersistedScroll("crm-staff-scroll", !isLoading);
 
   // Get unique locations for filter
   const uniqueLocations = [...new Set(clients.map((c) => c.location_category).filter(Boolean))];
